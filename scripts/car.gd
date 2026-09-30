@@ -45,6 +45,7 @@ var _paint: StandardMaterial3D
 ## Tempo in cui il rottame appena colpito dalla rana non può ferirla.
 var _frog_grace := 0.0
 var _wreck_age := 0.0
+var _last_floating_frame := -10
 
 
 func _ready() -> void:
@@ -126,18 +127,32 @@ func _on_wreck_body_entered(body: Node) -> void:
 			other.become_wreck()
 
 
-## Conta la velocità rispetto alla rana: chi viaggia insieme al veicolo, sopra
-## o accanto, non si fa male. Fa male solo se si avvicina, non se si allontana.
+## Fa male solo se è il veicolo ad andare addosso alla rana: deve muoversi
+## verso di lei, e più in fretta di lei. Chi viaggia insieme al veicolo, sopra o
+## accanto, non si fa male, e nemmeno chi sbatte contro un veicolo fermo.
+## I rottami che galleggiano sono zattere e non fanno mai male.
 func _hit_overlapping_frogs() -> void:
-	if _frog_grace > 0.0:
+	if _frog_grace > 0.0 or is_floating():
 		return
+	var velocity := motion_velocity()
 	for body in _hitbox.get_overlapping_bodies():
 		var frog := body as Frog
 		if frog == null:
 			continue
-		var relative := motion_velocity() - frog.velocity
-		if relative.length() >= min_harmful_speed and relative.dot(frog.global_position - global_position) > 0.0:
-			frog.take_hit(hit_damage, _knockback_for(frog, relative))
+		var toward_frog := (frog.global_position - global_position).normalized()
+		var own_speed := velocity.dot(toward_frog)
+		var closing_speed := (velocity - frog.velocity).dot(toward_frog)
+		if own_speed >= min_harmful_speed and closing_speed >= min_harmful_speed:
+			frog.take_hit(hit_damage, _knockback_for(frog, velocity))
+
+
+## Chiamato dal fiume a ogni passo in cui il rottame è in acqua.
+func mark_floating() -> void:
+	_last_floating_frame = Engine.get_physics_frames()
+
+
+func is_floating() -> bool:
+	return Engine.get_physics_frames() - _last_floating_frame <= 1
 
 
 ## Sbalza la rana soprattutto di lato, fuori dalla corsia: se venisse spinta solo

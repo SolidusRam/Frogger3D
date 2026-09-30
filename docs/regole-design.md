@@ -55,7 +55,7 @@ Il calore sale anche se il giocatore non fa nulla; i poteri lo accelerano, ma so
 | Acqua | Chi cade in acqua galleggia, nuota lento, segue la corrente e perde 20 di vita al secondo. Per uscire serve un salto tenuto premuto |
 | Rottami nel fiume | Galleggiano e seguono la corrente: un'auto lanciata nel fiume diventa una zattera |
 | Coccodrilli | La schiena è sicura; la bocca si apre a intervalli e morde |
-| Urti | Conta la velocità relativa: chi viaggia insieme a un veicolo, sopra o accanto, non si fa male |
+| Urti | Fa male solo un veicolo che ti viene addosso: chi viaggia insieme a un veicolo, sopra o accanto, non si fa male, e nemmeno chi sbatte contro un veicolo fermo. I rottami che galleggiano sono zattere e non fanno mai male |
 | Caos | Deve essere emergente: nasce da regole semplici che si incrociano, non da eventi scritti a mano |
 
 ## Gioco base (proposta da discutere)

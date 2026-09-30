@@ -62,6 +62,7 @@ func current_at(point: Vector3) -> Vector3:
 
 
 func _float(wreck: Car) -> void:
+	wreck.mark_floating()
 	# Ingombro verticale reale: un'auto su un fianco è alta quanto è larga.
 	var b := wreck.global_basis
 	var height := absf(b.x.y) * wreck.size.x + absf(b.y.y) * wreck.size.y + absf(b.z.y) * wreck.size.z
