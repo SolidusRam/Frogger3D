@@ -36,7 +36,7 @@ Il calore sale anche se il giocatore non fa nulla; i poteri lo accelerano, ma so
 | --- | --- |
 | Motore | Godot |
 | Telecamera | Terza persona, dietro la rana |
-| Controlli | Mouse e tastiera. Provvisori: WASD movimento, mouse telecamera, Spazio salto (tenuto in aria: deltaplano), tasto sinistro pugno, tasto destro super salto, Esc pausa |
+| Controlli | Mouse e tastiera. Provvisori: WASD movimento, mouse telecamera, Spazio salto (premuto di nuovo in aria e tenuto: deltaplano), tasto sinistro pugno, tasto destro super salto, Esc pausa |
 | Movimento | Libero, non su griglia |
 | Grafica | 3D low-poly in stile Megabonk, modelli fatti in Blender |
 | Ostacoli | Autostrada, fiume, coccodrilli |

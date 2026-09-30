@@ -157,3 +157,11 @@ offset_right = 316.0
 offset_bottom = 48.0
 theme_override_font_sizes/font_size = 24
 text = "Vita"
+
+[node name="PowersLabel" type="Label" parent="Hud"]
+offset_left = 16.0
+offset_top = 48.0
+offset_right = 316.0
+offset_bottom = 110.0
+theme_override_font_sizes/font_size = 20
+text = "Poteri"

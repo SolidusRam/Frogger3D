@@ -1,12 +1,16 @@
 class_name Frog
 extends CharacterBody3D
 ## La rana: movimento libero relativo alla telecamera, salto con coyote time e
-## buffer, saltelli solo visivi mentre cammina, vita e colpi subiti.
+## buffer, saltelli solo visivi mentre cammina, vita e colpi subiti, nuoto.
+## Poteri: pugno, super salto e deltaplano.
 
 signal health_changed(health: int, max_health: int)
 signal died
 ## Emesso a ogni pugno andato a segno, con i veicoli colpiti.
 signal punched(cars: Array[Car])
+## Emesso a ogni uso di un potere (&"punch", &"super_jump", &"glide"): servirà
+## al calore.
+signal power_used(power: StringName)
 
 @export_group("Movimento")
 @export var move_speed := 7.0
@@ -39,6 +43,26 @@ signal punched(cars: Array[Car])
 @export var punch_lift := 0.35
 @export var punch_cooldown := 0.4
 
+@export_group("Super salto")
+@export var super_jump_height := 5.0
+## Velocità orizzontale data dal super salto.
+@export var super_jump_boost := 9.0
+@export var super_jump_cooldown := 2.5
+## Controllo in aria durante il super salto: si sterza senza perdere slancio.
+@export var super_air_acceleration := 6.0
+
+@export_group("Deltaplano")
+@export var glide_speed := 10.0
+@export var glide_acceleration := 12.0
+## Velocità massima di discesa col deltaplano aperto.
+@export var glide_fall_speed := 2.0
+## Secondi di volo con la carica piena; si ricarica stando a terra.
+@export var glide_duration := 2.5
+@export var glide_recharge_per_second := 1.0
+## Sotto questa altezza dal suolo, Spazio in aria resta un salto anticipato e
+## non apre il deltaplano.
+@export var glide_min_height := 1.2
+
 @export_group("Acqua")
 @export var swim_speed := 2.5
 @export var swim_acceleration := 10.0
@@ -60,6 +84,7 @@ signal punched(cars: Array[Car])
 @export var fall_limit := -20.0
 
 @onready var visual: Node3D = $Visual
+@onready var glider: Node3D = $Visual/Glider
 @onready var camera_rig: CameraRig = $CameraRig
 
 var _jump_velocity: float
@@ -72,6 +97,10 @@ var _spawn_position: Vector3
 var _stun_time := 0.0
 var _invulnerable_time := 0.0
 var _punch_cooldown_left := 0.0
+var _super_jump_cooldown_left := 0.0
+var _super_jumping := false
+var _gliding := false
+var _glide_charge := 0.0
 var _river: River
 var _water_damage_owed := 0.0
 var _punch_query := PhysicsShapeQueryParameters3D.new()
@@ -85,30 +114,42 @@ func _ready() -> void:
 	_jump_velocity = 2.0 * jump_height / jump_time_to_peak
 	_gravity_up = 2.0 * jump_height / pow(jump_time_to_peak, 2)
 	_gravity_down = 2.0 * jump_height / pow(jump_time_to_fall, 2)
+	_glide_charge = glide_duration
 	var sphere := SphereShape3D.new()
 	sphere.radius = punch_radius
 	_punch_query.shape = sphere
 	_punch_query.collision_mask = 4 # veicoli
+	glider.visible = false
 
 
 func _physics_process(delta: float) -> void:
 	_stun_time = maxf(_stun_time - delta, 0.0)
 	_invulnerable_time = maxf(_invulnerable_time - delta, 0.0)
+	_punch_cooldown_left = maxf(_punch_cooldown_left - delta, 0.0)
+	_super_jump_cooldown_left = maxf(_super_jump_cooldown_left - delta, 0.0)
 
 	var input := Vector2.ZERO
 	if _stun_time == 0.0:
 		input = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var direction := camera_rig.flat_basis() * Vector3(input.x, 0.0, input.y)
 
+	var can_act := _stun_time == 0.0
+	if can_act and Input.is_action_just_pressed("super_jump") and _super_jump_cooldown_left == 0.0:
+		super_jump(direction)
+	_update_glider(delta)
+
 	if is_swimming():
 		_swim(direction, delta)
+	elif _gliding:
+		_glide(direction, delta)
 	else:
 		_apply_horizontal_movement(direction, delta)
 		_apply_gravity_and_jump(delta)
 	move_and_slide()
 
-	_punch_cooldown_left = maxf(_punch_cooldown_left - delta, 0.0)
-	if Input.is_action_just_pressed("punch") and _stun_time == 0.0 and _punch_cooldown_left == 0.0:
+	if is_on_floor() and velocity.y <= 0.0:
+		_super_jumping = false
+	if can_act and Input.is_action_just_pressed("punch") and _punch_cooldown_left == 0.0:
 		punch()
 
 	_update_visual(direction, delta)
@@ -131,11 +172,26 @@ func is_swimming() -> bool:
 	return _river != null and global_position.y < _river.surface_y() - 0.1 and velocity.y <= 2.0
 
 
+func is_gliding() -> bool:
+	return _gliding
+
+
+## Carica del deltaplano, da 0 a 1.
+func glide_charge_ratio() -> float:
+	return _glide_charge / glide_duration
+
+
+func super_jump_cooldown_left() -> float:
+	return _super_jump_cooldown_left
+
+
 func respawn() -> void:
 	global_position = _spawn_position
 	velocity = Vector3.ZERO
 	_stun_time = 0.0
 	_river = null
+	_super_jumping = false
+	_close_glider()
 	reset_physics_interpolation()
 
 
@@ -156,8 +212,27 @@ func punch() -> void:
 		if car and not hits.has(car):
 			hits.append(car)
 			car.receive_punch((forward + Vector3.UP * punch_lift) * punch_impulse)
+	power_used.emit(&"punch")
 	if not hits.is_empty():
 		punched.emit(hits)
+
+
+## Un balzo alto con slancio in avanti: nella direzione dei tasti o, da fermi,
+## in quella della telecamera. Funziona anche dall'acqua.
+func super_jump(direction: Vector3) -> void:
+	_super_jump_cooldown_left = super_jump_cooldown
+	_close_glider()
+	if direction.length_squared() < 0.01:
+		direction = -camera_rig.flat_basis().z
+	var boost := direction.normalized() * super_jump_boost
+	velocity = Vector3(boost.x, sqrt(2.0 * _gravity_up * super_jump_height), boost.z)
+	_super_jumping = true
+	_time_since_floor = INF
+	_time_since_jump_pressed = INF
+	var tween := create_tween()
+	visual.scale = Vector3(1.3, 0.6, 1.3)
+	tween.tween_property(visual, "scale", Vector3.ONE, 0.25)
+	power_used.emit(&"super_jump")
 
 
 ## Un colpo da un veicolo o da un pericolo: toglie vita e sbalza la rana.
@@ -167,6 +242,8 @@ func take_hit(damage: int, knockback: Vector3) -> void:
 	velocity = knockback
 	_stun_time = stun_duration
 	_invulnerable_time = invulnerability_duration
+	_super_jumping = false
+	_close_glider()
 	_lose_health(damage)
 
 
@@ -179,6 +256,56 @@ func _lose_health(amount: int) -> void:
 		health = max_health
 		health_changed.emit(health, max_health)
 		respawn()
+
+
+## Apre, tiene aperto e chiude il deltaplano; a terra lo ricarica.
+func _update_glider(delta: float) -> void:
+	var grounded := is_on_floor() or is_swimming()
+	if grounded:
+		_close_glider()
+		_glide_charge = minf(_glide_charge + glide_recharge_per_second * delta, glide_duration)
+		return
+
+	if _gliding:
+		_glide_charge = maxf(_glide_charge - delta, 0.0)
+		if not Input.is_action_pressed("jump") or _glide_charge == 0.0:
+			_close_glider()
+	elif Input.is_action_just_pressed("jump") and _stun_time == 0.0 and _can_open_glider():
+		_gliding = true
+		glider.visible = true
+		# La pressione ha aperto il deltaplano: non va ricordata come salto.
+		_time_since_jump_pressed = INF
+		power_used.emit(&"glide")
+
+
+## Serve una nuova pressione in aria, lontano dal suolo e fuori dal coyote time;
+## vicino al suolo la stessa pressione resta un salto anticipato.
+func _can_open_glider() -> bool:
+	if _glide_charge <= 0.0 or _time_since_floor <= coyote_time:
+		return false
+	var from := global_position + Vector3.UP * 0.1
+	var query := PhysicsRayQueryParameters3D.create(from, from + Vector3.DOWN * (glide_min_height + 0.1), 1 | 4 | 8)
+	query.exclude = [get_rid()]
+	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
+
+
+func _close_glider() -> void:
+	_gliding = false
+	if glider:
+		glider.visible = false
+
+
+## Scende lenta e plana in avanti; si sterza con i tasti, e da fermi prosegue
+## nella direzione in cui stava andando.
+func _glide(direction: Vector3, delta: float) -> void:
+	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
+	var heading := direction
+	if heading.length_squared() < 0.01:
+		heading = horizontal if horizontal.length_squared() > 0.01 else -camera_rig.flat_basis().z
+	horizontal = horizontal.move_toward(heading.normalized() * glide_speed, glide_acceleration * delta)
+	velocity.x = horizontal.x
+	velocity.z = horizontal.z
+	velocity.y = maxf(velocity.y - _gravity_down * delta, -glide_fall_speed)
 
 
 ## Galleggia, nuota lenta, segue la corrente e perde vita. Spazio fa un salto
@@ -205,12 +332,19 @@ func _swim(direction: Vector3, delta: float) -> void:
 
 
 func _apply_horizontal_movement(direction: Vector3, delta: float) -> void:
+	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
 	var acceleration := ground_acceleration if is_on_floor() else air_acceleration
+	var target_speed := move_speed
 	if _stun_time > 0.0:
 		# Lo sbalzo si esaurisce piano, invece di essere annullato subito.
 		acceleration = air_acceleration
-	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
-	horizontal = horizontal.move_toward(direction * move_speed, acceleration * delta)
+	elif _super_jumping and not is_on_floor():
+		# In volo si sterza senza frenare: senza tasti lo slancio resta tutto.
+		if direction.length_squared() < 0.01:
+			return
+		acceleration = super_air_acceleration
+		target_speed = maxf(move_speed, horizontal.length())
+	horizontal = horizontal.move_toward(direction * target_speed, acceleration * delta)
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
 
@@ -218,7 +352,7 @@ func _apply_horizontal_movement(direction: Vector3, delta: float) -> void:
 func _apply_gravity_and_jump(delta: float) -> void:
 	_time_since_floor = 0.0 if is_on_floor() else _time_since_floor + delta
 	_time_since_jump_pressed += delta
-	if Input.is_action_just_pressed("jump") and _stun_time == 0.0:
+	if Input.is_action_just_pressed("jump") and _stun_time == 0.0 and not _gliding:
 		_time_since_jump_pressed = 0.0
 
 	if _time_since_jump_pressed <= jump_buffer_time and _time_since_floor <= coyote_time:
@@ -226,16 +360,19 @@ func _apply_gravity_and_jump(delta: float) -> void:
 		_time_since_jump_pressed = INF
 		_time_since_floor = INF
 
-	# Rilasciare Spazio mentre sale accorcia il salto.
-	var rising := velocity.y > 0.0 and Input.is_action_pressed("jump")
+	# Rilasciare Spazio mentre sale accorcia il salto; il super salto no.
+	var rising := velocity.y > 0.0 and (Input.is_action_pressed("jump") or _super_jumping)
 	velocity.y -= (_gravity_up if rising else _gravity_down) * delta
 
 
 func _update_visual(direction: Vector3, delta: float) -> void:
 	visual.visible = _invulnerable_time == 0.0 or fmod(_invulnerable_time, 0.2) > 0.1
 
-	if direction.length_squared() > 0.01:
-		var target_yaw := atan2(-direction.x, -direction.z)
+	var heading := direction
+	if _gliding:
+		heading = Vector3(velocity.x, 0.0, velocity.z)
+	if heading.length_squared() > 0.01:
+		var target_yaw := atan2(-heading.x, -heading.z)
 		visual.rotation.y = lerp_angle(visual.rotation.y, target_yaw, turn_speed * delta)
 
 	var moving_on_floor := is_on_floor() and not is_swimming() and direction.length_squared() > 0.01
