@@ -1,0 +1,159 @@
+[gd_scene load_steps=20 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/frog.tscn" id="frog_scene"]
+[ext_resource type="Script" path="res://scripts/road.gd" id="road_script"]
+[ext_resource type="Script" path="res://scripts/debug_hud.gd" id="hud_script"]
+[ext_resource type="Script" path="res://scripts/river.gd" id="river_script"]
+
+[sub_resource type="ProceduralSkyMaterial" id="sky_material"]
+
+[sub_resource type="Sky" id="sky"]
+sky_material = SubResource("sky_material")
+
+[sub_resource type="Environment" id="environment"]
+background_mode = 2
+sky = SubResource("sky")
+ambient_light_source = 3
+tonemap_mode = 2
+
+[sub_resource type="BoxShape3D" id="ground_south_shape"]
+size = Vector3(120, 4, 110)
+
+[sub_resource type="BoxShape3D" id="ground_north_shape"]
+size = Vector3(120, 4, 76)
+
+[sub_resource type="StandardMaterial3D" id="ground_material"]
+albedo_color = Color(0.45, 0.45, 0.45, 1)
+
+[sub_resource type="BoxMesh" id="ground_south_mesh"]
+material = SubResource("ground_material")
+size = Vector3(120, 4, 110)
+
+[sub_resource type="BoxMesh" id="ground_north_mesh"]
+material = SubResource("ground_material")
+size = Vector3(120, 4, 76)
+
+[sub_resource type="StandardMaterial3D" id="block_material"]
+albedo_color = Color(0.65, 0.6, 0.5, 1)
+
+[sub_resource type="BoxShape3D" id="Step05_shape"]
+size = Vector3(2, 0.5, 2)
+
+[sub_resource type="BoxMesh" id="Step05_mesh"]
+material = SubResource("block_material")
+size = Vector3(2, 0.5, 2)
+
+[sub_resource type="BoxShape3D" id="Step10_shape"]
+size = Vector3(2, 1, 2)
+
+[sub_resource type="BoxMesh" id="Step10_mesh"]
+material = SubResource("block_material")
+size = Vector3(2, 1, 2)
+
+[sub_resource type="BoxShape3D" id="Step15_shape"]
+size = Vector3(2, 1.5, 2)
+
+[sub_resource type="BoxMesh" id="Step15_mesh"]
+material = SubResource("block_material")
+size = Vector3(2, 1.5, 2)
+
+[sub_resource type="BoxShape3D" id="Wall25_shape"]
+size = Vector3(8, 2.5, 2)
+
+[sub_resource type="BoxMesh" id="Wall25_mesh"]
+material = SubResource("block_material")
+size = Vector3(8, 2.5, 2)
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("environment")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 10, 0)
+shadow_enabled = true
+
+[node name="GroundSouth" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, 45)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="GroundSouth"]
+shape = SubResource("ground_south_shape")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="GroundSouth"]
+mesh = SubResource("ground_south_mesh")
+
+[node name="GroundNorth" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -2, -62)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="GroundNorth"]
+shape = SubResource("ground_north_shape")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="GroundNorth"]
+mesh = SubResource("ground_north_mesh")
+
+[node name="TestBlocks" type="Node3D" parent="."]
+
+[node name="Step05" type="StaticBody3D" parent="TestBlocks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.25, 30)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TestBlocks/Step05"]
+shape = SubResource("Step05_shape")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="TestBlocks/Step05"]
+mesh = SubResource("Step05_mesh")
+
+[node name="Step10" type="StaticBody3D" parent="TestBlocks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.5, 26)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TestBlocks/Step10"]
+shape = SubResource("Step10_shape")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="TestBlocks/Step10"]
+mesh = SubResource("Step10_mesh")
+
+[node name="Step15" type="StaticBody3D" parent="TestBlocks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0.75, 22)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TestBlocks/Step15"]
+shape = SubResource("Step15_shape")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="TestBlocks/Step15"]
+mesh = SubResource("Step15_mesh")
+
+[node name="Wall25" type="StaticBody3D" parent="TestBlocks"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1.25, 18)
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TestBlocks/Wall25"]
+shape = SubResource("Wall25_shape")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="TestBlocks/Wall25"]
+mesh = SubResource("Wall25_mesh")
+
+[node name="Frog" parent="." instance=ExtResource("frog_scene")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 36)
+
+[node name="Road" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4)
+script = ExtResource("road_script")
+
+[node name="River" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -17)
+script = ExtResource("river_script")
+
+[node name="Hud" type="CanvasLayer" parent="." node_paths=PackedStringArray("frog")]
+script = ExtResource("hud_script")
+frog = NodePath("../Frog")
+
+[node name="HealthLabel" type="Label" parent="Hud"]
+offset_left = 16.0
+offset_top = 12.0
+offset_right = 316.0
+offset_bottom = 48.0
+theme_override_font_sizes/font_size = 24
+text = "Vita"

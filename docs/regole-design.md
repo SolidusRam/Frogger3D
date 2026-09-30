@@ -1,0 +1,98 @@
+# Frogger 3D — Regole di design
+
+Ultimo aggiornamento: 2026-10-01
+
+## Visione
+
+Una rana con i superpoteri attraversa all'infinito strade e fiumi. Il caos che provoca le dà forza, ma rende il mondo sempre più ostile.
+
+Il Frogger originale parla di una creatura fragile in un mondo indifferente. Qui la rana può reagire, e il mondo reagisce a sua volta: più caos provochi, più il mondo ti dà la caccia.
+
+Riferimenti:
+
+- **Frogger**: gli ostacoli (strada, fiume, coccodrilli) e le tane.
+- **Megabonk**: grafica low-poly, esperienza e oggetti durante la run, alta intensità.
+- **GTA**: il livello di ricercato, cioè il mondo che reagisce alle tue azioni.
+- **Risk of Rain**: la difficoltà sale col tempo e non si ferma mai.
+- **Left 4 Dead (AI Director)**: l'intensità arriva a ondate, con momenti in cui si respira.
+- **Burnout (modalità Crash)**: tamponamenti a catena come fonte di punti.
+
+## Regole decise
+
+Il cuore del gioco è uno scambio: ogni potere usato ti rende più forte ma accelera l'ostilità del mondo, che non torna mai indietro.
+
+```mermaid
+flowchart LR
+    P["Usi un potere"] --> XP["Esperienza e oggetti"] --> F["Rana più forte"]
+    P --> H["Il calore sale"] --> O["Mondo più ostile"]
+    T["Il tempo passa"] -. anche senza poteri .-> H
+    F -- più forza per altro caos --> P
+    O -- più pericoli: servono di nuovo i poteri --> P
+```
+
+Il calore sale anche se il giocatore non fa nulla; i poteri lo accelerano, ma sono anche l'unico modo di diventare più forti.
+
+| Area | Regola |
+| --- | --- |
+| Motore | Godot |
+| Telecamera | Terza persona, dietro la rana |
+| Controlli | Mouse e tastiera. Provvisori: WASD movimento, mouse telecamera, Spazio salto (tenuto in aria: deltaplano), tasto sinistro pugno, tasto destro super salto, Esc pausa |
+| Movimento | Libero, non su griglia |
+| Grafica | 3D low-poly in stile Megabonk, modelli fatti in Blender |
+| Ostacoli | Autostrada, fiume, coccodrilli |
+| Poteri | Super salto, pugno alle macchine, deltaplano: poteri base, disponibili da subito; in futuro poteri nuovi o potenziamenti di quelli base |
+| Struttura della run | Infinita: si gioca finché non si muore |
+| Giocatori | Singleplayer per ora; multiplayer cooperativo possibile in futuro |
+| Tana | Checkpoint lungo il percorso, non la fine: salva i progressi, ma la morte chiude la run |
+| Calore | Un'unica barra, per strada e palude insieme; sale di continuo col tempo; usare i poteri lo fa salire più in fretta; non cala mai |
+| Ritmo | Ondate di pericolo sopra una base che cresce sempre |
+| Ricompensa | Provocare caos dà esperienza o oggetti, in stile Megabonk |
+| Vita | Statistiche e vita che crescono durante la run; auto, acqua e coccodrilli tolgono vita: un solo colpo non basta a perdere |
+| Sconfitta | Colpito dalle macchine (anche quelle che hai colpito tu), mangiato dal coccodrillo, caduto in acqua |
+| Traffico | Ibrido: le auto guidano in modo cinematico e diventano rottami fisici quando vengono colpite forte; un rottame che colpisce un'auto la trasforma a sua volta. Con il calore alto il traffico passa alla fisica e diventa instabile da solo. I veicoli frenano davanti agli ostacoli e si formano code; se non fanno in tempo a fermarsi si schiantano. I rottami spariscono dopo 25 s |
+| Tetto dei veicoli | Si può stare sul tetto: non fa danno e la rana viene trasportata, come su un tronco |
+| Sbalzo | Un veicolo che colpisce la rana la butta di lato, fuori dalla corsia, anche nella corsia accanto |
+| Acqua | Chi cade in acqua galleggia, nuota lento, segue la corrente e perde 20 di vita al secondo. Per uscire serve un salto tenuto premuto |
+| Rottami nel fiume | Galleggiano e seguono la corrente: un'auto lanciata nel fiume diventa una zattera |
+| Coccodrilli | La schiena è sicura; la bocca si apre a intervalli e morde |
+| Urti | Conta la velocità relativa: chi viaggia insieme a un veicolo, sopra o accanto, non si fa male |
+| Caos | Deve essere emergente: nasce da regole semplici che si incrociano, non da eventi scritti a mano |
+
+## Gioco base (proposta da discutere)
+
+La prima versione giocabile ha un solo obiettivo: capire se attraversare e prendere a pugni le macchine è divertente anche con dei cubi grigi.
+
+**Dentro:**
+
+- La rana in terza persona che salta, controllata con mouse e tastiera.
+- Una strada con più corsie di traffico; le auto hanno la fisica e possono scontrarsi tra loro.
+- Un fiume con tronchi e coccodrilli.
+- La tana come checkpoint, poi il percorso ricomincia più difficile.
+- La vita: auto, acqua e coccodrilli tolgono vita; si perde quando la vita finisce.
+- Una sola barra di calore che sale col tempo e rende il traffico più fitto e veloce.
+- **Tutti e tre i poteri: pugno, super salto e deltaplano.** Il pugno è la prima fonte di caos; ogni potere usato fa salire il calore.
+
+**Fuori, per ora:**
+
+- Esperienza, oggetti e statistiche: senza niente da comprare non servono.
+- Le reazioni del mondo (auto che danno la caccia, coccodrilli aggressivi).
+- Grafica e modelli in Blender: si usano forme semplici.
+
+Il gioco base è finito quando si può giocare una run infinita, morire e ricominciare.
+
+## Feature da aggiungere, in ordine
+
+Ogni passo si aggiunge solo quando il precedente è divertente. L'ordine è una proposta e si può riordinare.
+
+1. **Gioco base**: la sezione qui sopra.
+2. **Esperienza dal caos**: gli incidenti danno esperienza e le catene di scontri valgono di più delle auto singole. Il passaggio di livello fa scegliere una statistica. Per ora l'esperienza cade a terra e va raccolta tra i rottami, come in Megabonk; si rivede quando si arriva qui.
+3. **Reazioni del mondo**: al crescere del calore le auto ti danno la caccia e i coccodrilli diventano aggressivi. Ogni reazione ha un avviso visibile.
+4. **Ondate**: picchi di pericolo sopra la base del calore, con momenti di respiro.
+5. **Oggetti che cambiano le regole**, non solo i numeri; per esempio un oggetto che dà meno calore ma anche meno esperienza.
+6. **Poteri nuovi e potenziamenti** dei tre poteri base.
+7. **Modelli low-poly in Blender** e stile grafico definitivo. Si può anticipare in parallelo, ma non prima che il gioco base funzioni.
+8. **Multiplayer** cooperativo, se lo facciamo: teniamo aperta la porta, ma per ora si sviluppa e si testa in singleplayer.
+
+## Domande aperte
+
+Nessuna per ora. Le risposte alle domande precedenti sono nella tabella "Regole decise".
