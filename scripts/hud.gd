@@ -31,15 +31,24 @@ var _message: Label
 var _game_over: PanelContainer
 var _game_over_text: Label
 var _chain_label: Label
+var _offer: PanelContainer
+var _offer_title: Label
+var _offer_buttons: Array[Button] = []
+var _upgrades: Upgrades
+var _equipment_label: Label
 var _last_heat_level := 0
 
 
 func _ready() -> void:
+	# La scelta dei power-up avviene a gioco fermo: l'HUD deve restare attivo.
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_top_left()
 	_build_top_right()
 	_build_powers()
 	_build_message()
 	_build_chain_label()
+	_build_offer()
+	_build_equipment()
 	_build_game_over()
 	frog.health_changed.connect(_on_health_changed)
 	_on_health_changed(frog.health, frog.max_health)
@@ -108,6 +117,54 @@ func show_chain(count: int) -> void:
 	tween.tween_property(_chain_label, "scale", Vector2.ONE, 0.2)
 	tween.tween_interval(1.0)
 	tween.tween_property(_chain_label, "modulate:a", 0.0, 0.4)
+
+
+func announce(text: String) -> void:
+	_show_message(text)
+
+
+## Le tre carte della tana. Si sceglie con 1, 2, 3 o col mouse.
+func show_offer(options: Array[String], upgrades: Upgrades) -> void:
+	_upgrades = upgrades
+	_offer_title.text = "Tana %d: scegli un potenziamento" % course.dens_reached
+	for i in _offer_buttons.size():
+		var button := _offer_buttons[i]
+		button.visible = i < options.size()
+		if not button.visible:
+			continue
+		var id := options[i]
+		var item: Dictionary = Upgrades.CATALOG[id]
+		var slot := "Slot: %s" % Upgrades.SLOT_NAMES[item.slot] if item.slot != "" else "Potenziamento (si somma)"
+		var replaced := upgrades.replaced_by(id)
+		var warning := "\n\nSostituisce: %s" % Upgrades.CATALOG[replaced].name if replaced != "" else ""
+		button.text = "%d.  %s\n%s\n\n%s%s" % [i + 1, item.name, slot, item.text, warning]
+	_offer.visible = true
+	_offer_buttons[0].grab_focus()
+
+
+func hide_offer() -> void:
+	_offer.visible = false
+
+
+## L'equipaggiamento in basso a destra: un modificatore per slot e i
+## potenziamenti numerici presi.
+func show_equipment(upgrades: Upgrades) -> void:
+	var lines: Array[String] = []
+	for slot: String in Upgrades.SLOT_NAMES:
+		if upgrades.slots[slot] != "":
+			lines.append("%s: %s" % [Upgrades.SLOT_NAMES[slot], Upgrades.CATALOG[upgrades.slots[slot]].name])
+	for id: String in upgrades.stacks:
+		lines.append("%s ×%d" % [Upgrades.CATALOG[id].name, upgrades.stacks[id]])
+	_equipment_label.text = "\n".join(lines)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not _offer.visible or not event is InputEventKey or not event.pressed:
+		return
+	var index: int = [KEY_1, KEY_2, KEY_3].find(event.physical_keycode)
+	if index >= 0 and _offer_buttons[index].visible:
+		get_viewport().set_input_as_handled()
+		_upgrades.choose(index)
 
 
 func _show_message(text: String) -> void:
@@ -196,6 +253,58 @@ func _build_chain_label() -> void:
 	_chain_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2))
 	_chain_label.modulate.a = 0.0
 	add_child(_chain_label)
+
+
+func _build_offer() -> void:
+	_offer = PanelContainer.new()
+	_offer.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	_offer.offset_left = -470
+	_offer.offset_right = 470
+	_offer.offset_top = -190
+	_offer.offset_bottom = 190
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.07, 0.1, 0.92)
+	style.set_corner_radius_all(12)
+	style.set_content_margin_all(20)
+	_offer.add_theme_stylebox_override("panel", style)
+	_offer.visible = false
+	add_child(_offer)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 16)
+	_offer.add_child(box)
+	_offer_title = _label(28)
+	_offer_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(_offer_title)
+	var cards := HBoxContainer.new()
+	cards.add_theme_constant_override("separation", 14)
+	box.add_child(cards)
+	for i in 3:
+		var button := Button.new()
+		button.custom_minimum_size = Vector2(290, 260)
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
+		button.add_theme_font_size_override("font_size", 17)
+		button.pressed.connect(_on_card_pressed.bind(i))
+		cards.add_child(button)
+		_offer_buttons.append(button)
+
+
+func _on_card_pressed(index: int) -> void:
+	_upgrades.choose(index)
+
+
+func _build_equipment() -> void:
+	_equipment_label = _label(16)
+	_equipment_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	_equipment_label.offset_left = -360
+	_equipment_label.offset_right = -16
+	_equipment_label.offset_top = -130
+	_equipment_label.offset_bottom = -16
+	_equipment_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_equipment_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	add_child(_equipment_label)
 
 
 func _build_game_over() -> void:

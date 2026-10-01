@@ -10,6 +10,7 @@ extends Node3D
 @export var environment: WorldEnvironment
 @export var sun: DirectionalLight3D
 @export var post: ColorRect
+@export var upgrades: Upgrades
 ## File del record; i test ne usano uno loro per non toccare quello vero.
 @export var record_path := "user://record.cfg"
 
@@ -48,6 +49,7 @@ func _ready() -> void:
 	Heat.wreck_created.connect(_on_wreck_created)
 	course.den_reached.connect(_on_den_reached)
 	hud.restart_requested.connect(restart)
+	upgrades.equipped.connect(_on_equipped)
 	hud.set_record(record_distance)
 
 
@@ -126,9 +128,26 @@ func _on_wreck_created(car: Node3D) -> void:
 		frog.camera_rig.pull_back(4.0, slowmo_seconds + 0.6)
 
 
-## La tana salva i progressi: il record viene scritto subito su disco.
+## La tana salva i progressi: il record viene scritto subito su disco. Poi il
+## gioco si ferma e si sceglie un power-up, uno tra tre.
 func _on_den_reached(_count: int, distance: float) -> void:
 	_save_record_if_better(distance)
+	if _over:
+		return
+	var options := upgrades.make_offer()
+	if options.is_empty():
+		return
+	get_tree().paused = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	hud.show_offer(options, upgrades)
+
+
+func _on_equipped(id: String) -> void:
+	hud.hide_offer()
+	hud.show_equipment(upgrades)
+	hud.announce("Equipaggiato: %s" % Upgrades.CATALOG[id].name)
+	get_tree().paused = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 func _on_frog_died() -> void:

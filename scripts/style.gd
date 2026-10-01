@@ -25,6 +25,7 @@ var styles: Array[Dictionary] = [
 		"emission_day": 0.0,
 		"emission_night": 1.5,
 		"colors": {
+			"glove_hot": Color(1.0, 0.55, 0.1), "wing_hot": Color(0.95, 0.2, 0.1),
 			"tire": Color(0.05, 0.05, 0.05), "trim": Color(0.18, 0.18, 0.2),
 			"headlight": Color(1.0, 0.95, 0.7), "taillight": Color(0.9, 0.1, 0.1),
 			"cargo": Color(0.78, 0.77, 0.73), "wing_stripe": Color(0.95, 0.92, 0.85),
@@ -67,6 +68,7 @@ var styles: Array[Dictionary] = [
 		"emission_day": 0.0,
 		"emission_night": 1.5,
 		"colors": {
+			"glove_hot": Color(0.9, 0.48, 0.1), "wing_hot": Color(0.8, 0.18, 0.1),
 			"tire": Color(0.04, 0.04, 0.04), "trim": Color(0.15, 0.15, 0.16),
 			"headlight": Color(0.95, 0.9, 0.65), "taillight": Color(0.75, 0.1, 0.08),
 			"cargo": Color(0.62, 0.6, 0.55), "wing_stripe": Color(0.82, 0.78, 0.68),
@@ -105,12 +107,13 @@ var styles: Array[Dictionary] = [
 		"name": "Arcade",
 		"post": Post.ARCADE,
 		"glow": true,
-		"emissive": ["frog", "glove", "lane_line", "gold", "croc_eye", "spark",
+		"emissive": ["frog", "glove", "glove_hot", "lane_line", "gold", "croc_eye", "spark",
 			"headlight", "taillight", "lamp_light",
 			"car_0", "car_1", "car_2", "car_3", "car_4", "car_5"],
 		"emission_day": 0.15,
 		"emission_night": 0.8,
 		"colors": {
+			"glove_hot": Color(1.0, 0.6, 0.0), "wing_hot": Color(1.0, 0.1, 0.1),
 			"tire": Color(0.0, 0.0, 0.0), "trim": Color(0.3, 0.3, 0.35),
 			"headlight": Color(1.0, 1.0, 0.6), "taillight": Color(1.0, 0.1, 0.2),
 			"cargo": Color(0.9, 0.9, 0.95), "wing_stripe": Color(0.2, 0.9, 1.0),

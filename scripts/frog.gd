@@ -205,6 +205,12 @@ func is_swimming() -> bool:
 	return _river != null and global_position.y < _river.surface_y() - 0.1 and velocity.y <= 2.0
 
 
+## Vita piena, per esempio quando un power-up alza la vita massima.
+func heal_full() -> void:
+	health = max_health
+	health_changed.emit(health, max_health)
+
+
 ## Il punto in cui la rana ricompare se cade fuori dal mondo (una tana).
 func set_respawn_point(point: Vector3) -> void:
 	_spawn_position = point

@@ -17,6 +17,9 @@ func _initialize() -> void:
 
 func _physics_process(_delta: float) -> bool:
 	frame += 1
+	# Nelle tane il gioco si ferma per le carte dei power-up: se ne sceglie una.
+	if paused:
+		current_scene.get_node("Upgrades").choose(0)
 	if frame == 1:
 		root.get_node("Heat").value = 100.0
 	frog.global_position = Vector3(0, 30, -0.4 * frame)

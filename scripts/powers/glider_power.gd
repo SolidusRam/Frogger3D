@@ -18,22 +18,42 @@ const MODEL := preload("res://assets/models/glider.glb")
 ## non apre il deltaplano.
 @export var min_height := 1.2
 
+@export_group("Correnti calde")
+## Con le correnti calde, sopra un rottame che fuma si sale: accelerazione e
+## velocità massima di salita, raggio e altezza della colonna di fumo.
+@export var thermal_lift := 18.0
+@export var thermal_rise_speed := 4.0
+@export var thermal_radius := 4.5
+@export var thermal_height := 30.0
+## Nella colonna il deltaplano rallenta a questa frazione della velocità e,
+## senza tasti, viene attirato verso il centro: un ascensore da cui si esce
+## sterzando.
+@export var thermal_speed_factor := 0.4
+@export var thermal_centering := 2.0
+
 var charge := 0.0
 var gliding := false
+## Power-up "Correnti calde" equipaggiato.
+var thermals := false
+## Vero mentre il deltaplano sale in una colonna di fumo.
+var in_thermal := false
 
 var _frog: Frog
 var _wing: Node3D
 var _tween: Tween
 var _folding := false
+var _model: Node3D
+## Il rottame la cui colonna di fumo solleva la rana.
+var _thermal_source: Car
 
 
 func setup(frog: Frog) -> void:
 	_frog = frog
 	charge = duration
 	_wing = frog.glider
-	var model: Node3D = MODEL.instantiate()
-	_wing.add_child(model)
-	Style.apply_palette(model)
+	_model = MODEL.instantiate()
+	_wing.add_child(_model)
+	Style.apply_palette(_model)
 	_wing.visible = false
 
 
@@ -49,7 +69,11 @@ func update(delta: float) -> void:
 		charge = minf(charge + recharge_per_second * delta, duration)
 		return
 	if gliding:
-		charge = maxf(charge - delta, 0.0)
+		# Nelle correnti calde la carica non si consuma.
+		_thermal_source = _smoke_below() if thermals else null
+		in_thermal = _thermal_source != null
+		if not in_thermal:
+			charge = maxf(charge - delta, 0.0)
 		if not Input.is_action_pressed("jump") or charge == 0.0:
 			close()
 	elif Input.is_action_just_pressed("jump") and _frog.can_act() and _can_open():
@@ -68,12 +92,38 @@ func apply(direction: Vector3, delta: float) -> void:
 	var heading := direction
 	if heading.length_squared() < 0.01:
 		heading = horizontal if horizontal.length_squared() > 0.01 else -_frog.camera_rig.flat_basis().z
-	horizontal = horizontal.move_toward(heading.normalized() * speed, acceleration * delta)
-	_frog.velocity = Vector3(horizontal.x, maxf(velocity.y - _frog.gravity_down * delta, -fall_speed), horizontal.z)
+	var target := heading.normalized() * speed
+	var vertical := maxf(velocity.y - _frog.gravity_down * delta, -fall_speed)
+	if in_thermal:
+		vertical = minf(velocity.y + thermal_lift * delta, thermal_rise_speed)
+		if direction.length_squared() < 0.01:
+			var to_center := _thermal_source.global_position - _frog.global_position
+			target = Vector3(to_center.x, 0.0, to_center.z) * thermal_centering
+		target = target.limit_length(speed * thermal_speed_factor)
+	horizontal = horizontal.move_toward(target, acceleration * delta)
+	_frog.velocity = Vector3(horizontal.x, vertical, horizontal.z)
+
+
+## Equipaggia o toglie le correnti calde; si vede: le strisce dell'ala
+## diventano rosse.
+func set_thermals(on: bool) -> void:
+	thermals = on
+	Style.apply_palette(_model, {"wing_stripe": "wing_hot"} if on else {})
+
+
+## Il rottame nella cui colonna di fumo si trova la rana (null se nessuno).
+func _smoke_below() -> Car:
+	var position := _frog.global_position
+	for car in Car.smoking_wrecks():
+		var offset := position - car.global_position
+		if Vector2(offset.x, offset.z).length() < thermal_radius and offset.y > -1.0 and offset.y < thermal_height:
+			return car
+	return null
 
 
 func close() -> void:
 	gliding = false
+	in_thermal = false
 	if _wing and _wing.visible and not _folding:
 		_folding = true
 		var tween := _new_tween()

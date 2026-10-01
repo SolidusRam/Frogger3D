@@ -1,10 +1,11 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="game_script"]
 [ext_resource type="PackedScene" path="res://scenes/frog.tscn" id="frog_scene"]
 [ext_resource type="Script" path="res://scripts/course.gd" id="course_script"]
 [ext_resource type="Script" path="res://scripts/hud.gd" id="hud_script"]
 [ext_resource type="Script" path="res://scripts/backdrop.gd" id="backdrop_script"]
+[ext_resource type="Script" path="res://scripts/upgrades.gd" id="upgrades_script"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 
@@ -17,7 +18,7 @@ sky = SubResource("sky")
 ambient_light_source = 3
 tonemap_mode = 2
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("frog", "course", "hud", "environment", "sun", "post")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("frog", "course", "hud", "environment", "sun", "post", "upgrades")]
 script = ExtResource("game_script")
 frog = NodePath("Frog")
 course = NodePath("Course")
@@ -25,6 +26,7 @@ hud = NodePath("Hud")
 environment = NodePath("WorldEnvironment")
 sun = NodePath("Sun")
 post = NodePath("PostFX/Screen")
+upgrades = NodePath("Upgrades")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("environment")
@@ -37,6 +39,10 @@ shadow_enabled = true
 
 [node name="Course" type="Node3D" parent="." node_paths=PackedStringArray("frog")]
 script = ExtResource("course_script")
+frog = NodePath("../Frog")
+
+[node name="Upgrades" type="Node" parent="." node_paths=PackedStringArray("frog")]
+script = ExtResource("upgrades_script")
 frog = NodePath("../Frog")
 
 [node name="Backdrop" type="Node3D" parent="." node_paths=PackedStringArray("frog")]

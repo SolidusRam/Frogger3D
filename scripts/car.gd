@@ -15,6 +15,21 @@ enum State { DRIVING, WRECK }
 const MAX_WRECKS := 80
 ## Distanza dal muso sotto cui due veicoli sono a contatto.
 const CONTACT_DISTANCE := 0.3
+## Secondi di fumo di un rottame: per tutto quel tempo fa anche da corrente
+## calda per il deltaplano.
+const SMOKE_SECONDS := 6.0
+
+## Raggio, spinta (velocità data ai veicoli vicini) e danno alla rana
+## dell'esplosione dei guantoni esplosivi.
+const EXPLOSION_RADIUS := 6.0
+const EXPLOSION_PUSH := 12.0
+const EXPLOSION_FROG_RADIUS := 4.5
+const EXPLOSION_FROG_DAMAGE := 30
+## Se non urta niente, esplode comunque dopo questi secondi.
+const EXPLOSION_FUSE := 1.2
+## Prima di questo tempo un urto non la fa esplodere: l'auto deve allontanarsi
+## dalla rana, altrimenti nel traffico fitto esploderebbe in faccia a lei.
+const EXPLOSION_ARMING := 0.25
 
 ## I tipi di veicolo: ingombro di gioco (larghezza, altezza, lunghezza),
 ## danno alla rana, frequenza relativa nel traffico, raggio delle ruote,
@@ -45,6 +60,15 @@ const TYPES := {
 }
 
 static var _wrecks: Array[Car] = []
+
+
+## I rottami che fumano ancora: le correnti calde del deltaplano.
+static func smoking_wrecks() -> Array[Car]:
+	var smoking: Array[Car] = []
+	for car in _wrecks:
+		if car._wreck_age < SMOKE_SECONDS:
+			smoking.append(car)
+	return smoking
 
 
 ## Sceglie un tipo a caso secondo le frequenze del traffico.
@@ -93,7 +117,7 @@ var _painted := []
 var _wheels: Array[Node] = []
 ## Carrozzeria disegnata: si inclina e sobbalza senza toccare il corpo fisico.
 var _visual: Node3D
-var _frog: Node3D
+var _frog: Frog
 var _previous_speed := 0.0
 var _pitch := 0.0
 var _wobble_phase := randf() * TAU
@@ -104,6 +128,8 @@ var _color_index := 0
 var _frog_grace := 0.0
 var _wreck_age := 0.0
 var _last_floating_frame := -10
+## Colpito dai guantoni esplosivi: esploderà al primo urto con un veicolo.
+var _armed := false
 
 
 func _ready() -> void:
@@ -134,6 +160,8 @@ func _physics_process(delta: float) -> void:
 		State.WRECK:
 			_frog_grace = maxf(_frog_grace - delta, 0.0)
 			_wreck_age += delta
+			if _armed and _wreck_age > EXPLOSION_FUSE:
+				explode()
 			if _wreck_age > wreck_lifetime or global_position.y < -10.0:
 				_sink_and_free()
 	_hit_overlapping_frogs()
@@ -179,11 +207,44 @@ func lose_control() -> void:
 
 
 ## Il pugno della rana: il veicolo diventa un rottame e vola via.
-func receive_punch(impulse: Vector3) -> void:
+func receive_punch(impulse: Vector3, explosive := false) -> void:
 	become_wreck()
 	_frog_grace = 0.5
+	_armed = explosive
 	# Colpito un po' sopra il centro, così oltre a volare gira su se stesso.
 	apply_impulse(impulse, Vector3.UP * size.y * 0.3)
+
+
+## L'esplosione dei guantoni esplosivi: i veicoli vicini diventano rottami e
+## vengono scagliati via; la rana, se è troppo vicina, si fa male.
+func explode() -> void:
+	_armed = false
+	var center := global_position
+	var query := PhysicsShapeQueryParameters3D.new()
+	var sphere := SphereShape3D.new()
+	sphere.radius = EXPLOSION_RADIUS
+	query.shape = sphere
+	query.transform = Transform3D(Basis(), center)
+	query.collision_mask = 4 # veicoli
+	for result in get_world_3d().direct_space_state.intersect_shape(query, 32):
+		var other := result.collider as Car
+		if other == null or other == self:
+			continue
+		other.become_wreck()
+		var away := other.global_position - center
+		# Al bordo del raggio arriva ancora metà della spinta.
+		var strength := 1.0 - 0.5 * clampf(away.length() / EXPLOSION_RADIUS, 0.0, 1.0)
+		var direction := (Vector3(away.x, 0.0, away.z).normalized() + Vector3.UP * 0.8).normalized()
+		other.apply_central_impulse(direction * other.mass * EXPLOSION_PUSH * strength)
+	apply_central_impulse(Vector3.UP * mass * 5.0)
+	if _frog and not _frog.is_dead:
+		var to_frog := _frog.global_position - center
+		if to_frog.length() < EXPLOSION_FROG_RADIUS:
+			var push := (Vector3(to_frog.x, 0.0, to_frog.z).normalized() + Vector3.UP).normalized() * 12.0
+			_frog.take_hit(EXPLOSION_FROG_DAMAGE, push)
+		if to_frog.length() < 30.0:
+			_frog.camera_rig.shake(0.4, 0.35)
+	_emit_explosion()
 
 
 func _drive(delta: float) -> void:
@@ -214,6 +275,9 @@ func _drive(delta: float) -> void:
 
 func _on_wreck_body_entered(body: Node) -> void:
 	var other := body as Car
+	if _armed and other and _wreck_age > EXPLOSION_ARMING:
+		explode()
+		return
 	if other and other.state == State.DRIVING:
 		if (linear_velocity - other.motion_velocity()).length() > crash_speed:
 			other.become_wreck()
@@ -288,7 +352,7 @@ func _build_visual() -> void:
 	_visual.add_child(model)
 	_painted = Style.apply_palette(model, {"paint": "car_%d" % _color_index})
 	_wheels = model.find_children("Wheel_*", "", true, false)
-	_frog = get_tree().get_first_node_in_group("frog")
+	_frog = get_tree().get_first_node_in_group("frog") as Frog
 
 
 ## Sospensioni: il muso si abbassa in frenata e si alza in accelerazione; il
@@ -324,10 +388,10 @@ func _animate_driving(delta: float) -> void:
 
 
 ## Scintille all'impatto, a raggiera.
-func _emit_sparks() -> void:
+func _emit_sparks(amount := 20) -> void:
 	var sparks := CPUParticles3D.new()
 	sparks.one_shot = true
-	sparks.amount = 20
+	sparks.amount = amount
 	sparks.lifetime = 0.5
 	sparks.explosiveness = 1.0
 	sparks.local_coords = false
@@ -340,6 +404,26 @@ func _emit_sparks() -> void:
 	add_child(sparks)
 	sparks.emitting = true
 	sparks.finished.connect(sparks.queue_free)
+
+
+## Una palla di fuoco low-poly che si gonfia e sparisce, con molte scintille.
+func _emit_explosion() -> void:
+	var ball := MeshInstance3D.new()
+	var mesh := SphereMesh.new()
+	mesh.radius = 1.0
+	mesh.height = 2.0
+	mesh.radial_segments = 7
+	mesh.rings = 4
+	mesh.material = Style.material("spark")
+	ball.mesh = mesh
+	get_parent().add_child(ball)
+	ball.global_position = global_position
+	ball.scale = Vector3.ONE * 0.5
+	var tween := ball.create_tween()
+	tween.tween_property(ball, "scale", Vector3.ONE * EXPLOSION_RADIUS * 0.7, 0.18).set_ease(Tween.EASE_OUT)
+	tween.tween_property(ball, "scale", Vector3.ZERO, 0.25).set_ease(Tween.EASE_IN)
+	tween.tween_callback(ball.queue_free)
+	_emit_sparks(60)
 
 
 ## Fumo dal rottame per qualche secondo: sbuffi low-poly che salgono e
@@ -372,7 +456,7 @@ func _emit_smoke() -> void:
 	smoke.emitting = true
 	# Collegato al metodo del fumo, non a una lambda che lo cattura: se il
 	# rottame sparisce prima, Godot scollega da solo il segnale.
-	get_tree().create_timer(4.0).timeout.connect(smoke.set_emitting.bind(false))
+	get_tree().create_timer(SMOKE_SECONDS).timeout.connect(smoke.set_emitting.bind(false))
 
 
 ## Area che rileva la rana ai lati e davanti, ma non sul tetto: stare sopra un

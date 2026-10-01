@@ -15,6 +15,8 @@ extends Node
 @export var cooldown := 0.4
 
 var cooldown_left := 0.0
+## Guantoni esplosivi: l'auto colpita esplode al primo urto con un veicolo.
+var explosive := false
 
 var _frog: Frog
 var _gloves: Array[Node3D] = []
@@ -61,10 +63,17 @@ func use() -> void:
 		var car := result.collider as Car
 		if car and not hits.has(car):
 			hits.append(car)
-			car.receive_punch((forward + Vector3.UP * lift) * impulse)
+			car.receive_punch((forward + Vector3.UP * lift) * impulse, explosive)
 	_frog.power_used.emit(&"punch")
 	if not hits.is_empty():
 		_frog.punched.emit(hits)
+
+
+## Equipaggia o toglie i guantoni esplosivi; si vede: diventano arancioni.
+func set_explosive(on: bool) -> void:
+	explosive = on
+	for glove: MeshInstance3D in _gloves:
+		glove.material_override = Style.material("glove_hot") if on else null
 
 
 ## Un guantone scatta in avanti e torna; destro e sinistro si alternano. Va in

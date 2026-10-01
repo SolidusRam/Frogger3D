@@ -33,6 +33,27 @@ Se l'esperienza cade a terra tra i rottami, l'ingorgo diventa il posto più como
 
 Oggi la distanza conta fino al punto della morte e la tana salva il record. Alternativa: conta solo la distanza raggiunta all'ultima tana. Chi muore tra due tane perde il tratto fatto dopo, e ogni sezione diventa una scommessa (come incassare in Balatro).
 
+## Power-up ancora da fare
+
+Ogni power-up si vede addosso alla rana (è un supereroe con gli attrezzi). Già fatti: guantoni esplosivi, correnti calde e quattro numerici.
+
+| Slot | Power-up | Cosa cambia |
+| --- | --- | --- |
+| Guantoni | Montante | spinta verso l'alto triplicata: le auto volano e ricadono su altre auto |
+| Guantoni | Guantoni magnetici | l'auto colpita curva verso il veicolo più vicino: catene garantite |
+| Guantoni | Guantone a molla | portata da 1,3 a 4 m |
+| Molle | Molle a razzo | un secondo super salto in aria |
+| Molle | Atterraggio sismico | atterrando da un super salto si ribaltano le auto intorno |
+| Molle | Molle-trampolino | sui tetti delle auto si rimbalza da soli: il traffico diventa una strada |
+| Ala | Ala a reazione | più veloce, ma scalda finché si vola |
+| Ala | Ala corazzata | in volo assorbe un colpo |
+| Corpo | Pelle impermeabile | l'acqua non toglie vita |
+| Corpo | Assicurazione | si sopravvive a un colpo mortale, ma il calore sale di un livello |
+| Calore | Più caldo, più forte | i poteri crescono col livello del calore |
+| Calore | Benzina sul fuoco | calore ×1,5, esperienza ×2 |
+
+Combinazioni da cercare: correnti calde + guantoni esplosivi (il caos sulla strada fa volare sopra il fiume), molle-trampolino + traffico veloce, montante + atterraggio sismico. Domanda aperta: un secondo slot per attrezzo come premio raro?
+
 ## Poteri
 
 - **Equilibrio attuale**: super salto più deltaplano coprono circa 29 m, il fiume ne è largo 14. Per ora restano forti; il contrappeso è il calore (decisione provvisoria).
