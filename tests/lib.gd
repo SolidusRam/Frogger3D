@@ -60,3 +60,16 @@ static func place(frog: Node3D, at: Vector3) -> void:
 	frog._invulnerable_time = 0.0
 	frog._stun_time = 0.0
 	frog.reset_physics_interpolation()
+
+
+## Una piattaforma di terreno dietro la partenza, dove il percorso non genera
+## niente: le prove lì non vengono disturbate da auto, treni o tane.
+static func test_ground(main: Node, center := Vector3(0, 0, 320), size := 120.0) -> void:
+	var ground := StaticBody3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(size, 1, size)
+	var collision := CollisionShape3D.new()
+	collision.shape = shape
+	ground.add_child(collision)
+	main.add_child(ground)
+	ground.global_position = center + Vector3(0, -0.5, 0)

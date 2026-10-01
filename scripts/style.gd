@@ -25,6 +25,14 @@ var styles: Array[Dictionary] = [
 		"emission_day": 0.0,
 		"emission_night": 1.5,
 		"colors": {
+			"tarmac": Color(0.3, 0.3, 0.32), "taxi_line": Color(0.95, 0.8, 0.1),
+			"plane": Color(0.93, 0.94, 0.96), "plane_wing": Color(0.75, 0.77, 0.8),
+			"plane_engine": Color(0.55, 0.57, 0.6), "plane_tail": Color(0.15, 0.3, 0.75),
+			"concrete": Color(0.62, 0.6, 0.56), "belt": Color(0.12, 0.12, 0.13),
+			"crane": Color(0.95, 0.65, 0.1), "crane_cab": Color(0.2, 0.45, 0.3),
+			"container_0": Color(0.75, 0.2, 0.15), "container_1": Color(0.15, 0.4, 0.7),
+			"container_2": Color(0.2, 0.55, 0.3), "container_3": Color(0.85, 0.6, 0.15),
+			"drop_warning": Color(1.0, 0.25, 0.05),
 			"ballast": Color(0.42, 0.4, 0.38), "gravel": Color(0.5, 0.47, 0.42),
 			"rail": Color(0.6, 0.6, 0.62), "sleeper": Color(0.35, 0.25, 0.18),
 			"loco": Color(0.75, 0.15, 0.12), "loco_stripe": Color(0.98, 0.8, 0.15),
@@ -74,6 +82,14 @@ var styles: Array[Dictionary] = [
 		"emission_day": 0.0,
 		"emission_night": 1.5,
 		"colors": {
+			"tarmac": Color(0.26, 0.26, 0.28), "taxi_line": Color(0.82, 0.68, 0.12),
+			"plane": Color(0.82, 0.83, 0.84), "plane_wing": Color(0.64, 0.65, 0.68),
+			"plane_engine": Color(0.46, 0.47, 0.5), "plane_tail": Color(0.15, 0.26, 0.55),
+			"concrete": Color(0.5, 0.48, 0.45), "belt": Color(0.1, 0.1, 0.11),
+			"crane": Color(0.82, 0.55, 0.1), "crane_cab": Color(0.18, 0.36, 0.25),
+			"container_0": Color(0.6, 0.18, 0.14), "container_1": Color(0.14, 0.32, 0.55),
+			"container_2": Color(0.18, 0.42, 0.24), "container_3": Color(0.72, 0.5, 0.15),
+			"drop_warning": Color(1.0, 0.3, 0.05),
 			"ballast": Color(0.36, 0.34, 0.32), "gravel": Color(0.42, 0.4, 0.36),
 			"rail": Color(0.5, 0.5, 0.52), "sleeper": Color(0.3, 0.21, 0.15),
 			"loco": Color(0.6, 0.14, 0.1), "loco_stripe": Color(0.85, 0.68, 0.15),
@@ -125,6 +141,14 @@ var styles: Array[Dictionary] = [
 		"emission_day": 0.15,
 		"emission_night": 0.8,
 		"colors": {
+			"tarmac": Color(0.05, 0.05, 0.12), "taxi_line": Color(1.0, 1.0, 0.2),
+			"plane": Color(1.0, 1.0, 1.0), "plane_wing": Color(0.7, 0.7, 1.0),
+			"plane_engine": Color(0.5, 0.5, 0.8), "plane_tail": Color(1.0, 0.2, 0.6),
+			"concrete": Color(0.2, 0.1, 0.3), "belt": Color(0.0, 0.0, 0.0),
+			"crane": Color(1.0, 0.6, 0.0), "crane_cab": Color(0.1, 1.0, 0.5),
+			"container_0": Color(1.0, 0.2, 0.4), "container_1": Color(0.2, 0.8, 1.0),
+			"container_2": Color(0.4, 1.0, 0.3), "container_3": Color(1.0, 0.9, 0.2),
+			"drop_warning": Color(1.0, 0.0, 0.0),
 			"ballast": Color(0.15, 0.1, 0.25), "gravel": Color(0.25, 0.1, 0.35),
 			"rail": Color(0.8, 0.8, 1.0), "sleeper": Color(0.5, 0.2, 0.6),
 			"loco": Color(1.0, 0.2, 0.2), "loco_stripe": Color(1.0, 1.0, 0.2),
@@ -269,9 +293,9 @@ func _color_material(key: String, mat: StandardMaterial3D) -> void:
 		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mat.emission_enabled = _is_emissive(key)
 	mat.emission = Color(color, 1.0)
-	# Le luci dei passaggi a livello sono il primo avviso del treno: brillano
+	# Le luci dei passaggi a livello e le ombre delle gru sono avvisi: brillano
 	# sempre, anche di giorno.
-	if key == "signal_on":
+	if key == "signal_on" or key == "drop_warning":
 		mat.emission_enabled = true
 		mat.emission_energy_multiplier = 4.0
 

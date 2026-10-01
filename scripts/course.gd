@@ -7,7 +7,7 @@ extends Node3D
 
 signal den_reached(count: int, distance: float)
 
-enum Kind { START, SAFE, ROAD, RIVER, RAIL, DEN }
+enum Kind { START, SAFE, ROAD, RIVER, RAIL, DEN, AIRPORT, PORT }
 
 const TREE := preload("res://assets/models/tree.glb")
 const HOUSE := preload("res://assets/models/house.glb")
@@ -79,12 +79,24 @@ func _plan_section() -> void:
 	_planning_section += 1
 
 
-## Strada, fiume o, dalla seconda sezione, ferrovia.
+## Strada o fiume; dalla seconda sezione anche ferrovia, dalla terza anche
+## aeroporto e porto. Una lotteria pesata.
 func _random_obstacle() -> Kind:
-	var roll := randf()
-	if _planning_section >= 1 and roll < 0.2:
-		return Kind.RAIL
-	return Kind.ROAD if roll < 0.62 else Kind.RIVER
+	var weights := {Kind.ROAD: 45.0, Kind.RIVER: 35.0}
+	if _planning_section >= 1:
+		weights[Kind.RAIL] = 18.0
+	if _planning_section >= 2:
+		weights[Kind.AIRPORT] = 12.0
+		weights[Kind.PORT] = 12.0
+	var total := 0.0
+	for kind in weights:
+		total += weights[kind]
+	var roll := randf() * total
+	for kind in weights:
+		roll -= weights[kind]
+		if roll < 0.0:
+			return kind
+	return Kind.ROAD
 
 
 func _add_chunk(kind: Kind) -> void:
@@ -130,6 +142,31 @@ func _add_chunk(kind: Kind) -> void:
 				track.length = rail_ground_width
 				track.play_half_width = play_half_width
 				chunk.add_child(track)
+		Kind.AIRPORT:
+			# Un raccordo con gli aerei: le ali coprono quasi 26 m.
+			depth = 30.0
+			_add_ground(chunk, depth, "tarmac", rail_ground_width)
+			var taxiway := Taxiway.new()
+			taxiway.direction = 1.0 if randf() < 0.5 else -1.0
+			taxiway.length = rail_ground_width
+			taxiway.play_half_width = play_half_width
+			chunk.add_child(taxiway)
+		Kind.PORT:
+			# Nastri trasportatori tra le gambe di una o due gru a portale.
+			depth = 16.0
+			_add_ground(chunk, depth, "concrete")
+			var belts := 2 if difficulty < 4 else 3
+			for i in belts:
+				var belt := Conveyor.new()
+				belt.position.z = (i - (belts - 1) / 2.0) * 4.0
+				belt.direction = 1.0 if i % 2 == 0 else -1.0
+				belt.speed = randf_range(3.0, 5.0)
+				chunk.add_child(belt)
+			for i in (1 if difficulty < 4 else 2):
+				var crane := Crane.new()
+				crane.play_half_width = play_half_width
+				crane.position.x = randf_range(-20.0, 20.0)
+				chunk.add_child(crane)
 		Kind.DEN:
 			depth = den_depth
 			_add_ground(chunk, depth, "den_grass")

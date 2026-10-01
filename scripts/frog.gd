@@ -77,6 +77,11 @@ var _invulnerable_time := 0.0
 var _river: River
 var _water_damage_owed := 0.0
 var _squash_tween: Tween
+## Vento di questo passo (il getto dei motori degli aerei): una velocità che
+## si somma al movimento, come la corrente del fiume, e una spinta verso
+## l'alto che conta solo col deltaplano aperto.
+var _wind_push := Vector3.ZERO
+var _wind_lift := 0.0
 
 
 func _ready() -> void:
@@ -128,6 +133,9 @@ func _physics_process(delta: float) -> void:
 		punch()
 
 	_update_visual(direction, delta)
+	# Il vento lo rimettono ogni passo gli aerei: se ci si allontana, cessa.
+	_wind_push = Vector3.ZERO
+	_wind_lift = 0.0
 	if global_position.y < fall_limit:
 		respawn()
 
@@ -137,6 +145,22 @@ func _physics_process(delta: float) -> void:
 ## Falsa durante lo stordimento dopo un colpo.
 func can_act() -> bool:
 	return _stun_time == 0.0
+
+
+## Vento per il prossimo passo di fisica, come il getto dei motori: conta il
+## più forte tra quelli che investono la rana.
+func apply_wind(push: Vector3, lift: float) -> void:
+	if push.length() > _wind_push.length():
+		_wind_push = Vector3(push.x, 0.0, push.z)
+	_wind_lift = maxf(_wind_lift, lift)
+
+
+func wind_push() -> Vector3:
+	return _wind_push
+
+
+func wind_lift() -> float:
+	return _wind_lift
 
 
 ## Lancia la rana con la velocità data, annullando salti in corso o anticipati.
@@ -303,11 +327,11 @@ func _apply_horizontal_movement(direction: Vector3, delta: float) -> void:
 		acceleration = air_acceleration
 	elif super_jump_power.active and not is_on_floor():
 		# In volo si sterza senza frenare: senza tasti lo slancio resta tutto.
-		if direction.length_squared() < 0.01:
+		if direction.length_squared() < 0.01 and _wind_push == Vector3.ZERO:
 			return
 		acceleration = super_jump_power.air_acceleration
 		target_speed = maxf(move_speed, horizontal.length())
-	horizontal = horizontal.move_toward(direction * target_speed, acceleration * delta)
+	horizontal = horizontal.move_toward(direction * target_speed + _wind_push, acceleration * delta)
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
 

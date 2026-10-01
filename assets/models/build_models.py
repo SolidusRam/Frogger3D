@@ -41,6 +41,9 @@ PREVIEW = {
     "wagon": (0.45, 0.25, 0.15, 1), "wagon_deck": (0.5, 0.38, 0.22, 1),
     "sign_white": (0.95, 0.95, 0.92, 1), "signal_off": (0.25, 0.05, 0.05, 1),
     "signal_on": (1.0, 0.1, 0.05, 1),
+    "plane": (0.92, 0.93, 0.95, 1), "plane_wing": (0.75, 0.77, 0.8, 1),
+    "plane_engine": (0.55, 0.57, 0.6, 1), "plane_tail": (0.15, 0.3, 0.7, 1),
+    "crane": (0.95, 0.65, 0.1, 1), "crane_cab": (0.2, 0.45, 0.3, 1),
 }
 
 
@@ -359,6 +362,98 @@ def build_signal():
     save("signal")
 
 
+# --- Aeroporto --------------------------------------------------------------
+
+def build_airplane():
+    """Aereo di linea: davanti verso +Y, origine a terra. Pancia a 0,9 m (la
+    rana non ci passa sotto), ali a circa 2,5 m (sotto le ali sì), motori
+    sotto le ali."""
+    reset()
+    parts = []
+    parts.append(block("fuselage",
+                       [(-1.8, -7, 0.9), (1.8, -7, 0.9), (1.8, 8, 0.9), (-1.8, 8, 0.9)],
+                       [(-1.8, -7, 4.5), (1.8, -7, 4.5), (1.8, 8, 4.5), (-1.8, 8, 4.5)], "plane"))
+    parts.append(block("nose",
+                       [(-1.8, 8, 0.9), (1.8, 8, 0.9), (0.6, 12, 2.0), (-0.6, 12, 2.0)],
+                       [(-1.8, 8, 4.5), (1.8, 8, 4.5), (0.6, 12, 3.4), (-0.6, 12, 3.4)], "plane"))
+    parts.append(block("cockpit",
+                       [(-1.2, 9.6, 3.5), (1.2, 9.6, 3.5), (0.62, 11.6, 3.05), (-0.62, 11.6, 3.05)],
+                       [(-1.2, 9.6, 4.0), (1.2, 9.6, 4.0), (0.62, 11.6, 3.45), (-0.62, 11.6, 3.45)], "glass"))
+    parts.append(block("tail_cone",
+                       [(-1.8, -7, 0.9), (1.8, -7, 0.9), (0.5, -12, 3.0), (-0.5, -12, 3.0)],
+                       [(-1.8, -7, 4.5), (1.8, -7, 4.5), (0.5, -12, 4.5), (-0.5, -12, 4.5)], "plane"))
+    parts += mirrored_box("windows", 1.8, 1.83, -6.0, 7.0, 3.2, 3.6, "glass")
+    for side in (1, -1):
+        parts.append(block("wing_%d" % side,
+                           [(side * 1.8, -1.0, 2.4), (side * 13.0, -4.0, 2.6), (side * 13.0, -2.2, 2.6), (side * 1.8, 4.0, 2.4)],
+                           [(side * 1.8, -1.0, 2.75), (side * 13.0, -4.0, 2.8), (side * 13.0, -2.2, 2.8), (side * 1.8, 4.0, 2.75)],
+                           "plane_wing"))
+        parts.append(cylinder("engine_%d" % side, 0.85, 3.4, (side * 6.0, 1.2, 1.75), "plane_engine", sides=8, axis="Y"))
+        parts.append(cylinder("intake_%d" % side, 0.7, 0.05, (side * 6.0, 2.92, 1.75), "trim", sides=8, axis="Y"))
+        parts.append(block("stabilizer_%d" % side,
+                           [(side * 0.4, -12.0, 4.2), (side * 5.0, -12.2, 4.3), (side * 5.0, -11.2, 4.3), (side * 0.4, -9.2, 4.2)],
+                           [(side * 0.4, -12.0, 4.45), (side * 5.0, -12.2, 4.45), (side * 5.0, -11.2, 4.45), (side * 0.4, -9.2, 4.45)],
+                           "plane_wing"))
+    parts.append(block("fin",
+                       [(-0.2, -11.8, 4.5), (0.2, -11.8, 4.5), (0.2, -8.0, 4.5), (-0.2, -8.0, 4.5)],
+                       [(-0.15, -12.6, 9.5), (0.15, -12.6, 9.5), (0.15, -10.6, 9.5), (-0.15, -10.6, 9.5)],
+                       "plane_tail"))
+    parts.append(box("tail_stripe_l", -1.84, -1.8, -6.5, 7.5, 1.6, 1.9, "plane_tail"))
+    parts.append(box("tail_stripe_r", 1.8, 1.84, -6.5, 7.5, 1.6, 1.9, "plane_tail"))
+    parts.append(cylinder("nose_wheel", 0.35, 0.3, (0, 9.5, 0.35), "tire"))
+    parts.append(box("nose_strut", -0.08, 0.08, 9.42, 9.58, 0.35, 1.2, "metal"))
+    for side in (1, -1):
+        for dy in (-0.45, 0.45):
+            parts.append(cylinder("main_wheel", 0.45, 0.35, (side * 2.4, -0.5 + dy, 0.45), "tire"))
+        parts.append(box("main_strut", side * 2.4 - 0.1, side * 2.4 + 0.1, -0.6, -0.4, 0.45, 2.5, "metal"))
+    join("Airplane", parts)
+    save("airplane")
+
+
+# --- Porto -------------------------------------------------------------------
+
+def build_crane():
+    """Gru a portale: scavalca il blocco lungo Y (14 m tra le gambe) e scorre
+    lungo X. Origine a terra, al centro. Il container appeso lo aggiunge
+    Godot sotto il carrello, a 12 m."""
+    reset()
+    parts = []
+    half = 7.0
+    for y in (half, -half):
+        for x in (2.2, -2.2):
+            parts.append(box("leg", x - 0.25, x + 0.25, y - 0.25, y + 0.25, 0, 15.0, "crane"))
+        parts.append(box("foot_beam", -2.6, 2.6, y - 0.35, y + 0.35, 0, 0.6, "crane"))
+        parts.append(box("cross", -2.2, 2.2, y - 0.2, y + 0.2, 7.5, 8.0, "crane"))
+        parts.append(cylinder("wheel_a", 0.35, 0.3, (2.2, y, 0.35), "trim", sides=8, axis="X"))
+        parts.append(cylinder("wheel_b", 0.35, 0.3, (-2.2, y, 0.35), "trim", sides=8, axis="X"))
+    for x in (1.6, -1.6):
+        parts.append(box("girder", x - 0.35, x + 0.35, -half - 1.5, half + 1.5, 15.0, 16.0, "crane"))
+    parts.append(box("trolley", -1.3, 1.3, -1.6, 1.6, 15.2, 16.4, "crane"))
+    parts.append(box("cab", -1.9, -1.3, -half - 1.4, -half + 0.2, 13.6, 15.0, "crane_cab"))
+    parts.append(box("cab_window", -1.95, -1.9, -half - 1.2, -half, 14.1, 14.8, "glass"))
+    parts.append(box("cable_a", -0.05, 0.05, -1.2, -1.1, 13.0, 15.2, "metal"))
+    parts.append(box("cable_b", -0.05, 0.05, 1.1, 1.2, 13.0, 15.2, "metal"))
+    parts.append(box("spreader", -1.3, 1.3, -3.1, 3.1, 12.8, 13.0, "metal"))
+    join("Crane", parts)
+    save("crane")
+
+
+def build_container():
+    """Container da 20 piedi: 2,44 x 2,6 x 6,1 m, davanti verso +Y, origine
+    al centro. Le nervature fanno leggere la forma anche in pixel grossi."""
+    reset()
+    w, h, length = 1.22, 1.3, 3.05
+    parts = [box("body", -w, w, -length, length, -h, h, "paint")]
+    for i in range(9):
+        y = -length + 0.35 + i * (2 * length - 0.7) / 8
+        parts += mirrored_box("rib", w, w + 0.05, y - 0.08, y + 0.08, -h + 0.1, h - 0.1, "paint")
+    parts.append(box("doors", -w + 0.05, w - 0.05, -length - 0.04, -length, -h + 0.05, h - 0.05, "trim"))
+    parts.append(box("frame_top", -w - 0.02, w + 0.02, -length, length, h - 0.08, h + 0.02, "trim"))
+    parts.append(box("frame_bottom", -w - 0.02, w + 0.02, -length, length, -h - 0.02, -h + 0.08, "trim"))
+    join("Container", parts)
+    save("container")
+
+
 # --- Scenario --------------------------------------------------------------
 
 def build_tree():
@@ -406,7 +501,8 @@ BUILDERS = {
     "compact": build_compact, "sedan": build_sedan, "van": build_van, "truck": build_truck,
     "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
     "mountain": build_mountain, "locomotive": build_locomotive, "boxcar": build_boxcar,
-    "flatcar": build_flatcar, "signal": build_signal,
+    "flatcar": build_flatcar, "signal": build_signal, "airplane": build_airplane,
+    "crane": build_crane, "container": build_container,
 }
 
 if __name__ == "__main__":

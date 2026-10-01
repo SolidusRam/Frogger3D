@@ -31,6 +31,10 @@ const MODEL := preload("res://assets/models/glider.glb")
 @export var thermal_speed_factor := 0.4
 @export var thermal_centering := 2.0
 
+@export_group("Getto dei motori")
+## Quanto in fretta il getto degli aerei porta il deltaplano alla sua velocità.
+@export var wind_acceleration := 45.0
+
 var charge := 0.0
 var gliding := false
 ## Power-up "Correnti calde" equipaggiato.
@@ -94,13 +98,20 @@ func apply(direction: Vector3, delta: float) -> void:
 		heading = horizontal if horizontal.length_squared() > 0.01 else -_frog.camera_rig.flat_basis().z
 	var target := heading.normalized() * speed
 	var vertical := maxf(velocity.y - _frog.gravity_down * delta, -fall_speed)
+	# Il getto dei motori: spinge e, col deltaplano aperto, solleva.
+	var lift := _frog.wind_lift()
+	if lift > 0.0:
+		vertical = minf(velocity.y + lift * delta, thermal_rise_speed)
 	if in_thermal:
 		vertical = minf(velocity.y + thermal_lift * delta, thermal_rise_speed)
 		if direction.length_squared() < 0.01:
 			var to_center := _thermal_source.global_position - _frog.global_position
 			target = Vector3(to_center.x, 0.0, to_center.z) * thermal_centering
 		target = target.limit_length(speed * thermal_speed_factor)
-	horizontal = horizontal.move_toward(target, acceleration * delta)
+	# Nel getto dei motori la spinta arriva subito: il getto catapulta.
+	var push := _frog.wind_push()
+	var rate := acceleration if push == Vector3.ZERO else wind_acceleration
+	horizontal = horizontal.move_toward(target + push, rate * delta)
 	_frog.velocity = Vector3(horizontal.x, vertical, horizontal.z)
 
 
