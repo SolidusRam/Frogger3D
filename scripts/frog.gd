@@ -185,6 +185,11 @@ func super_jump_cooldown_left() -> float:
 	return _super_jump_cooldown_left
 
 
+## Il punto in cui la rana ricompare se cade fuori dal mondo (una tana).
+func set_respawn_point(point: Vector3) -> void:
+	_spawn_position = point
+
+
 func respawn() -> void:
 	global_position = _spawn_position
 	velocity = Vector3.ZERO

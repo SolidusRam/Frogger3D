@@ -10,6 +10,7 @@ extends Node3D
 @export var length := 120.0
 @export var min_speed := 2.0
 @export var max_speed := 5.0
+@export var crocodile_chance := 0.25
 ## Quota della superficie rispetto alle sponde (che stanno a 0).
 @export var water_level := -0.4
 @export var depth := 3.0
@@ -35,6 +36,7 @@ func _ready() -> void:
 		lane.speed = randf_range(min_speed, max_speed)
 		lane.half_length = length / 2.0 - 12.0
 		lane.float_height = water_level + 0.1
+		lane.crocodile_chance = crocodile_chance
 		add_child(lane)
 		_lanes.append(lane)
 

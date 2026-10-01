@@ -44,6 +44,7 @@ Il calore sale anche se il giocatore non fa nulla; i poteri lo accelerano, ma so
 | Struttura della run | Infinita: si gioca finché non si muore |
 | Giocatori | Singleplayer per ora; multiplayer cooperativo possibile in futuro |
 | Tana | Checkpoint lungo il percorso, non la fine: salva i progressi, ma la morte chiude la run |
+| Percorso | Infinito, a sezioni: strade e fiumi separati da strisce sicure, poi una tana. Ogni sezione ha più corsie e veicoli e correnti più veloci; i fiumi hanno sempre terra su entrambi i lati. Muri invisibili ai lati della zona di gioco |
 | Calore | Un'unica barra, per strada e palude insieme; sale di continuo col tempo; usare i poteri lo fa salire più in fretta; non cala mai |
 | Ritmo | Ondate di pericolo sopra una base che cresce sempre |
 | Ricompensa | Provocare caos dà esperienza o oggetti, in stile Megabonk |
