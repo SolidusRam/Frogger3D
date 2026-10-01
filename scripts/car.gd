@@ -13,6 +13,8 @@ enum State { DRIVING, WRECK }
 ## Rottami presenti al massimo nello stesso momento: oltre, il più vecchio
 ## sprofonda subito. Tiene la fisica sotto controllo anche al calore massimo.
 const MAX_WRECKS := 80
+## Distanza dal muso sotto cui due veicoli sono a contatto.
+const CONTACT_DISTANCE := 0.3
 
 static var _wrecks: Array[Car] = []
 
@@ -129,12 +131,23 @@ func _drive(delta: float) -> void:
 	var target_speed := cruise_speed
 	if _look_ahead.is_colliding():
 		var distance := _look_ahead.get_closest_collision_safe_fraction() * _look_ahead.target_position.length()
-		var stop_speed := sqrt(2.0 * braking * maxf(distance - safe_gap, 0.0))
-		var ahead_speed := 0.0
 		var ahead := _look_ahead.get_collider(0) as Car
+		var ahead_speed := 0.0
 		if ahead:
 			ahead_speed = maxf(ahead.motion_velocity().dot(drive_direction), 0.0)
-		target_speed = minf(cruise_speed, maxf(ahead_speed, stop_speed))
+		if distance <= CONTACT_DISTANCE:
+			# A contatto: due veicoli cinematici si attraverserebbero, quindi qui
+			# si decide l'urto. Troppo veloce è un tamponamento, piano si accoda.
+			if ahead and _speed - ahead_speed > crash_speed:
+				ahead.become_wreck()
+				become_wreck()
+				return
+			_speed = minf(_speed, ahead_speed)
+			return
+		# Velocità a cui ci si può ancora fermare dietro chi precede, se frena
+		# come noi: tiene conto anche della sua velocità.
+		var room := maxf(distance - safe_gap, 0.0)
+		target_speed = minf(cruise_speed, sqrt(ahead_speed * ahead_speed + 2.0 * braking * room))
 	var rate := braking if target_speed < _speed else acceleration
 	_speed = move_toward(_speed, target_speed, rate * delta)
 	global_position += drive_direction * _speed * delta
