@@ -1,5 +1,6 @@
 extends Node3D
-## La partita: collega i poteri al calore, chiude la run alla morte della rana,
+## La partita: collega poteri, calore e stile, gestisce i tempi speciali
+## (fermo-immagine e rallentatore), chiude la run alla morte della rana,
 ## salva il record e fa ricominciare.
 
 const RECORD_PATH := "user://record.cfg"
@@ -7,25 +8,50 @@ const RECORD_PATH := "user://record.cfg"
 @export var frog: Frog
 @export var course: Course
 @export var hud: Hud
+@export var environment: WorldEnvironment
+@export var sun: DirectionalLight3D
+@export var post: ColorRect
+
+@export_group("Tempi speciali")
+## Fermo-immagine quando il pugno colpisce un'auto.
+@export var hitstop_seconds := 0.07
+@export var hitstop_time_scale := 0.03
+## Rallentatore sulle catene di rottami vicino alla rana.
+@export var chain_size := 4
+@export var chain_window_seconds := 1.5
+@export var chain_radius := 30.0
+@export var slowmo_seconds := 0.8
+@export var slowmo_time_scale := 0.3
+@export var slowmo_cooldown_seconds := 4.0
 
 var run_time := 0.0
 var max_heat_level := 0
 var record_distance := 0.0
 
 var _over := false
+## Istanti (in ms reali) dei rottami recenti vicino alla rana.
+var _recent_wrecks: Array[int] = []
+var _hitstop_until := 0
+var _slowmo_until := 0
+var _slowmo_ready_at := 0
 
 
 func _ready() -> void:
+	Engine.time_scale = 1.0
 	Heat.reset()
+	Style.bind(environment.environment, sun, post)
 	record_distance = _load_record()
 	frog.power_used.connect(Heat.on_power_used)
+	frog.punched.connect(_on_punched)
 	frog.died.connect(_on_frog_died)
+	Heat.wreck_created.connect(_on_wreck_created)
 	course.den_reached.connect(_on_den_reached)
 	hud.restart_requested.connect(restart)
 	hud.set_record(record_distance)
 
 
 func _process(delta: float) -> void:
+	_update_time_scale()
 	if not _over:
 		run_time += delta
 		max_heat_level = maxi(max_heat_level, Heat.level())
@@ -37,8 +63,43 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func restart() -> void:
+	Engine.time_scale = 1.0
 	Heat.reset()
 	get_tree().reload_current_scene()
+
+
+## Il fermo-immagine vince sul rallentatore; il tempo è misurato in ms reali,
+## perché Engine.time_scale rallenta anche i timer normali.
+func _update_time_scale() -> void:
+	var now := Time.get_ticks_msec()
+	var time_scale := 1.0
+	if now < _slowmo_until:
+		time_scale = slowmo_time_scale
+	if now < _hitstop_until:
+		time_scale = hitstop_time_scale
+	Engine.time_scale = time_scale
+
+
+func _on_punched(_cars: Array[Car]) -> void:
+	_hitstop_until = Time.get_ticks_msec() + roundi(hitstop_seconds * 1000.0)
+	_update_time_scale()
+
+
+func _on_wreck_created(car: Node3D) -> void:
+	if _over or car.global_position.distance_to(frog.global_position) > chain_radius:
+		return
+	var now := Time.get_ticks_msec()
+	_recent_wrecks.append(now)
+	var window := roundi(chain_window_seconds * 1000.0)
+	_recent_wrecks.assign(_recent_wrecks.filter(func(t: int) -> bool: return now - t <= window))
+	var count := _recent_wrecks.size()
+	if count < chain_size:
+		return
+	hud.show_chain(count)
+	if now >= _slowmo_ready_at:
+		_slowmo_until = now + roundi(slowmo_seconds * 1000.0)
+		_slowmo_ready_at = now + roundi(slowmo_cooldown_seconds * 1000.0)
+		frog.camera_rig.pull_back(4.0, slowmo_seconds + 0.6)
 
 
 ## La tana salva i progressi: il record viene scritto subito su disco.
@@ -48,6 +109,7 @@ func _on_den_reached(_count: int, distance: float) -> void:
 
 func _on_frog_died() -> void:
 	_over = true
+	_slowmo_until = 0
 	Heat.running = false
 	var distance := course.distance()
 	var new_record := _save_record_if_better(distance)

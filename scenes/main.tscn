@@ -16,11 +16,14 @@ sky = SubResource("sky")
 ambient_light_source = 3
 tonemap_mode = 2
 
-[node name="Main" type="Node3D" node_paths=PackedStringArray("frog", "course", "hud")]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("frog", "course", "hud", "environment", "sun", "post")]
 script = ExtResource("game_script")
 frog = NodePath("Frog")
 course = NodePath("Course")
 hud = NodePath("Hud")
+environment = NodePath("WorldEnvironment")
+sun = NodePath("Sun")
+post = NodePath("PostFX/Screen")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("environment")
@@ -34,6 +37,17 @@ shadow_enabled = true
 [node name="Course" type="Node3D" parent="." node_paths=PackedStringArray("frog")]
 script = ExtResource("course_script")
 frog = NodePath("../Frog")
+
+[node name="PostFX" type="CanvasLayer" parent="."]
+layer = 0
+
+[node name="Screen" type="ColorRect" parent="PostFX"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="Hud" type="CanvasLayer" parent="." node_paths=PackedStringArray("frog", "course")]
 script = ExtResource("hud_script")

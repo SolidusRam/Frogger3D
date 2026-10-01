@@ -107,10 +107,16 @@ var _punch_query := PhysicsShapeQueryParameters3D.new()
 
 var is_dead := false
 
+var _gloves: Array[Node3D] = []
+var _springs: Array[Node3D] = []
+var _next_glove := 0
+var _squash_tween: Tween
+
 @onready var health := max_health
 
 
 func _ready() -> void:
+	add_to_group("frog")
 	_spawn_position = global_position
 	# Salto parabolico definito da altezza e tempi, non da gravità e velocità.
 	_jump_velocity = 2.0 * jump_height / jump_time_to_peak
@@ -122,6 +128,8 @@ func _ready() -> void:
 	_punch_query.shape = sphere
 	_punch_query.collision_mask = 4 # veicoli
 	glider.visible = false
+	_build_gear()
+	_apply_palette()
 
 
 func _physics_process(delta: float) -> void:
@@ -150,7 +158,13 @@ func _physics_process(delta: float) -> void:
 	else:
 		_apply_horizontal_movement(direction, delta)
 		_apply_gravity_and_jump(delta)
+	var was_on_floor := is_on_floor()
+	var fall_speed := -velocity.y
 	move_and_slide()
+	if is_on_floor() and not was_on_floor and fall_speed > 4.0:
+		# Si spiaccica all'atterraggio, tanto più quanto cadeva veloce.
+		var amount := clampf(fall_speed / 25.0, 0.1, 0.4)
+		_squash(Vector3(1.0 + amount, 1.0 - amount, 1.0 + amount), 0.3)
 
 	if is_on_floor() and velocity.y <= 0.0:
 		_super_jumping = false
@@ -221,9 +235,8 @@ func punch() -> void:
 	_punch_cooldown_left = punch_cooldown
 	var forward := -camera_rig.flat_basis().z
 	visual.rotation.y = atan2(-forward.x, -forward.z)
-	var tween := create_tween()
-	visual.scale = Vector3(0.8, 0.8, 1.4)
-	tween.tween_property(visual, "scale", Vector3.ONE, 0.15)
+	_squash(Vector3(0.9, 0.9, 1.2), 0.15)
+	_throw_glove()
 
 	var center := global_position + Vector3.UP * 0.6 + forward * punch_reach
 	_punch_query.transform = Transform3D(Basis(), center)
@@ -250,10 +263,93 @@ func super_jump(direction: Vector3) -> void:
 	_super_jumping = true
 	_time_since_floor = INF
 	_time_since_jump_pressed = INF
-	var tween := create_tween()
-	visual.scale = Vector3(1.3, 0.6, 1.3)
-	tween.tween_property(visual, "scale", Vector3.ONE, 0.25)
+	# Si accuccia sulle molle e poi si allunga verso l'alto.
+	_squash_tween = _new_squash_tween()
+	visual.scale = Vector3(1.4, 0.55, 1.4)
+	_squash_tween.tween_property(visual, "scale", Vector3(0.75, 1.4, 0.75), 0.08)
+	_squash_tween.tween_property(visual, "scale", Vector3.ONE, 0.35).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	for spring in _springs:
+		var spring_tween := create_tween()
+		spring.scale = Vector3(1.0, 0.3, 1.0)
+		spring_tween.tween_property(spring, "scale", Vector3(1.0, 2.2, 1.0), 0.08)
+		spring_tween.tween_property(spring, "scale", Vector3.ONE, 0.4)
 	power_used.emit(&"super_jump")
+
+
+## Imposta subito la forma data e la riporta a quella normale con un rimbalzo.
+func _squash(shape: Vector3, duration: float) -> void:
+	_squash_tween = _new_squash_tween()
+	visual.scale = shape
+	_squash_tween.tween_property(visual, "scale", Vector3.ONE, duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func _new_squash_tween() -> Tween:
+	if _squash_tween:
+		_squash_tween.kill()
+	return create_tween()
+
+
+## Un guantone scatta in avanti e torna; destro e sinistro si alternano.
+func _throw_glove() -> void:
+	var glove := _gloves[_next_glove]
+	_next_glove = (_next_glove + 1) % _gloves.size()
+	var rest: Vector3 = glove.get_meta("rest")
+	var tween := create_tween()
+	tween.tween_property(glove, "position", rest + Vector3(0.0, 0.1, -0.9), 0.05)
+	tween.tween_property(glove, "position", rest, 0.15).set_ease(Tween.EASE_OUT)
+
+
+## Gli attrezzi: guantoni, molle sotto le zampe e telaio del deltaplano.
+func _build_gear() -> void:
+	for side in [-1.0, 1.0]:
+		var glove := MeshInstance3D.new()
+		var glove_mesh := SphereMesh.new()
+		glove_mesh.radius = 0.2
+		glove_mesh.height = 0.36
+		glove_mesh.material = Style.material("glove")
+		glove.mesh = glove_mesh
+		glove.position = Vector3(side * 0.5, 0.35, -0.3)
+		glove.set_meta("rest", glove.position)
+		visual.add_child(glove)
+		_gloves.append(glove)
+
+		var spring := MeshInstance3D.new()
+		var spring_mesh := CylinderMesh.new()
+		spring_mesh.top_radius = 0.1
+		spring_mesh.bottom_radius = 0.1
+		spring_mesh.height = 0.14
+		spring_mesh.material = Style.material("metal")
+		spring.mesh = spring_mesh
+		spring.position = Vector3(side * 0.25, 0.04, 0.32)
+		visual.add_child(spring)
+		_springs.append(spring)
+
+	var bar := MeshInstance3D.new()
+	bar.mesh = _metal_box(Vector3(1.2, 0.06, 0.06))
+	bar.position = Vector3(0.0, -0.75, -0.2)
+	glider.add_child(bar)
+	for side in [-1.0, 1.0]:
+		var strut := MeshInstance3D.new()
+		strut.mesh = _metal_box(Vector3(0.05, 0.85, 0.05))
+		strut.position = Vector3(side * 0.42, -0.36, -0.2)
+		strut.rotation.z = side * 0.35
+		glider.add_child(strut)
+
+
+func _metal_box(box_size: Vector3) -> BoxMesh:
+	var mesh := BoxMesh.new()
+	mesh.size = box_size
+	mesh.material = Style.material("metal")
+	return mesh
+
+
+## Le parti fatte nella scena prendono i colori dalla tavolozza dello stile.
+func _apply_palette() -> void:
+	$Visual/Body.material_override = Style.material("frog")
+	for eye: MeshInstance3D in [$Visual/EyeLeft, $Visual/EyeRight]:
+		eye.material_override = Style.material("eye")
+		(eye.get_child(0) as MeshInstance3D).material_override = Style.material("pupil")
+	$Visual/Glider/Wing.material_override = Style.material("wing")
 
 
 ## Un colpo da un veicolo o da un pericolo: toglie vita e sbalza la rana.
@@ -352,6 +448,7 @@ func _swim(direction: Vector3, delta: float) -> void:
 
 	if Input.is_action_just_pressed("jump") and _stun_time == 0.0:
 		velocity.y = _jump_velocity * water_jump_factor
+		_squash(Vector3(0.8, 1.3, 0.8), 0.25)
 
 	_water_damage_owed += water_damage_per_second * delta
 	if _water_damage_owed >= 1.0:
@@ -386,6 +483,7 @@ func _apply_gravity_and_jump(delta: float) -> void:
 
 	if _time_since_jump_pressed <= jump_buffer_time and _time_since_floor <= coyote_time:
 		velocity.y = _jump_velocity
+		_squash(Vector3(0.8, 1.3, 0.8), 0.25)
 		_time_since_jump_pressed = INF
 		_time_since_floor = INF
 

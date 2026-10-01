@@ -18,10 +18,6 @@ const CONTACT_DISTANCE := 0.3
 
 static var _wrecks: Array[Car] = []
 
-const COLORS: Array[Color] = [
-	Color(0.85, 0.2, 0.2), Color(0.95, 0.75, 0.15), Color(0.2, 0.45, 0.85),
-	Color(0.9, 0.5, 0.15), Color(0.6, 0.3, 0.75), Color(0.9, 0.9, 0.9),
-]
 
 ## Larghezza, altezza e lunghezza. Il muso guarda verso -Z locale.
 var size := Vector3(2.0, 1.4, 4.0)
@@ -49,7 +45,16 @@ var wreck_lifetime := 25.0
 var _speed := 0.0
 var _hitbox: Area3D
 var _look_ahead: ShapeCast3D
-var _paint: StandardMaterial3D
+var _body: MeshInstance3D
+## Carrozzeria disegnata: si inclina e sobbalza senza toccare il corpo fisico.
+var _visual: Node3D
+var _frog: Node3D
+var _previous_speed := 0.0
+var _pitch := 0.0
+var _wobble_phase := randf() * TAU
+var _hop_offset := 0.0
+var _scare_cooldown := 0.0
+var _color_index := 0
 ## Tempo in cui il rottame appena colpito dalla rana non può ferirla.
 var _frog_grace := 0.0
 var _wreck_age := 0.0
@@ -77,6 +82,8 @@ func _physics_process(delta: float) -> void:
 	match state:
 		State.DRIVING:
 			_drive(delta)
+			if state == State.DRIVING:
+				_animate_driving(delta)
 		State.WRECK:
 			_frog_grace = maxf(_frog_grace - delta, 0.0)
 			_wreck_age += delta
@@ -101,12 +108,16 @@ func become_wreck() -> void:
 	contact_monitor = true
 	max_contacts_reported = 8
 	body_entered.connect(_on_wreck_body_entered)
-	_paint.albedo_color = _paint.albedo_color.darkened(0.45)
+	_body.material_override = Style.material("wreck_%d" % _color_index)
+	_visual.rotation = Vector3.ZERO
+	_visual.position = Vector3.ZERO
+	_emit_sparks()
+	_emit_smoke()
 	_wrecks.append(self)
 	tree_exiting.connect(_wrecks.erase.bind(self))
 	if _wrecks.size() > MAX_WRECKS:
 		_wrecks.pop_front()._sink_and_free()
-	Heat.add(Heat.per_wreck)
+	Heat.on_wreck(self)
 	wrecked.emit(self)
 
 
@@ -220,19 +231,99 @@ func _build_collision() -> void:
 
 
 func _build_visual() -> void:
-	_paint = StandardMaterial3D.new()
-	_paint.albedo_color = COLORS.pick_random()
-	var body := MeshInstance3D.new()
-	body.mesh = _box_mesh(size, _paint)
-	add_child(body)
+	_color_index = randi() % Style.CAR_COLORS
+	_visual = Node3D.new()
+	add_child(_visual)
+	_body = MeshInstance3D.new()
+	_body.mesh = _box_mesh(size, Style.material("car_%d" % _color_index))
+	_visual.add_child(_body)
 
 	# Parabrezza scuro sul muso, per capire da che parte va il veicolo.
-	var glass := StandardMaterial3D.new()
-	glass.albedo_color = Color(0.1, 0.12, 0.15)
 	var windshield := MeshInstance3D.new()
-	windshield.mesh = _box_mesh(Vector3(size.x * 0.9, size.y * 0.35, 0.1), glass)
+	windshield.mesh = _box_mesh(Vector3(size.x * 0.9, size.y * 0.35, 0.1), Style.material("glass"))
 	windshield.position = Vector3(0.0, size.y * 0.2, -size.z / 2.0 - 0.02)
-	add_child(windshield)
+	_visual.add_child(windshield)
+	_frog = get_tree().get_first_node_in_group("frog")
+
+
+## Sospensioni: il muso si abbassa in frenata e si alza in accelerazione; il
+## motore fa tremare appena la carrozzeria. Se la rana passa davanti a
+## un'auto in corsa, l'auto fa un sobbalzo di spavento.
+func _animate_driving(delta: float) -> void:
+	var acceleration_now := (_speed - _previous_speed) / delta
+	_previous_speed = _speed
+	var target_pitch := clampf(acceleration_now * 0.015, -0.12, 0.06)
+	_pitch = lerpf(_pitch, target_pitch, 1.0 - exp(-10.0 * delta))
+	_visual.rotation.x = _pitch
+
+	var wobble := 0.0
+	if _speed > 0.5:
+		_wobble_phase += delta * (10.0 + _speed)
+		wobble = 0.025 * sin(_wobble_phase)
+	_visual.position.y = wobble + _hop_offset
+
+	_scare_cooldown -= delta
+	if _scare_cooldown <= 0.0 and _speed > 3.0 and _frog:
+		var to_frog := _frog.global_position - global_position
+		var ahead := to_frog.dot(drive_direction)
+		var sideways := (to_frog - drive_direction * ahead - Vector3.UP * to_frog.y).length()
+		if ahead > 0.0 and ahead < size.z / 2.0 + 6.0 and sideways < size.x:
+			_scare_cooldown = 2.0
+			var tween := create_tween()
+			tween.tween_property(self, "_hop_offset", 0.45, 0.1).set_ease(Tween.EASE_OUT)
+			tween.tween_property(self, "_hop_offset", 0.0, 0.25).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+
+
+## Scintille all'impatto, a raggiera.
+func _emit_sparks() -> void:
+	var sparks := CPUParticles3D.new()
+	sparks.one_shot = true
+	sparks.amount = 20
+	sparks.lifetime = 0.5
+	sparks.explosiveness = 1.0
+	sparks.local_coords = false
+	sparks.direction = Vector3.UP
+	sparks.spread = 75.0
+	sparks.initial_velocity_min = 4.0
+	sparks.initial_velocity_max = 9.0
+	sparks.gravity = Vector3(0.0, -15.0, 0.0)
+	sparks.mesh = _box_mesh(Vector3.ONE * 0.12, Style.material("spark"))
+	add_child(sparks)
+	sparks.emitting = true
+	sparks.finished.connect(sparks.queue_free)
+
+
+## Fumo dal rottame per qualche secondo: sbuffi low-poly che salgono e
+## crescono. Le particelle restano nel mondo mentre il rottame vola.
+func _emit_smoke() -> void:
+	var smoke := CPUParticles3D.new()
+	smoke.amount = 10
+	smoke.lifetime = 1.8
+	smoke.local_coords = false
+	smoke.direction = Vector3.UP
+	smoke.spread = 20.0
+	smoke.initial_velocity_min = 1.5
+	smoke.initial_velocity_max = 2.5
+	smoke.gravity = Vector3(0.0, 0.5, 0.0)
+	smoke.scale_amount_min = 1.0
+	smoke.scale_amount_max = 1.6
+	var growth := Curve.new()
+	growth.add_point(Vector2(0.0, 0.3))
+	growth.add_point(Vector2(1.0, 1.0))
+	smoke.scale_amount_curve = growth
+	var puff := SphereMesh.new()
+	puff.radius = 0.35
+	puff.height = 0.7
+	puff.radial_segments = 6
+	puff.rings = 3
+	puff.material = Style.material("smoke")
+	smoke.mesh = puff
+	smoke.position.y = size.y / 2.0
+	add_child(smoke)
+	smoke.emitting = true
+	get_tree().create_timer(4.0).timeout.connect(func() -> void:
+		if is_instance_valid(smoke):
+			smoke.emitting = false)
 
 
 ## Area che rileva la rana ai lati e davanti, ma non sul tetto: stare sopra un

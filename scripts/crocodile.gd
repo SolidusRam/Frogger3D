@@ -53,15 +53,14 @@ func _build() -> void:
 	collision.position.z = HEAD_LENGTH / 2.0
 	add_child(collision)
 
-	var green := Color(0.2, 0.4, 0.2)
 	var back := MeshInstance3D.new()
-	back.mesh = _box_mesh(Vector3(size.x, size.y, body_length), green)
+	back.mesh = _box_mesh(Vector3(size.x, size.y, body_length), "croc")
 	back.position.z = HEAD_LENGTH / 2.0
 	add_child(back)
 
 	var head_z := -size.z / 2.0 + HEAD_LENGTH / 2.0
 	var lower_jaw := MeshInstance3D.new()
-	lower_jaw.mesh = _box_mesh(Vector3(size.x * 0.7, size.y * 0.35, HEAD_LENGTH), green.darkened(0.2))
+	lower_jaw.mesh = _box_mesh(Vector3(size.x * 0.7, size.y * 0.35, HEAD_LENGTH), "croc_dark")
 	lower_jaw.position = Vector3(0.0, -size.y * 0.1, head_z)
 	add_child(lower_jaw)
 
@@ -70,14 +69,13 @@ func _build() -> void:
 	_jaw.position = Vector3(0.0, size.y * 0.1, head_z + HEAD_LENGTH / 2.0)
 	add_child(_jaw)
 	var upper_jaw := MeshInstance3D.new()
-	upper_jaw.mesh = _box_mesh(Vector3(size.x * 0.7, size.y * 0.35, HEAD_LENGTH), green)
+	upper_jaw.mesh = _box_mesh(Vector3(size.x * 0.7, size.y * 0.35, HEAD_LENGTH), "croc")
 	upper_jaw.position.z = -HEAD_LENGTH / 2.0
 	_jaw.add_child(upper_jaw)
 
-	var eye_material := Color(0.95, 0.85, 0.2)
 	for side in [-1.0, 1.0]:
 		var eye := MeshInstance3D.new()
-		eye.mesh = _box_mesh(Vector3(0.2, 0.2, 0.2), eye_material)
+		eye.mesh = _box_mesh(Vector3(0.2, 0.2, 0.2), "croc_eye")
 		eye.position = Vector3(side * size.x * 0.3, size.y * 0.55, -size.z / 2.0 + HEAD_LENGTH + 0.2)
 		add_child(eye)
 

@@ -28,10 +28,9 @@ func _build() -> void:
 	add_child(collision)
 
 
-static func _box_mesh(box_size: Vector3, color: Color) -> BoxMesh:
-	var material := StandardMaterial3D.new()
-	material.albedo_color = color
+## Un parallelepipedo col materiale condiviso della voce di tavolozza data.
+static func _box_mesh(box_size: Vector3, palette_key: String) -> BoxMesh:
 	var mesh := BoxMesh.new()
 	mesh.size = box_size
-	mesh.material = material
+	mesh.material = Style.material(palette_key)
 	return mesh

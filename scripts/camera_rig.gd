@@ -12,6 +12,7 @@ extends Node3D
 @export var follow_speed := 15.0
 
 @onready var pitch: Node3D = $Pitch
+@onready var spring_arm: SpringArm3D = $Pitch/SpringArm3D
 
 var _target: Node3D
 
@@ -43,6 +44,15 @@ func _unhandled_input(event: InputEvent) -> void:
 			deg_to_rad(min_pitch_degrees),
 			deg_to_rad(max_pitch_degrees)
 		)
+
+
+## Allarga la telecamera e la riporta indietro, in tempo reale anche durante
+## il rallentatore.
+func pull_back(extra: float, duration: float) -> void:
+	var base := 6.0
+	var tween := create_tween().set_ignore_time_scale(true)
+	tween.tween_property(spring_arm, "spring_length", base + extra, duration * 0.3).set_ease(Tween.EASE_OUT)
+	tween.tween_property(spring_arm, "spring_length", base, duration * 0.7).set_ease(Tween.EASE_IN_OUT)
 
 
 ## Orientamento orizzontale della telecamera, per muovere la rana rispetto a

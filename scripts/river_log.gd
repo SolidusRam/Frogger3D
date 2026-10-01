@@ -10,9 +10,7 @@ func _build() -> void:
 	mesh.top_radius = size.x / 2.0
 	mesh.bottom_radius = size.x / 2.0
 	mesh.height = size.z
-	var material := StandardMaterial3D.new()
-	material.albedo_color = Color(0.45, 0.3, 0.15)
-	mesh.material = material
+	mesh.material = Style.material("log")
 	bark.mesh = mesh
 	# Il cilindro nasce verticale: lo si corica lungo Z.
 	bark.rotation.x = PI / 2.0

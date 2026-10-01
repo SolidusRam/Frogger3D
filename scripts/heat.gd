@@ -4,6 +4,8 @@ extends Node
 ## e non scende mai. Il mondo lo legge quando crea veicoli e correnti.
 
 signal changed(value: float, level: int)
+## Un veicolo è appena diventato rottame (anche nelle catene).
+signal wreck_created(car: Node3D)
 
 const MAX := 100.0
 const LEVELS := 5
@@ -59,6 +61,11 @@ func ratio() -> float:
 ## Da 0 a 5, uno ogni 20 punti di calore.
 func level() -> int:
 	return mini(floori(value / (MAX / LEVELS)), LEVELS)
+
+
+func on_wreck(car: Node3D) -> void:
+	add(per_wreck)
+	wreck_created.emit(car)
 
 
 func on_power_used(power: StringName) -> void:

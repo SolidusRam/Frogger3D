@@ -26,18 +26,14 @@ func _lane_offset(index: int) -> float:
 
 
 func _build_asphalt() -> void:
-	var asphalt := StandardMaterial3D.new()
-	asphalt.albedo_color = Color(0.18, 0.18, 0.2)
 	var road := MeshInstance3D.new()
-	road.mesh = _box_mesh(Vector3(length, 0.02, lane_count * lane_width), asphalt)
+	road.mesh = _box_mesh(Vector3(length, 0.02, lane_count * lane_width), Style.material("asphalt"))
 	road.position.y = 0.01
 	add_child(road)
 
-	var paint := StandardMaterial3D.new()
-	paint.albedo_color = Color(0.9, 0.9, 0.85)
 	for i in lane_count - 1:
 		var line := MeshInstance3D.new()
-		line.mesh = _box_mesh(Vector3(length, 0.02, 0.15), paint)
+		line.mesh = _box_mesh(Vector3(length, 0.02, 0.15), Style.material("lane_line"))
 		line.position = Vector3(0.0, 0.02, (_lane_offset(i) + _lane_offset(i + 1)) / 2.0)
 		add_child(line)
 

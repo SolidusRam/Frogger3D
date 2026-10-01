@@ -97,13 +97,10 @@ func _build_bed_and_water() -> void:
 	bed.add_child(bed_collision)
 	add_child(bed)
 
-	var water_material := StandardMaterial3D.new()
-	water_material.albedo_color = Color(0.15, 0.4, 0.7, 0.75)
-	water_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	var surface := MeshInstance3D.new()
 	var surface_mesh := BoxMesh.new()
 	surface_mesh.size = Vector3(length, 0.05, width)
-	surface_mesh.material = water_material
+	surface_mesh.material = Style.material("water")
 	surface.mesh = surface_mesh
 	surface.position.y = water_level
 	add_child(surface)

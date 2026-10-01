@@ -38,7 +38,10 @@ Il calore sale anche se il giocatore non fa nulla; i poteri lo accelerano, ma so
 | Telecamera | Terza persona, dietro la rana |
 | Controlli | Mouse e tastiera. Provvisori: WASD movimento, mouse telecamera, Spazio salto (premuto di nuovo in aria e tenuto: deltaplano), tasto sinistro pugno, tasto destro super salto, Esc pausa |
 | Movimento | Libero, non su griglia |
-| Grafica | 3D low-poly in stile Megabonk, modelli fatti in Blender |
+| Grafica | 3D low-poly in stile Megabonk, modelli fatti in Blender. Stili candidati: PS1 sgranato e arcade 1981 (confronto in gioco con F2, insieme allo stile Base). Tutti i materiali vengono da una tavolozza per stile |
+| Colori e calore | Il calore sposta l'ora del giorno come nel dinosauro di Google: giorno, tramonto, notte; lampo invertito a ogni nuovo livello. Di notte le minacce restano leggibili (nello stile arcade brillano) |
+| Personaggio | Una rana con gli attrezzi: guantoni da boxe, molle sotto le zampe, deltaplano con barra e montanti |
+| Animazioni | Fermo-immagine solo quando il pugno colpisce un'auto; rallentatore e telecamera larga sulle catene di 4 o più rottami vicino alla rana; schiacciamento e allungamento della rana; sospensioni e sobbalzo di spavento delle auto; scintille e fumo dai rottami |
 | Ostacoli | Autostrada, fiume, coccodrilli |
 | Poteri | Super salto, pugno alle macchine, deltaplano: poteri base, disponibili da subito; in futuro poteri nuovi o potenziamenti di quelli base |
 | Struttura della run | Infinita: si gioca finché non si muore |

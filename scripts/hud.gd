@@ -30,6 +30,8 @@ var _glide_bar: ProgressBar
 var _message: Label
 var _game_over: PanelContainer
 var _game_over_text: Label
+var _chain_label: Label
+var _last_heat_level := 0
 
 
 func _ready() -> void:
@@ -37,12 +39,15 @@ func _ready() -> void:
 	_build_top_right()
 	_build_powers()
 	_build_message()
+	_build_chain_label()
 	_build_game_over()
 	frog.health_changed.connect(_on_health_changed)
 	_on_health_changed(frog.health, frog.max_health)
 	Heat.changed.connect(_on_heat_changed)
 	_on_heat_changed(Heat.value, Heat.level())
 	course.den_reached.connect(_on_den_reached)
+	Style.style_changed.connect(_on_style_changed)
+	_last_heat_level = Heat.level()
 
 
 func _process(_delta: float) -> void:
@@ -80,14 +85,36 @@ func _on_health_changed(health: int, max_health: int) -> void:
 
 func _on_heat_changed(value: float, level: int) -> void:
 	_heat_bar.value = value
+	if level > _last_heat_level:
+		_show_message("Calore: livello %d" % level)
+	_last_heat_level = level
 	_heat_label.text = "Calore: livello %d / %d" % [level, Heat.LEVELS]
 	_set_fill(_heat_bar, HEAT_COLORS[level])
 
 
 func _on_den_reached(count: int, distance: float) -> void:
-	_message.text = "Tana %d raggiunta! %d m" % [count, roundi(distance)]
+	_show_message("Tana %d raggiunta! %d m" % [count, roundi(distance)])
+
+
+func _on_style_changed(style_name: String) -> void:
+	_show_message("Stile: %s   (F2 per cambiare)" % style_name)
+
+
+## "CATENA ×N" sotto il centro, che pulsa a ogni rottame in più.
+func show_chain(count: int) -> void:
+	_chain_label.text = "CATENA ×%d" % count
+	_chain_label.modulate.a = 1.0
+	_chain_label.scale = Vector2(1.4, 1.4)
+	var tween := create_tween().set_ignore_time_scale(true)
+	tween.tween_property(_chain_label, "scale", Vector2.ONE, 0.2)
+	tween.tween_interval(1.0)
+	tween.tween_property(_chain_label, "modulate:a", 0.0, 0.4)
+
+
+func _show_message(text: String) -> void:
+	_message.text = text
 	_message.modulate.a = 1.0
-	var tween := create_tween()
+	var tween := create_tween().set_ignore_time_scale(true)
 	tween.tween_interval(1.5)
 	tween.tween_property(_message, "modulate:a", 0.0, 0.5)
 
@@ -132,7 +159,7 @@ func _build_powers() -> void:
 	var box := VBoxContainer.new()
 	box.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	box.offset_left = 16
-	box.offset_top = -90
+	box.offset_top = -110
 	box.offset_bottom = -16
 	box.add_theme_constant_override("separation", 2)
 	add_child(box)
@@ -144,6 +171,7 @@ func _build_powers() -> void:
 	_glide_bar = _bar(Vector2(220, 10), POWER_COLOR)
 	_glide_bar.max_value = 1.0
 	box.add_child(_glide_bar)
+	box.add_child(_label(14, "F2: cambia stile grafico"))
 
 
 func _build_message() -> void:
@@ -155,6 +183,20 @@ func _build_message() -> void:
 	_message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_message.modulate.a = 0.0
 	add_child(_message)
+
+
+func _build_chain_label() -> void:
+	_chain_label = _label(48)
+	_chain_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+	_chain_label.offset_left = -300
+	_chain_label.offset_right = 300
+	_chain_label.offset_top = 60
+	_chain_label.offset_bottom = 120
+	_chain_label.pivot_offset = Vector2(300, 30)
+	_chain_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_chain_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2))
+	_chain_label.modulate.a = 0.0
+	add_child(_chain_label)
 
 
 func _build_game_over() -> void:

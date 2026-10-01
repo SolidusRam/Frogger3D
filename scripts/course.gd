@@ -9,9 +9,6 @@ signal den_reached(count: int, distance: float)
 
 enum Kind { START, SAFE, ROAD, RIVER, DEN }
 
-const GRASS := Color(0.35, 0.55, 0.3)
-const SIDEWALK := Color(0.55, 0.55, 0.55)
-const DEN_GRASS := Color(0.25, 0.45, 0.25)
 
 @export var frog: Frog
 ## Larghezza del terreno e mezza larghezza della zona di gioco (muri invisibili).
@@ -82,14 +79,14 @@ func _add_chunk(kind: Kind) -> void:
 	match kind:
 		Kind.START:
 			depth = start_depth
-			_add_ground(chunk, depth, GRASS)
+			_add_ground(chunk, depth, "grass")
 		Kind.SAFE:
 			depth = safe_depth
-			_add_ground(chunk, depth, GRASS)
+			_add_ground(chunk, depth, "grass")
 		Kind.ROAD:
 			var lanes := clampi(3 + difficulty + randi_range(-1, 1), 2, 7)
 			depth = lanes * road_lane_width + 1.0
-			_add_ground(chunk, depth, SIDEWALK)
+			_add_ground(chunk, depth, "sidewalk")
 			var road := Road.new()
 			road.lane_count = lanes
 			road.lane_width = road_lane_width
@@ -109,7 +106,7 @@ func _add_chunk(kind: Kind) -> void:
 			chunk.add_child(river)
 		Kind.DEN:
 			depth = den_depth
-			_add_ground(chunk, depth, DEN_GRASS)
+			_add_ground(chunk, depth, "den_grass")
 			_add_den(chunk, depth)
 
 	_add_side_walls(chunk, depth)
@@ -122,7 +119,7 @@ func _add_chunk(kind: Kind) -> void:
 	_front_z -= depth
 
 
-func _add_ground(chunk: Node3D, depth: float, color: Color) -> void:
+func _add_ground(chunk: Node3D, depth: float, palette_key: String) -> void:
 	var size := Vector3(ground_width, 4.0, depth)
 	var ground := StaticBody3D.new()
 	ground.collision_mask = 0
@@ -133,7 +130,7 @@ func _add_ground(chunk: Node3D, depth: float, color: Color) -> void:
 	collision.shape = shape
 	ground.add_child(collision)
 	var mesh := MeshInstance3D.new()
-	mesh.mesh = _box_mesh(size, color)
+	mesh.mesh = _box_mesh(size, palette_key)
 	ground.add_child(mesh)
 	chunk.add_child(ground)
 
@@ -155,26 +152,23 @@ func _add_side_walls(chunk: Node3D, depth: float) -> void:
 
 ## La tana: un portale su un prato. Entrarci registra il checkpoint.
 func _add_den(chunk: Node3D, depth: float) -> void:
-	var gold := Color(0.95, 0.75, 0.2)
 	for side in [-1.0, 1.0]:
 		var post := MeshInstance3D.new()
-		post.mesh = _box_mesh(Vector3(0.8, 6.0, 0.8), gold)
+		post.mesh = _box_mesh(Vector3(0.8, 6.0, 0.8), "gold")
 		post.position = Vector3(side * 8.0, 3.0, 0.0)
 		chunk.add_child(post)
 	var bar := MeshInstance3D.new()
-	bar.mesh = _box_mesh(Vector3(16.8, 0.8, 0.8), gold)
+	bar.mesh = _box_mesh(Vector3(16.8, 0.8, 0.8), "gold")
 	bar.position.y = 6.0
 	chunk.add_child(bar)
 
-	var pad_material := StandardMaterial3D.new()
-	pad_material.albedo_color = Color(0.3, 0.7, 0.3)
 	for x in [-20.0, -12.0, 12.0, 20.0]:
 		var pad := MeshInstance3D.new()
 		var cylinder := CylinderMesh.new()
 		cylinder.top_radius = 2.0
 		cylinder.bottom_radius = 2.0
 		cylinder.height = 0.1
-		cylinder.material = pad_material
+		cylinder.material = Style.material("pad")
 		pad.mesh = cylinder
 		pad.position = Vector3(x, 0.05, 0.0)
 		chunk.add_child(pad)
@@ -199,10 +193,8 @@ func _on_den_entered(body: Node3D, chunk: Node3D) -> void:
 		den_reached.emit(dens_reached, distance())
 
 
-static func _box_mesh(size: Vector3, color: Color) -> BoxMesh:
-	var material := StandardMaterial3D.new()
-	material.albedo_color = color
+static func _box_mesh(size: Vector3, palette_key: String) -> BoxMesh:
 	var mesh := BoxMesh.new()
 	mesh.size = size
-	mesh.material = material
+	mesh.material = Style.material(palette_key)
 	return mesh
