@@ -20,11 +20,12 @@ const LEVELS := 5
 @export var per_wreck := 0.6
 
 @export_group("Effetti al massimo del calore")
-## Velocità dei veicoli e delle correnti: +50% e +40% al massimo.
-@export var max_traffic_speed_bonus := 0.5
+## Velocità dei veicoli e delle correnti: +80% e +40% al massimo.
+@export var max_traffic_speed_bonus := 0.8
 @export var max_river_speed_bonus := 0.4
-## Spazio tra i veicoli: -50% al massimo.
-@export var max_gap_reduction := 0.5
+## Spazio tra i veicoli: +25% al massimo. Al calore alto le auto sono un po'
+## meno, ma molto più veloci: il traffico minaccia invece di ingorgarsi.
+@export var max_gap_increase := 0.25
 ## Frenata dei veicoli e soglia di schianto: -60% e -50% al massimo.
 @export var max_braking_reduction := 0.6
 @export var max_crash_speed_reduction := 0.5
@@ -87,7 +88,7 @@ func river_speed_factor() -> float:
 
 
 func gap_factor() -> float:
-	return 1.0 - max_gap_reduction * ratio()
+	return 1.0 + max_gap_increase * ratio()
 
 
 func braking_factor() -> float:
