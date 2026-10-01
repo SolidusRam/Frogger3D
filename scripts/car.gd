@@ -370,9 +370,9 @@ func _emit_smoke() -> void:
 	smoke.position.y = size.y / 2.0
 	add_child(smoke)
 	smoke.emitting = true
-	get_tree().create_timer(4.0).timeout.connect(func() -> void:
-		if is_instance_valid(smoke):
-			smoke.emitting = false)
+	# Collegato al metodo del fumo, non a una lambda che lo cattura: se il
+	# rottame sparisce prima, Godot scollega da solo il segnale.
+	get_tree().create_timer(4.0).timeout.connect(smoke.set_emitting.bind(false))
 
 
 ## Area che rileva la rana ai lati e davanti, ma non sul tetto: stare sopra un
