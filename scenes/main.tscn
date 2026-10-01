@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="game_script"]
 [ext_resource type="PackedScene" path="res://scenes/frog.tscn" id="frog_scene"]
 [ext_resource type="Script" path="res://scripts/course.gd" id="course_script"]
 [ext_resource type="Script" path="res://scripts/hud.gd" id="hud_script"]
+[ext_resource type="Script" path="res://scripts/backdrop.gd" id="backdrop_script"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 
@@ -36,6 +37,10 @@ shadow_enabled = true
 
 [node name="Course" type="Node3D" parent="." node_paths=PackedStringArray("frog")]
 script = ExtResource("course_script")
+frog = NodePath("../Frog")
+
+[node name="Backdrop" type="Node3D" parent="." node_paths=PackedStringArray("frog")]
+script = ExtResource("backdrop_script")
 frog = NodePath("../Frog")
 
 [node name="PostFX" type="CanvasLayer" parent="."]

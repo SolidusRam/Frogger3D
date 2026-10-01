@@ -16,11 +16,54 @@ const MAX_WRECKS := 80
 ## Distanza dal muso sotto cui due veicoli sono a contatto.
 const CONTACT_DISTANCE := 0.3
 
+## I tipi di veicolo: ingombro di gioco (larghezza, altezza, lunghezza),
+## danno alla rana, frequenza relativa nel traffico, raggio delle ruote,
+## modello di Blender e collisione su misura (scatole: dimensione e centro),
+## così si può stare sul cofano e la cabina del camion è più bassa del
+## rimorchio. Il muso guarda verso -Z locale.
+const TYPES := {
+	"compact": {
+		"size": Vector3(1.8, 1.35, 3.4), "damage": 20, "weight": 3, "wheel_radius": 0.3,
+		"model": preload("res://assets/models/compact.glb"),
+		"collision": [[Vector3(1.8, 0.69, 3.4), Vector3(0.0, -0.33, 0.0)], [Vector3(1.64, 0.66, 2.05), Vector3(0.0, 0.345, 0.275)]],
+	},
+	"sedan": {
+		"size": Vector3(2.0, 1.4, 4.4), "damage": 25, "weight": 4, "wheel_radius": 0.33,
+		"model": preload("res://assets/models/sedan.glb"),
+		"collision": [[Vector3(2.0, 0.69, 4.4), Vector3(0.0, -0.355, 0.0)], [Vector3(1.84, 0.71, 2.2), Vector3(0.0, 0.345, 0.15)]],
+	},
+	"van": {
+		"size": Vector3(2.1, 2.0, 4.8), "damage": 30, "weight": 2, "wheel_radius": 0.38,
+		"model": preload("res://assets/models/van.glb"),
+		"collision": [[Vector3(2.1, 2.0, 4.8), Vector3.ZERO]],
+	},
+	"truck": {
+		"size": Vector3(2.4, 2.6, 8.0), "damage": 40, "weight": 2, "wheel_radius": 0.48,
+		"model": preload("res://assets/models/truck.glb"),
+		"collision": [[Vector3(2.4, 2.3, 2.4), Vector3(0.0, -0.15, -2.8)], [Vector3(2.4, 2.6, 5.4), Vector3(0.0, 0.0, 1.3)]],
+	},
+}
+
 static var _wrecks: Array[Car] = []
 
 
-## Larghezza, altezza e lunghezza. Il muso guarda verso -Z locale.
-var size := Vector3(2.0, 1.4, 4.0)
+## Sceglie un tipo a caso secondo le frequenze del traffico.
+static func random_type() -> String:
+	var total := 0
+	for type in TYPES:
+		total += TYPES[type].weight
+	var pick := randi() % total
+	for type in TYPES:
+		pick -= TYPES[type].weight
+		if pick < 0:
+			return type
+	return "sedan"
+
+
+## Tipo di veicolo (una voce di TYPES), da scegliere prima di aggiungerlo.
+var model_type := "sedan"
+## Larghezza, altezza e lunghezza, prese dal tipo.
+var size := Vector3(2.0, 1.4, 4.4)
 ## Direzione di marcia nel mondo e velocità di crociera, impostate dalla corsia.
 var drive_direction := Vector3.RIGHT
 var cruise_speed := 8.0
@@ -45,7 +88,9 @@ var wreck_lifetime := 25.0
 var _speed := 0.0
 var _hitbox: Area3D
 var _look_ahead: ShapeCast3D
-var _body: MeshInstance3D
+## Superfici verniciate del modello, per annerirle quando diventa rottame.
+var _painted := []
+var _wheels: Array[Node] = []
 ## Carrozzeria disegnata: si inclina e sobbalza senza toccare il corpo fisico.
 var _visual: Node3D
 var _frog: Node3D
@@ -62,6 +107,8 @@ var _last_floating_frame := -10
 
 
 func _ready() -> void:
+	size = TYPES[model_type].size
+	hit_damage = TYPES[model_type].damage
 	collision_layer = 4 # veicoli
 	collision_mask = 1 | 4 | 8 # terreno, veicoli, piattaforme
 	freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
@@ -108,7 +155,8 @@ func become_wreck() -> void:
 	contact_monitor = true
 	max_contacts_reported = 8
 	body_entered.connect(_on_wreck_body_entered)
-	_body.material_override = Style.material("wreck_%d" % _color_index)
+	for surface in _painted:
+		(surface[0] as MeshInstance3D).set_surface_override_material(surface[1], Style.material("wreck_%d" % _color_index))
 	_visual.rotation = Vector3.ZERO
 	_visual.position = Vector3.ZERO
 	_emit_sparks()
@@ -223,26 +271,23 @@ func _sink_and_free() -> void:
 
 
 func _build_collision() -> void:
-	var shape := BoxShape3D.new()
-	shape.size = size
-	var collision := CollisionShape3D.new()
-	collision.shape = shape
-	add_child(collision)
+	for part in TYPES[model_type].collision:
+		var shape := BoxShape3D.new()
+		shape.size = part[0]
+		var collision := CollisionShape3D.new()
+		collision.shape = shape
+		collision.position = part[1]
+		add_child(collision)
 
 
 func _build_visual() -> void:
 	_color_index = randi() % Style.CAR_COLORS
 	_visual = Node3D.new()
 	add_child(_visual)
-	_body = MeshInstance3D.new()
-	_body.mesh = _box_mesh(size, Style.material("car_%d" % _color_index))
-	_visual.add_child(_body)
-
-	# Parabrezza scuro sul muso, per capire da che parte va il veicolo.
-	var windshield := MeshInstance3D.new()
-	windshield.mesh = _box_mesh(Vector3(size.x * 0.9, size.y * 0.35, 0.1), Style.material("glass"))
-	windshield.position = Vector3(0.0, size.y * 0.2, -size.z / 2.0 - 0.02)
-	_visual.add_child(windshield)
+	var model: Node3D = TYPES[model_type].model.instantiate()
+	_visual.add_child(model)
+	_painted = Style.apply_palette(model, {"paint": "car_%d" % _color_index})
+	_wheels = model.find_children("Wheel_*", "", true, false)
 	_frog = get_tree().get_first_node_in_group("frog")
 
 
@@ -255,6 +300,10 @@ func _animate_driving(delta: float) -> void:
 	var target_pitch := clampf(acceleration_now * 0.015, -0.12, 0.06)
 	_pitch = lerpf(_pitch, target_pitch, 1.0 - exp(-10.0 * delta))
 	_visual.rotation.x = _pitch
+
+	var spin: float = -_speed / TYPES[model_type].wheel_radius * delta
+	for wheel: Node3D in _wheels:
+		wheel.rotate_x(spin)
 
 	var wobble := 0.0
 	if _speed > 0.5:

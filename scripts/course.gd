@@ -9,6 +9,10 @@ signal den_reached(count: int, distance: float)
 
 enum Kind { START, SAFE, ROAD, RIVER, DEN }
 
+const TREE := preload("res://assets/models/tree.glb")
+const HOUSE := preload("res://assets/models/house.glb")
+const LAMP := preload("res://assets/models/lamp.glb")
+
 
 @export var frog: Frog
 ## Larghezza del terreno e mezza larghezza della zona di gioco (muri invisibili).
@@ -110,6 +114,7 @@ func _add_chunk(kind: Kind) -> void:
 			_add_den(chunk, depth)
 
 	_add_side_walls(chunk, depth)
+	_add_props(chunk, kind, depth)
 	chunk.position.z = _front_z - depth / 2.0
 	chunk.set_meta("near_z", _front_z)
 	chunk.set_meta("depth", depth)
@@ -148,6 +153,40 @@ func _add_side_walls(chunk: Node3D, depth: float) -> void:
 		collision.position = Vector3(side * (play_half_width + 0.5), 16.0, 0.0)
 		walls.add_child(collision)
 	chunk.add_child(walls)
+
+
+## Lo scenario ai lati, fuori dai muri invisibili: alberi sull'erba, case alla
+## partenza e ogni tanto lungo il percorso, lampioni lungo le strade.
+func _add_props(chunk: Node3D, kind: Kind, depth: float) -> void:
+	var outside := play_half_width + 4.0
+	var edge := ground_width / 2.0 - 3.0
+	match kind:
+		Kind.START, Kind.SAFE, Kind.DEN:
+			for side in [-1.0, 1.0]:
+				for i in maxi(1, floori(depth / 6.0)):
+					var tree := _prop(chunk, TREE, Vector3(side * randf_range(outside, edge), 0.0, randf_range(-depth, depth) * 0.4))
+					tree.rotation.y = randf() * TAU
+					tree.scale = Vector3.ONE * randf_range(0.8, 1.3)
+				if kind == Kind.START or randf() < 0.25:
+					# Le case guardano verso il percorso.
+					var house := _prop(chunk, HOUSE, Vector3(side * 50.0, 0.0, randf_range(-depth, depth) * 0.25))
+					house.rotation.y = -PI / 2.0 * side
+		Kind.ROAD:
+			for side in [-1.0, 1.0]:
+				var z := -depth / 2.0 + 2.0
+				while z < depth / 2.0:
+					# Il braccio del lampione punta verso la strada.
+					var lamp := _prop(chunk, LAMP, Vector3(side * (play_half_width + 1.2), 0.0, z))
+					lamp.rotation.y = 0.0 if side < 0.0 else PI
+					z += 12.0
+
+
+func _prop(chunk: Node3D, scene: PackedScene, at: Vector3) -> Node3D:
+	var prop: Node3D = scene.instantiate()
+	prop.position = at
+	chunk.add_child(prop)
+	Style.apply_palette(prop)
+	return prop
 
 
 ## La tana: un portale su un prato. Entrarci registra il checkpoint.

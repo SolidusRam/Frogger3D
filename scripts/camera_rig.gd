@@ -15,6 +15,9 @@ extends Node3D
 @onready var spring_arm: SpringArm3D = $Pitch/SpringArm3D
 
 var _target: Node3D
+var _shake_strength := 0.0
+var _shake_left := 0.0
+var _shake_duration := 1.0
 
 
 func _ready() -> void:
@@ -28,6 +31,11 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	var weight := 1.0 - exp(-follow_speed * delta)
 	global_position = global_position.lerp(_target_point(), weight)
+	# La scossa usa il tempo reale: deve vedersi anche nel fermo-immagine.
+	var real_delta := delta / maxf(Engine.time_scale, 0.001)
+	_shake_left = maxf(_shake_left - real_delta, 0.0)
+	var amount := _shake_strength * _shake_left / _shake_duration
+	spring_arm.position = Vector3(randf_range(-amount, amount), randf_range(-amount, amount), 0.0)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -44,6 +52,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			deg_to_rad(min_pitch_degrees),
 			deg_to_rad(max_pitch_degrees)
 		)
+
+
+## Scossa: sposta la telecamera a caso per un attimo, in tempo reale.
+func shake(strength: float, duration: float) -> void:
+	_shake_strength = strength
+	_shake_left = duration
+	_shake_duration = duration
 
 
 ## Allarga la telecamera e la riporta indietro, in tempo reale anche durante

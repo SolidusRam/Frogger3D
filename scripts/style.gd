@@ -21,7 +21,17 @@ var styles: Array[Dictionary] = [
 		"name": "Base",
 		"post": Post.NONE,
 		"glow": false,
+		"emissive": ["headlight", "taillight", "lamp_light"],
+		"emission_day": 0.0,
+		"emission_night": 1.5,
 		"colors": {
+			"tire": Color(0.05, 0.05, 0.05), "trim": Color(0.18, 0.18, 0.2),
+			"headlight": Color(1.0, 0.95, 0.7), "taillight": Color(0.9, 0.1, 0.1),
+			"cargo": Color(0.78, 0.77, 0.73), "wing_stripe": Color(0.95, 0.92, 0.85),
+			"trunk": Color(0.38, 0.25, 0.14), "tree": Color(0.2, 0.45, 0.18),
+			"house": Color(0.85, 0.78, 0.62), "roof": Color(0.6, 0.22, 0.16),
+			"lamp_light": Color(1.0, 0.9, 0.6), "mountain": Color(0.42, 0.42, 0.45),
+			"mountain_snow": Color(0.92, 0.94, 0.97), "far_ground": Color(0.3, 0.45, 0.26),
 			"grass": Color(0.35, 0.55, 0.3), "den_grass": Color(0.25, 0.45, 0.25),
 			"sidewalk": Color(0.55, 0.55, 0.55), "asphalt": Color(0.18, 0.18, 0.2),
 			"lane_line": Color(0.9, 0.9, 0.85), "water": Color(0.15, 0.4, 0.7, 0.75),
@@ -53,7 +63,17 @@ var styles: Array[Dictionary] = [
 		"name": "PS1",
 		"post": Post.PS1,
 		"glow": false,
+		"emissive": ["headlight", "taillight", "lamp_light"],
+		"emission_day": 0.0,
+		"emission_night": 1.5,
 		"colors": {
+			"tire": Color(0.04, 0.04, 0.04), "trim": Color(0.15, 0.15, 0.16),
+			"headlight": Color(0.95, 0.9, 0.65), "taillight": Color(0.75, 0.1, 0.08),
+			"cargo": Color(0.62, 0.6, 0.55), "wing_stripe": Color(0.82, 0.78, 0.68),
+			"trunk": Color(0.3, 0.2, 0.12), "tree": Color(0.2, 0.32, 0.15),
+			"house": Color(0.62, 0.56, 0.45), "roof": Color(0.45, 0.2, 0.15),
+			"lamp_light": Color(0.95, 0.85, 0.55), "mountain": Color(0.36, 0.36, 0.36),
+			"mountain_snow": Color(0.78, 0.8, 0.82), "far_ground": Color(0.26, 0.34, 0.18),
 			"grass": Color(0.32, 0.42, 0.22), "den_grass": Color(0.24, 0.35, 0.2),
 			"sidewalk": Color(0.42, 0.4, 0.38), "asphalt": Color(0.16, 0.15, 0.17),
 			"lane_line": Color(0.8, 0.75, 0.55), "water": Color(0.12, 0.26, 0.36, 0.85),
@@ -86,10 +106,18 @@ var styles: Array[Dictionary] = [
 		"post": Post.ARCADE,
 		"glow": true,
 		"emissive": ["frog", "glove", "lane_line", "gold", "croc_eye", "spark",
+			"headlight", "taillight", "lamp_light",
 			"car_0", "car_1", "car_2", "car_3", "car_4", "car_5"],
 		"emission_day": 0.15,
 		"emission_night": 0.8,
 		"colors": {
+			"tire": Color(0.0, 0.0, 0.0), "trim": Color(0.3, 0.3, 0.35),
+			"headlight": Color(1.0, 1.0, 0.6), "taillight": Color(1.0, 0.1, 0.2),
+			"cargo": Color(0.9, 0.9, 0.95), "wing_stripe": Color(0.2, 0.9, 1.0),
+			"trunk": Color(0.6, 0.3, 0.1), "tree": Color(0.1, 0.8, 0.3),
+			"house": Color(0.3, 0.2, 0.6), "roof": Color(1.0, 0.2, 0.6),
+			"lamp_light": Color(1.0, 1.0, 0.5), "mountain": Color(0.15, 0.05, 0.3),
+			"mountain_snow": Color(0.8, 0.3, 1.0), "far_ground": Color(0.05, 0.0, 0.1),
 			"grass": Color(0.45, 0.12, 0.55), "den_grass": Color(0.1, 0.55, 0.2),
 			"sidewalk": Color(0.45, 0.12, 0.55), "asphalt": Color(0.04, 0.03, 0.08),
 			"lane_line": Color(1.0, 1.0, 0.3), "water": Color(0.0, 0.06, 0.4, 0.92),
@@ -119,7 +147,8 @@ var styles: Array[Dictionary] = [
 	},
 ]
 
-var current := 0
+## Lo stile scelto è il PS1; gli altri restano disponibili con F2.
+var current := 1
 ## Ora del giorno, da 0 (giorno) a 2 (notte); segue il calore.
 var phase := 0.0
 
@@ -184,6 +213,28 @@ func material(key: String) -> StandardMaterial3D:
 	return _materials[key]
 
 
+## Dà ai modelli importati da Blender i materiali della tavolozza, scelti per
+## nome del materiale. overrides cambia una voce (per esempio "paint" in
+## "car_3"). Restituisce le superfici verniciate ("paint"), come coppie
+## [MeshInstance3D, indice], per poterle cambiare dopo (i rottami).
+func apply_palette(root: Node, overrides := {}) -> Array:
+	var painted := []
+	var stack: Array[Node] = [root]
+	while not stack.is_empty():
+		var node: Node = stack.pop_back()
+		stack.append_array(node.get_children())
+		var mesh_instance := node as MeshInstance3D
+		if mesh_instance == null or mesh_instance.mesh == null:
+			continue
+		for i in mesh_instance.mesh.get_surface_count():
+			var original := mesh_instance.mesh.surface_get_material(i)
+			var key := original.resource_name if original else ""
+			if key == "paint":
+				painted.append([mesh_instance, i])
+			mesh_instance.set_surface_override_material(i, material(overrides.get(key, key)))
+	return painted
+
+
 func _color_material(key: String, mat: StandardMaterial3D) -> void:
 	var colors: Dictionary = styles[current].colors
 	var color: Color
@@ -193,6 +244,8 @@ func _color_material(key: String, mat: StandardMaterial3D) -> void:
 		color = colors.get(key, Color.MAGENTA)
 	mat.albedo_color = color
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if color.a < 1.0 else BaseMaterial3D.TRANSPARENCY_DISABLED
+	if key.begins_with("wing"):
+		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mat.emission_enabled = _is_emissive(key)
 	mat.emission = Color(color, 1.0)
 

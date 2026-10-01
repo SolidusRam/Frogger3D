@@ -83,6 +83,8 @@ signal power_used(power: StringName)
 ## Sotto questa quota la rana torna al punto di partenza.
 @export var fall_limit := -20.0
 
+const GLIDER_MODEL := preload("res://assets/models/glider.glb")
+
 @onready var visual: Node3D = $Visual
 @onready var glider: Node3D = $Visual/Glider
 @onready var camera_rig: CameraRig = $CameraRig
@@ -111,6 +113,8 @@ var _gloves: Array[Node3D] = []
 var _springs: Array[Node3D] = []
 var _next_glove := 0
 var _squash_tween: Tween
+var _glider_tween: Tween
+var _glider_folding := false
 
 @onready var health := max_health
 
@@ -294,21 +298,26 @@ func _throw_glove() -> void:
 	var glove := _gloves[_next_glove]
 	_next_glove = (_next_glove + 1) % _gloves.size()
 	var rest: Vector3 = glove.get_meta("rest")
-	var tween := create_tween()
-	tween.tween_property(glove, "position", rest + Vector3(0.0, 0.1, -0.9), 0.05)
-	tween.tween_property(glove, "position", rest, 0.15).set_ease(Tween.EASE_OUT)
+	# Il guantone scatta lontano e si gonfia all'impatto. Va in tempo reale:
+	# il fermo-immagine lo congela già disteso sull'auto.
+	var tween := create_tween().set_ignore_time_scale(true)
+	tween.tween_property(glove, "position", rest + Vector3(-signf(rest.x) * 0.3, 0.15, -1.5), 0.05)
+	tween.parallel().tween_property(glove, "scale", Vector3.ONE * 1.8, 0.05)
+	tween.tween_property(glove, "position", rest, 0.18).set_ease(Tween.EASE_OUT)
+	tween.parallel().tween_property(glove, "scale", Vector3.ONE, 0.18)
 
 
-## Gli attrezzi: guantoni, molle sotto le zampe e telaio del deltaplano.
+## Gli attrezzi: guantoni, molle sotto le zampe e il deltaplano (modello di
+## Blender in assets/models/glider.blend).
 func _build_gear() -> void:
 	for side in [-1.0, 1.0]:
 		var glove := MeshInstance3D.new()
 		var glove_mesh := SphereMesh.new()
-		glove_mesh.radius = 0.2
-		glove_mesh.height = 0.36
+		glove_mesh.radius = 0.28
+		glove_mesh.height = 0.5
 		glove_mesh.material = Style.material("glove")
 		glove.mesh = glove_mesh
-		glove.position = Vector3(side * 0.5, 0.35, -0.3)
+		glove.position = Vector3(side * 0.55, 0.38, -0.3)
 		glove.set_meta("rest", glove.position)
 		visual.add_child(glove)
 		_gloves.append(glove)
@@ -324,23 +333,9 @@ func _build_gear() -> void:
 		visual.add_child(spring)
 		_springs.append(spring)
 
-	var bar := MeshInstance3D.new()
-	bar.mesh = _metal_box(Vector3(1.2, 0.06, 0.06))
-	bar.position = Vector3(0.0, -0.75, -0.2)
-	glider.add_child(bar)
-	for side in [-1.0, 1.0]:
-		var strut := MeshInstance3D.new()
-		strut.mesh = _metal_box(Vector3(0.05, 0.85, 0.05))
-		strut.position = Vector3(side * 0.42, -0.36, -0.2)
-		strut.rotation.z = side * 0.35
-		glider.add_child(strut)
-
-
-func _metal_box(box_size: Vector3) -> BoxMesh:
-	var mesh := BoxMesh.new()
-	mesh.size = box_size
-	mesh.material = Style.material("metal")
-	return mesh
+	var glider_model: Node3D = GLIDER_MODEL.instantiate()
+	glider.add_child(glider_model)
+	Style.apply_palette(glider_model)
 
 
 ## Le parti fatte nella scena prendono i colori dalla tavolozza dello stile.
@@ -349,7 +344,6 @@ func _apply_palette() -> void:
 	for eye: MeshInstance3D in [$Visual/EyeLeft, $Visual/EyeRight]:
 		eye.material_override = Style.material("eye")
 		(eye.get_child(0) as MeshInstance3D).material_override = Style.material("pupil")
-	$Visual/Glider/Wing.material_override = Style.material("wing")
 
 
 ## Un colpo da un veicolo o da un pericolo: toglie vita e sbalza la rana.
@@ -397,7 +391,7 @@ func _update_glider(delta: float) -> void:
 			_close_glider()
 	elif Input.is_action_just_pressed("jump") and _stun_time == 0.0 and _can_open_glider():
 		_gliding = true
-		glider.visible = true
+		_unfold_glider()
 		# La pressione ha aperto il deltaplano: non va ricordata come salto.
 		_time_since_jump_pressed = INF
 		power_used.emit(&"glide")
@@ -416,8 +410,29 @@ func _can_open_glider() -> bool:
 
 func _close_glider() -> void:
 	_gliding = false
-	if glider:
-		glider.visible = false
+	if glider and glider.visible and not _glider_folding:
+		_glider_folding = true
+		var tween := _new_glider_tween()
+		tween.tween_property(glider, "scale", Vector3(0.05, 1.0, 0.6), 0.12).set_ease(Tween.EASE_IN)
+		tween.tween_callback(func() -> void:
+			glider.visible = false
+			_glider_folding = false)
+
+
+## Le ali si aprono di lato con un piccolo rimbalzo.
+func _unfold_glider() -> void:
+	_glider_folding = false
+	glider.visible = true
+	glider.scale = Vector3(0.05, 1.0, 0.6)
+	var tween := _new_glider_tween()
+	tween.tween_property(glider, "scale", Vector3.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func _new_glider_tween() -> Tween:
+	if _glider_tween:
+		_glider_tween.kill()
+	_glider_tween = create_tween()
+	return _glider_tween
 
 
 ## Scende lenta e plana in avanti; si sterza con i tasti, e da fermi prosegue

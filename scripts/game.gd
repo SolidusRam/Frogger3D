@@ -14,7 +14,7 @@ const RECORD_PATH := "user://record.cfg"
 
 @export_group("Tempi speciali")
 ## Fermo-immagine quando il pugno colpisce un'auto.
-@export var hitstop_seconds := 0.07
+@export var hitstop_seconds := 0.11
 @export var hitstop_time_scale := 0.03
 ## Rallentatore sulle catene di rottami vicino alla rana.
 @export var chain_size := 4
@@ -80,9 +80,32 @@ func _update_time_scale() -> void:
 	Engine.time_scale = time_scale
 
 
-func _on_punched(_cars: Array[Car]) -> void:
+func _on_punched(cars: Array[Car]) -> void:
 	_hitstop_until = Time.get_ticks_msec() + roundi(hitstop_seconds * 1000.0)
 	_update_time_scale()
+	frog.camera_rig.shake(0.25, 0.25)
+	for car in cars:
+		_impact_burst(car.global_position.lerp(frog.global_position, 0.5) + Vector3.UP * 0.8)
+
+
+## Lampo d'impatto: una stella low-poly che esplode e sparisce. Resta ferma
+## durante il fermo-immagine, poi si apre: il colpo "scatta" quando riparte.
+func _impact_burst(at: Vector3) -> void:
+	var burst := MeshInstance3D.new()
+	var star := SphereMesh.new()
+	star.radius = 0.6
+	star.height = 1.2
+	star.radial_segments = 5
+	star.rings = 2
+	star.material = Style.material("spark")
+	burst.mesh = star
+	add_child(burst)
+	burst.global_position = at
+	burst.scale = Vector3.ONE * 0.3
+	var tween := create_tween()
+	tween.tween_property(burst, "scale", Vector3.ONE * 2.2, 0.12).set_ease(Tween.EASE_OUT)
+	tween.tween_property(burst, "scale", Vector3.ZERO, 0.12)
+	tween.tween_callback(burst.queue_free)
 
 
 func _on_wreck_created(car: Node3D) -> void:
