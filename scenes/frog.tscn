@@ -1,7 +1,10 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://scripts/frog.gd" id="frog_script"]
 [ext_resource type="Script" path="res://scripts/camera_rig.gd" id="camera_rig_script"]
+[ext_resource type="Script" path="res://scripts/powers/punch_power.gd" id="punch_script"]
+[ext_resource type="Script" path="res://scripts/powers/super_jump_power.gd" id="super_jump_script"]
+[ext_resource type="Script" path="res://scripts/powers/glider_power.gd" id="glider_script"]
 
 [sub_resource type="CapsuleShape3D" id="body_shape"]
 radius = 0.4
@@ -78,3 +81,14 @@ margin = 0.2
 
 [node name="Camera3D" type="Camera3D" parent="CameraRig/Pitch/SpringArm3D"]
 fov = 70.0
+
+[node name="Powers" type="Node" parent="."]
+
+[node name="Punch" type="Node" parent="Powers"]
+script = ExtResource("punch_script")
+
+[node name="SuperJump" type="Node" parent="Powers"]
+script = ExtResource("super_jump_script")
+
+[node name="Glider" type="Node" parent="Powers"]
+script = ExtResource("glider_script")

@@ -53,8 +53,7 @@ func _ready() -> void:
 func _process(_delta: float) -> void:
 	_distance_label.text = "%d m" % roundi(course.distance())
 	_dens_label.text = "Tane: %d" % course.dens_reached
-	var cooldown := frog.super_jump_cooldown_left()
-	_super_jump_bar.value = 1.0 - cooldown / frog.super_jump_cooldown
+	_super_jump_bar.value = frog.super_jump_power.ready_ratio()
 	_glide_bar.value = frog.glide_charge_ratio()
 
 

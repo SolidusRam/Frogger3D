@@ -80,7 +80,7 @@ func _physics_process(_delta: float) -> bool:
 				Input.action_release("jump")
 				var distance: float = frog.global_position.x - m.x
 				t.check(m.get("glide_frames", 0) / 60.0 > 2.3, "il deltaplano vola circa 2,5 s (%.2f)" % (m.get("glide_frames", 0) / 60.0))
-				t.check(absf(m.get("descent", 0.0) - frog.glide_fall_speed) < 0.2, "col deltaplano scende a circa 2 m/s")
+				t.check(absf(m.get("descent", 0.0) - frog.glider_power.fall_speed) < 0.2, "col deltaplano scende a circa 2 m/s")
 				t.check(distance > 25.0, "super salto più deltaplano coprono più di 25 m (%.1f)" % distance)
 				m.charge_check = f + 120
 			if m.has("charge_check") and f == m.charge_check:

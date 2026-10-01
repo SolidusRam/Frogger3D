@@ -1,15 +1,17 @@
 class_name Frog
 extends CharacterBody3D
 ## La rana: movimento libero relativo alla telecamera, salto con coyote time e
-## buffer, saltelli solo visivi mentre cammina, vita e colpi subiti, nuoto.
-## Poteri: pugno, super salto e deltaplano.
+## buffer, saltelli solo visivi mentre cammina, nuoto, vita e colpi subiti.
+## I poteri sono nodi figli in Powers (pugno, super salto, deltaplano), ognuno
+## con i suoi valori, il suo stato e il suo attrezzo: i potenziamenti li
+## modificano lì. La rana legge i comandi e li passa ai poteri.
 
 signal health_changed(health: int, max_health: int)
 signal died
 ## Emesso a ogni pugno andato a segno, con i veicoli colpiti.
 signal punched(cars: Array[Car])
-## Emesso a ogni uso di un potere (&"punch", &"super_jump", &"glide"): servirà
-## al calore.
+## Emesso a ogni uso di un potere (&"punch", &"super_jump", &"glide"): fa
+## salire il calore.
 signal power_used(power: StringName)
 
 @export_group("Movimento")
@@ -32,37 +34,6 @@ signal power_used(power: StringName)
 @export var hop_height := 0.25
 @export var hops_per_second := 3.0
 
-@export_group("Pugno")
-## Distanza e raggio della zona colpita davanti alla rana.
-@export var punch_reach := 1.3
-@export var punch_radius := 1.2
-## Spinta del pugno in N·s: un'auto (2400 kg) parte a circa 12 m/s, un camion
-## (5760 kg) a circa 5.
-@export var punch_impulse := 30000.0
-## Quanto il pugno solleva il veicolo, rispetto alla spinta orizzontale.
-@export var punch_lift := 0.35
-@export var punch_cooldown := 0.4
-
-@export_group("Super salto")
-@export var super_jump_height := 5.0
-## Velocità orizzontale data dal super salto.
-@export var super_jump_boost := 9.0
-@export var super_jump_cooldown := 2.5
-## Controllo in aria durante il super salto: si sterza senza perdere slancio.
-@export var super_air_acceleration := 6.0
-
-@export_group("Deltaplano")
-@export var glide_speed := 10.0
-@export var glide_acceleration := 12.0
-## Velocità massima di discesa col deltaplano aperto.
-@export var glide_fall_speed := 2.0
-## Secondi di volo con la carica piena; si ricarica stando a terra.
-@export var glide_duration := 2.5
-@export var glide_recharge_per_second := 1.0
-## Sotto questa altezza dal suolo, Spazio in aria resta un salto anticipato e
-## non apre il deltaplano.
-@export var glide_min_height := 1.2
-
 @export_group("Acqua")
 @export var swim_speed := 2.5
 @export var swim_acceleration := 10.0
@@ -83,56 +54,39 @@ signal power_used(power: StringName)
 ## Sotto questa quota la rana torna al punto di partenza.
 @export var fall_limit := -20.0
 
-const GLIDER_MODEL := preload("res://assets/models/glider.glb")
+## Salto parabolico definito da altezza e tempi: velocità e gravità derivano.
+var jump_velocity: float
+var gravity_up: float
+var gravity_down: float
+var is_dead := false
 
+@onready var health := max_health
 @onready var visual: Node3D = $Visual
 @onready var glider: Node3D = $Visual/Glider
 @onready var camera_rig: CameraRig = $CameraRig
+@onready var punch_power: PunchPower = $Powers/Punch
+@onready var super_jump_power: SuperJumpPower = $Powers/SuperJump
+@onready var glider_power: GliderPower = $Powers/Glider
 
-var _jump_velocity: float
-var _gravity_up: float
-var _gravity_down: float
 var _time_since_floor := 0.0
 var _time_since_jump_pressed := INF
 var _hop_phase := 0.0
 var _spawn_position: Vector3
 var _stun_time := 0.0
 var _invulnerable_time := 0.0
-var _punch_cooldown_left := 0.0
-var _super_jump_cooldown_left := 0.0
-var _super_jumping := false
-var _gliding := false
-var _glide_charge := 0.0
 var _river: River
 var _water_damage_owed := 0.0
-var _punch_query := PhysicsShapeQueryParameters3D.new()
-
-var is_dead := false
-
-var _gloves: Array[Node3D] = []
-var _springs: Array[Node3D] = []
-var _next_glove := 0
 var _squash_tween: Tween
-var _glider_tween: Tween
-var _glider_folding := false
-
-@onready var health := max_health
 
 
 func _ready() -> void:
 	add_to_group("frog")
 	_spawn_position = global_position
-	# Salto parabolico definito da altezza e tempi, non da gravità e velocità.
-	_jump_velocity = 2.0 * jump_height / jump_time_to_peak
-	_gravity_up = 2.0 * jump_height / pow(jump_time_to_peak, 2)
-	_gravity_down = 2.0 * jump_height / pow(jump_time_to_fall, 2)
-	_glide_charge = glide_duration
-	var sphere := SphereShape3D.new()
-	sphere.radius = punch_radius
-	_punch_query.shape = sphere
-	_punch_query.collision_mask = 4 # veicoli
-	glider.visible = false
-	_build_gear()
+	jump_velocity = 2.0 * jump_height / jump_time_to_peak
+	gravity_up = 2.0 * jump_height / pow(jump_time_to_peak, 2)
+	gravity_down = 2.0 * jump_height / pow(jump_time_to_fall, 2)
+	for power in $Powers.get_children():
+		power.setup(self)
 	_apply_palette()
 
 
@@ -142,23 +96,23 @@ func _physics_process(delta: float) -> void:
 		return
 	_stun_time = maxf(_stun_time - delta, 0.0)
 	_invulnerable_time = maxf(_invulnerable_time - delta, 0.0)
-	_punch_cooldown_left = maxf(_punch_cooldown_left - delta, 0.0)
-	_super_jump_cooldown_left = maxf(_super_jump_cooldown_left - delta, 0.0)
+	punch_power.tick(delta)
+	super_jump_power.tick(delta)
 
 	var input := Vector2.ZERO
-	if _stun_time == 0.0:
+	if can_act():
 		input = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var direction := camera_rig.flat_basis() * Vector3(input.x, 0.0, input.y)
 
-	var can_act := _stun_time == 0.0
-	if can_act and Input.is_action_just_pressed("super_jump") and _super_jump_cooldown_left == 0.0:
-		super_jump(direction)
-	_update_glider(delta)
+	if can_act() and Input.is_action_just_pressed("super_jump") and super_jump_power.is_ready():
+		glider_power.close()
+		super_jump_power.use(direction)
+	glider_power.update(delta)
 
 	if is_swimming():
 		_swim(direction, delta)
-	elif _gliding:
-		_glide(direction, delta)
+	elif glider_power.gliding:
+		glider_power.apply(direction, delta)
 	else:
 		_apply_horizontal_movement(direction, delta)
 		_apply_gravity_and_jump(delta)
@@ -168,17 +122,73 @@ func _physics_process(delta: float) -> void:
 	if is_on_floor() and not was_on_floor and fall_speed > 4.0:
 		# Si spiaccica all'atterraggio, tanto più quanto cadeva veloce.
 		var amount := clampf(fall_speed / 25.0, 0.1, 0.4)
-		_squash(Vector3(1.0 + amount, 1.0 - amount, 1.0 + amount), 0.3)
+		squash(Vector3(1.0 + amount, 1.0 - amount, 1.0 + amount), 0.3)
 
-	if is_on_floor() and velocity.y <= 0.0:
-		_super_jumping = false
-	if can_act and Input.is_action_just_pressed("punch") and _punch_cooldown_left == 0.0:
+	if can_act() and Input.is_action_just_pressed("punch") and punch_power.is_ready():
 		punch()
 
 	_update_visual(direction, delta)
 	if global_position.y < fall_limit:
 		respawn()
 
+
+# --- Usati dai poteri ---------------------------------------------------------
+
+## Falsa durante lo stordimento dopo un colpo.
+func can_act() -> bool:
+	return _stun_time == 0.0
+
+
+## Lancia la rana con la velocità data, annullando salti in corso o anticipati.
+func launch(new_velocity: Vector3) -> void:
+	velocity = new_velocity
+	_time_since_floor = INF
+	_time_since_jump_pressed = INF
+
+
+func time_since_floor() -> float:
+	return _time_since_floor
+
+
+func forget_jump_press() -> void:
+	_time_since_jump_pressed = INF
+
+
+## Imposta subito la forma data e la riporta a quella normale con un rimbalzo.
+func squash(shape: Vector3, duration: float) -> void:
+	var tween := new_squash_tween()
+	visual.scale = shape
+	tween.tween_property(visual, "scale", Vector3.ONE, duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+## Un tween per la forma della rana, che interrompe quello precedente.
+func new_squash_tween() -> Tween:
+	if _squash_tween:
+		_squash_tween.kill()
+	_squash_tween = create_tween()
+	return _squash_tween
+
+
+# --- Scorciatoie verso i poteri (HUD, partita, test) -------------------------
+
+func punch() -> void:
+	punch_power.use()
+
+
+func is_gliding() -> bool:
+	return glider_power.gliding
+
+
+## Carica del deltaplano, da 0 a 1.
+func glide_charge_ratio() -> float:
+	return glider_power.charge_ratio()
+
+
+func super_jump_cooldown_left() -> float:
+	return super_jump_power.cooldown_left
+
+
+# --- Acqua, vita, ripartenza -------------------------------------------------
 
 func enter_water(river: River) -> void:
 	_river = river
@@ -195,19 +205,6 @@ func is_swimming() -> bool:
 	return _river != null and global_position.y < _river.surface_y() - 0.1 and velocity.y <= 2.0
 
 
-func is_gliding() -> bool:
-	return _gliding
-
-
-## Carica del deltaplano, da 0 a 1.
-func glide_charge_ratio() -> float:
-	return _glide_charge / glide_duration
-
-
-func super_jump_cooldown_left() -> float:
-	return _super_jump_cooldown_left
-
-
 ## Il punto in cui la rana ricompare se cade fuori dal mondo (una tana).
 func set_respawn_point(point: Vector3) -> void:
 	_spawn_position = point
@@ -218,132 +215,9 @@ func respawn() -> void:
 	velocity = Vector3.ZERO
 	_stun_time = 0.0
 	_river = null
-	_super_jumping = false
-	_close_glider()
+	super_jump_power.active = false
+	glider_power.close()
 	reset_physics_interpolation()
-
-
-## Da morta la rana cade o galleggia, senza controlli né poteri.
-func _fall_while_dead(delta: float) -> void:
-	velocity.x = move_toward(velocity.x, 0.0, air_acceleration * delta)
-	velocity.z = move_toward(velocity.z, 0.0, air_acceleration * delta)
-	if _river != null and global_position.y < _river.surface_y() - float_depth:
-		velocity.y = move_toward(velocity.y, 1.0, 30.0 * delta)
-	else:
-		velocity.y -= _gravity_down * delta
-	move_and_slide()
-
-
-## Colpisce i veicoli davanti a sé, nella direzione in cui guarda la telecamera.
-func punch() -> void:
-	_punch_cooldown_left = punch_cooldown
-	var forward := -camera_rig.flat_basis().z
-	visual.rotation.y = atan2(-forward.x, -forward.z)
-	_squash(Vector3(0.9, 0.9, 1.2), 0.15)
-	_throw_glove()
-
-	var center := global_position + Vector3.UP * 0.6 + forward * punch_reach
-	_punch_query.transform = Transform3D(Basis(), center)
-	var hits: Array[Car] = []
-	for result in get_world_3d().direct_space_state.intersect_shape(_punch_query, 8):
-		var car := result.collider as Car
-		if car and not hits.has(car):
-			hits.append(car)
-			car.receive_punch((forward + Vector3.UP * punch_lift) * punch_impulse)
-	power_used.emit(&"punch")
-	if not hits.is_empty():
-		punched.emit(hits)
-
-
-## Un balzo alto con slancio in avanti: nella direzione dei tasti o, da fermi,
-## in quella della telecamera. Funziona anche dall'acqua.
-func super_jump(direction: Vector3) -> void:
-	_super_jump_cooldown_left = super_jump_cooldown
-	_close_glider()
-	if direction.length_squared() < 0.01:
-		direction = -camera_rig.flat_basis().z
-	var boost := direction.normalized() * super_jump_boost
-	velocity = Vector3(boost.x, sqrt(2.0 * _gravity_up * super_jump_height), boost.z)
-	_super_jumping = true
-	_time_since_floor = INF
-	_time_since_jump_pressed = INF
-	# Si accuccia sulle molle e poi si allunga verso l'alto.
-	_squash_tween = _new_squash_tween()
-	visual.scale = Vector3(1.4, 0.55, 1.4)
-	_squash_tween.tween_property(visual, "scale", Vector3(0.75, 1.4, 0.75), 0.08)
-	_squash_tween.tween_property(visual, "scale", Vector3.ONE, 0.35).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-	for spring in _springs:
-		var spring_tween := create_tween()
-		spring.scale = Vector3(1.0, 0.3, 1.0)
-		spring_tween.tween_property(spring, "scale", Vector3(1.0, 2.2, 1.0), 0.08)
-		spring_tween.tween_property(spring, "scale", Vector3.ONE, 0.4)
-	power_used.emit(&"super_jump")
-
-
-## Imposta subito la forma data e la riporta a quella normale con un rimbalzo.
-func _squash(shape: Vector3, duration: float) -> void:
-	_squash_tween = _new_squash_tween()
-	visual.scale = shape
-	_squash_tween.tween_property(visual, "scale", Vector3.ONE, duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-
-
-func _new_squash_tween() -> Tween:
-	if _squash_tween:
-		_squash_tween.kill()
-	return create_tween()
-
-
-## Un guantone scatta in avanti e torna; destro e sinistro si alternano.
-func _throw_glove() -> void:
-	var glove := _gloves[_next_glove]
-	_next_glove = (_next_glove + 1) % _gloves.size()
-	var rest: Vector3 = glove.get_meta("rest")
-	# Il guantone scatta lontano e si gonfia all'impatto. Va in tempo reale:
-	# il fermo-immagine lo congela già disteso sull'auto.
-	var tween := create_tween().set_ignore_time_scale(true)
-	tween.tween_property(glove, "position", rest + Vector3(-signf(rest.x) * 0.3, 0.15, -1.5), 0.05)
-	tween.parallel().tween_property(glove, "scale", Vector3.ONE * 1.8, 0.05)
-	tween.tween_property(glove, "position", rest, 0.18).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(glove, "scale", Vector3.ONE, 0.18)
-
-
-## Gli attrezzi: guantoni, molle sotto le zampe e il deltaplano (modello di
-## Blender in assets/models/glider.blend).
-func _build_gear() -> void:
-	for side in [-1.0, 1.0]:
-		var glove := MeshInstance3D.new()
-		var glove_mesh := SphereMesh.new()
-		glove_mesh.radius = 0.28
-		glove_mesh.height = 0.5
-		glove_mesh.material = Style.material("glove")
-		glove.mesh = glove_mesh
-		glove.position = Vector3(side * 0.55, 0.38, -0.3)
-		glove.set_meta("rest", glove.position)
-		visual.add_child(glove)
-		_gloves.append(glove)
-
-		var spring := MeshInstance3D.new()
-		var spring_mesh := CylinderMesh.new()
-		spring_mesh.top_radius = 0.1
-		spring_mesh.bottom_radius = 0.1
-		spring_mesh.height = 0.14
-		spring_mesh.material = Style.material("metal")
-		spring.mesh = spring_mesh
-		spring.position = Vector3(side * 0.25, 0.04, 0.32)
-		visual.add_child(spring)
-		_springs.append(spring)
-
-	var glider_model: Node3D = GLIDER_MODEL.instantiate()
-	glider.add_child(glider_model)
-	Style.apply_palette(glider_model)
-
-
-## Le parti fatte nella scena prendono i colori dalla tavolozza dello stile.
-func _apply_palette() -> void:
-	$Visual/Body.material_override = Style.material("frog")
-	for eye: MeshInstance3D in [$Visual/EyeLeft, $Visual/EyeRight]:
-		eye.material_override = Style.material("eye")
-		(eye.get_child(0) as MeshInstance3D).material_override = Style.material("pupil")
 
 
 ## Un colpo da un veicolo o da un pericolo: toglie vita e sbalza la rana.
@@ -353,8 +227,8 @@ func take_hit(damage: int, knockback: Vector3) -> void:
 	velocity = knockback
 	_stun_time = stun_duration
 	_invulnerable_time = invulnerability_duration
-	_super_jumping = false
-	_close_glider()
+	super_jump_power.active = false
+	glider_power.close()
 	_lose_health(damage)
 
 
@@ -370,83 +244,25 @@ func _lose_health(amount: int) -> void:
 ## La morte chiude la run: la rana non risponde più e si gira a pancia in su.
 func _die() -> void:
 	is_dead = true
-	_close_glider()
-	_super_jumping = false
+	glider_power.close()
+	super_jump_power.active = false
 	var tween := create_tween()
 	tween.tween_property(visual, "rotation:z", PI, 0.4)
 	died.emit()
 
 
-## Apre, tiene aperto e chiude il deltaplano; a terra lo ricarica.
-func _update_glider(delta: float) -> void:
-	var grounded := is_on_floor() or is_swimming()
-	if grounded:
-		_close_glider()
-		_glide_charge = minf(_glide_charge + glide_recharge_per_second * delta, glide_duration)
-		return
-
-	if _gliding:
-		_glide_charge = maxf(_glide_charge - delta, 0.0)
-		if not Input.is_action_pressed("jump") or _glide_charge == 0.0:
-			_close_glider()
-	elif Input.is_action_just_pressed("jump") and _stun_time == 0.0 and _can_open_glider():
-		_gliding = true
-		_unfold_glider()
-		# La pressione ha aperto il deltaplano: non va ricordata come salto.
-		_time_since_jump_pressed = INF
-		power_used.emit(&"glide")
+## Da morta la rana cade o galleggia, senza controlli né poteri.
+func _fall_while_dead(delta: float) -> void:
+	velocity.x = move_toward(velocity.x, 0.0, air_acceleration * delta)
+	velocity.z = move_toward(velocity.z, 0.0, air_acceleration * delta)
+	if _river != null and global_position.y < _river.surface_y() - float_depth:
+		velocity.y = move_toward(velocity.y, 1.0, 30.0 * delta)
+	else:
+		velocity.y -= gravity_down * delta
+	move_and_slide()
 
 
-## Serve una nuova pressione in aria, lontano dal suolo e fuori dal coyote time;
-## vicino al suolo la stessa pressione resta un salto anticipato.
-func _can_open_glider() -> bool:
-	if _glide_charge <= 0.0 or _time_since_floor <= coyote_time:
-		return false
-	var from := global_position + Vector3.UP * 0.1
-	var query := PhysicsRayQueryParameters3D.create(from, from + Vector3.DOWN * (glide_min_height + 0.1), 1 | 4 | 8)
-	query.exclude = [get_rid()]
-	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
-
-
-func _close_glider() -> void:
-	_gliding = false
-	if glider and glider.visible and not _glider_folding:
-		_glider_folding = true
-		var tween := _new_glider_tween()
-		tween.tween_property(glider, "scale", Vector3(0.05, 1.0, 0.6), 0.12).set_ease(Tween.EASE_IN)
-		tween.tween_callback(func() -> void:
-			glider.visible = false
-			_glider_folding = false)
-
-
-## Le ali si aprono di lato con un piccolo rimbalzo.
-func _unfold_glider() -> void:
-	_glider_folding = false
-	glider.visible = true
-	glider.scale = Vector3(0.05, 1.0, 0.6)
-	var tween := _new_glider_tween()
-	tween.tween_property(glider, "scale", Vector3.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-
-
-func _new_glider_tween() -> Tween:
-	if _glider_tween:
-		_glider_tween.kill()
-	_glider_tween = create_tween()
-	return _glider_tween
-
-
-## Scende lenta e plana in avanti; si sterza con i tasti, e da fermi prosegue
-## nella direzione in cui stava andando.
-func _glide(direction: Vector3, delta: float) -> void:
-	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
-	var heading := direction
-	if heading.length_squared() < 0.01:
-		heading = horizontal if horizontal.length_squared() > 0.01 else -camera_rig.flat_basis().z
-	horizontal = horizontal.move_toward(heading.normalized() * glide_speed, glide_acceleration * delta)
-	velocity.x = horizontal.x
-	velocity.z = horizontal.z
-	velocity.y = maxf(velocity.y - _gravity_down * delta, -glide_fall_speed)
-
+# --- Movimento ---------------------------------------------------------------
 
 ## Galleggia, nuota lenta, segue la corrente e perde vita. Spazio fa un salto
 ## più debole per risalire su un tronco o sulla sponda.
@@ -461,9 +277,9 @@ func _swim(direction: Vector3, delta: float) -> void:
 	var target_vertical := clampf((float_y - global_position.y) * 6.0, -4.0, 4.0)
 	velocity.y = move_toward(velocity.y, target_vertical, 30.0 * delta)
 
-	if Input.is_action_just_pressed("jump") and _stun_time == 0.0:
-		velocity.y = _jump_velocity * water_jump_factor
-		_squash(Vector3(0.8, 1.3, 0.8), 0.25)
+	if Input.is_action_just_pressed("jump") and can_act():
+		velocity.y = jump_velocity * water_jump_factor
+		squash(Vector3(0.8, 1.3, 0.8), 0.25)
 
 	_water_damage_owed += water_damage_per_second * delta
 	if _water_damage_owed >= 1.0:
@@ -479,11 +295,11 @@ func _apply_horizontal_movement(direction: Vector3, delta: float) -> void:
 	if _stun_time > 0.0:
 		# Lo sbalzo si esaurisce piano, invece di essere annullato subito.
 		acceleration = air_acceleration
-	elif _super_jumping and not is_on_floor():
+	elif super_jump_power.active and not is_on_floor():
 		# In volo si sterza senza frenare: senza tasti lo slancio resta tutto.
 		if direction.length_squared() < 0.01:
 			return
-		acceleration = super_air_acceleration
+		acceleration = super_jump_power.air_acceleration
 		target_speed = maxf(move_speed, horizontal.length())
 	horizontal = horizontal.move_toward(direction * target_speed, acceleration * delta)
 	velocity.x = horizontal.x
@@ -493,25 +309,35 @@ func _apply_horizontal_movement(direction: Vector3, delta: float) -> void:
 func _apply_gravity_and_jump(delta: float) -> void:
 	_time_since_floor = 0.0 if is_on_floor() else _time_since_floor + delta
 	_time_since_jump_pressed += delta
-	if Input.is_action_just_pressed("jump") and _stun_time == 0.0 and not _gliding:
+	if Input.is_action_just_pressed("jump") and can_act():
 		_time_since_jump_pressed = 0.0
 
 	if _time_since_jump_pressed <= jump_buffer_time and _time_since_floor <= coyote_time:
-		velocity.y = _jump_velocity
-		_squash(Vector3(0.8, 1.3, 0.8), 0.25)
+		velocity.y = jump_velocity
+		squash(Vector3(0.8, 1.3, 0.8), 0.25)
 		_time_since_jump_pressed = INF
 		_time_since_floor = INF
 
 	# Rilasciare Spazio mentre sale accorcia il salto; il super salto no.
-	var rising := velocity.y > 0.0 and (Input.is_action_pressed("jump") or _super_jumping)
-	velocity.y -= (_gravity_up if rising else _gravity_down) * delta
+	var rising := velocity.y > 0.0 and (Input.is_action_pressed("jump") or super_jump_power.active)
+	velocity.y -= (gravity_up if rising else gravity_down) * delta
+
+
+# --- Aspetto -----------------------------------------------------------------
+
+## Le parti fatte nella scena prendono i colori dalla tavolozza dello stile.
+func _apply_palette() -> void:
+	$Visual/Body.material_override = Style.material("frog")
+	for eye: MeshInstance3D in [$Visual/EyeLeft, $Visual/EyeRight]:
+		eye.material_override = Style.material("eye")
+		(eye.get_child(0) as MeshInstance3D).material_override = Style.material("pupil")
 
 
 func _update_visual(direction: Vector3, delta: float) -> void:
 	visual.visible = _invulnerable_time == 0.0 or fmod(_invulnerable_time, 0.2) > 0.1
 
 	var heading := direction
-	if _gliding:
+	if glider_power.gliding:
 		heading = Vector3(velocity.x, 0.0, velocity.z)
 	if heading.length_squared() > 0.01:
 		var target_yaw := atan2(-heading.x, -heading.z)
