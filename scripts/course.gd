@@ -7,7 +7,7 @@ extends Node3D
 
 signal den_reached(count: int, distance: float)
 
-enum Kind { START, SAFE, ROAD, RIVER, DEN }
+enum Kind { START, SAFE, ROAD, RIVER, RAIL, DEN }
 
 const TREE := preload("res://assets/models/tree.glb")
 const HOUSE := preload("res://assets/models/house.glb")
@@ -28,6 +28,9 @@ const LAMP := preload("res://assets/models/lamp.glb")
 @export var den_depth := 12.0
 @export var road_lane_width := 4.0
 @export var river_lane_width := 3.5
+@export var rail_track_spacing := 4.5
+## Massicciata e binari arrivano fino all'orizzonte: il treno si vede arrivare.
+@export var rail_ground_width := 400.0
 
 var dens_reached := 0
 var best_distance := 0.0
@@ -69,11 +72,19 @@ func distance() -> float:
 func _plan_section() -> void:
 	var obstacles := 2 + mini(_planning_section, 3) + randi_range(0, 1)
 	for i in obstacles:
-		_plan.append(Kind.ROAD if randf() < 0.55 else Kind.RIVER)
+		_plan.append(_random_obstacle())
 		_plan.append(Kind.SAFE)
 	# L'ultima striscia sicura lascia il posto alla tana.
 	_plan[_plan.size() - 1] = Kind.DEN
 	_planning_section += 1
+
+
+## Strada, fiume o, dalla seconda sezione, ferrovia.
+func _random_obstacle() -> Kind:
+	var roll := randf()
+	if _planning_section >= 1 and roll < 0.2:
+		return Kind.RAIL
+	return Kind.ROAD if roll < 0.62 else Kind.RIVER
 
 
 func _add_chunk(kind: Kind) -> void:
@@ -108,6 +119,17 @@ func _add_chunk(kind: Kind) -> void:
 			river.max_speed = minf(5.0 + difficulty * 0.4, 8.0) * Heat.river_speed_factor()
 			river.crocodile_chance = minf(0.2 + difficulty * 0.05, 0.5)
 			chunk.add_child(river)
+		Kind.RAIL:
+			var tracks := clampi(1 + floori(difficulty / 2.0) + randi_range(0, 1), 1, 3)
+			depth = tracks * rail_track_spacing + 2.0
+			_add_ground(chunk, depth, "gravel", rail_ground_width)
+			for i in tracks:
+				var track := RailTrack.new()
+				track.position.z = (i - (tracks - 1) / 2.0) * rail_track_spacing
+				track.direction = 1.0 if randf() < 0.5 else -1.0
+				track.length = rail_ground_width
+				track.play_half_width = play_half_width
+				chunk.add_child(track)
 		Kind.DEN:
 			depth = den_depth
 			_add_ground(chunk, depth, "den_grass")
@@ -124,8 +146,8 @@ func _add_chunk(kind: Kind) -> void:
 	_front_z -= depth
 
 
-func _add_ground(chunk: Node3D, depth: float, palette_key: String) -> void:
-	var size := Vector3(ground_width, 4.0, depth)
+func _add_ground(chunk: Node3D, depth: float, palette_key: String, width := -1.0) -> void:
+	var size := Vector3(ground_width if width < 0.0 else width, 4.0, depth)
 	var ground := StaticBody3D.new()
 	ground.collision_mask = 0
 	ground.position.y = -2.0

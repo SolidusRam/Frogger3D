@@ -25,6 +25,12 @@ var styles: Array[Dictionary] = [
 		"emission_day": 0.0,
 		"emission_night": 1.5,
 		"colors": {
+			"ballast": Color(0.42, 0.4, 0.38), "gravel": Color(0.5, 0.47, 0.42),
+			"rail": Color(0.6, 0.6, 0.62), "sleeper": Color(0.35, 0.25, 0.18),
+			"loco": Color(0.75, 0.15, 0.12), "loco_stripe": Color(0.98, 0.8, 0.15),
+			"wagon": Color(0.5, 0.3, 0.18), "wagon_deck": Color(0.55, 0.42, 0.26),
+			"sign_white": Color(0.95, 0.95, 0.92), "signal_off": Color(0.25, 0.05, 0.05),
+			"signal_on": Color(1.0, 0.1, 0.05),
 			"glove_hot": Color(1.0, 0.55, 0.1), "wing_hot": Color(0.95, 0.2, 0.1),
 			"tire": Color(0.05, 0.05, 0.05), "trim": Color(0.18, 0.18, 0.2),
 			"headlight": Color(1.0, 0.95, 0.7), "taillight": Color(0.9, 0.1, 0.1),
@@ -68,6 +74,12 @@ var styles: Array[Dictionary] = [
 		"emission_day": 0.0,
 		"emission_night": 1.5,
 		"colors": {
+			"ballast": Color(0.36, 0.34, 0.32), "gravel": Color(0.42, 0.4, 0.36),
+			"rail": Color(0.5, 0.5, 0.52), "sleeper": Color(0.3, 0.21, 0.15),
+			"loco": Color(0.6, 0.14, 0.1), "loco_stripe": Color(0.85, 0.68, 0.15),
+			"wagon": Color(0.42, 0.26, 0.16), "wagon_deck": Color(0.46, 0.35, 0.22),
+			"sign_white": Color(0.85, 0.85, 0.8), "signal_off": Color(0.2, 0.05, 0.05),
+			"signal_on": Color(1.0, 0.12, 0.05),
 			"glove_hot": Color(0.9, 0.48, 0.1), "wing_hot": Color(0.8, 0.18, 0.1),
 			"tire": Color(0.04, 0.04, 0.04), "trim": Color(0.15, 0.15, 0.16),
 			"headlight": Color(0.95, 0.9, 0.65), "taillight": Color(0.75, 0.1, 0.08),
@@ -113,6 +125,12 @@ var styles: Array[Dictionary] = [
 		"emission_day": 0.15,
 		"emission_night": 0.8,
 		"colors": {
+			"ballast": Color(0.15, 0.1, 0.25), "gravel": Color(0.25, 0.1, 0.35),
+			"rail": Color(0.8, 0.8, 1.0), "sleeper": Color(0.5, 0.2, 0.6),
+			"loco": Color(1.0, 0.2, 0.2), "loco_stripe": Color(1.0, 1.0, 0.2),
+			"wagon": Color(0.2, 0.6, 1.0), "wagon_deck": Color(0.9, 0.5, 0.1),
+			"sign_white": Color(1.0, 1.0, 1.0), "signal_off": Color(0.3, 0.0, 0.0),
+			"signal_on": Color(1.0, 0.0, 0.0),
 			"glove_hot": Color(1.0, 0.6, 0.0), "wing_hot": Color(1.0, 0.1, 0.1),
 			"tire": Color(0.0, 0.0, 0.0), "trim": Color(0.3, 0.3, 0.35),
 			"headlight": Color(1.0, 1.0, 0.6), "taillight": Color(1.0, 0.1, 0.2),
@@ -251,6 +269,11 @@ func _color_material(key: String, mat: StandardMaterial3D) -> void:
 		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	mat.emission_enabled = _is_emissive(key)
 	mat.emission = Color(color, 1.0)
+	# Le luci dei passaggi a livello sono il primo avviso del treno: brillano
+	# sempre, anche di giorno.
+	if key == "signal_on":
+		mat.emission_enabled = true
+		mat.emission_energy_multiplier = 4.0
 
 
 ## Nelle tavolozze che lo prevedono, minacce e rana brillano di luce propria,

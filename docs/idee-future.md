@@ -61,6 +61,12 @@ Combinazioni da cercare: correnti calde + guantoni esplosivi (il caos sulla stra
 - **Lingua-rampino**: agganci un camion e ti fai trascinare, oppure tiri un rottame verso di te.
 - **Gracidio sonico**: le auto vicine sbandano. Un pugno ad area che fa salire molto il calore.
 
+## Biomi
+
+Un bioma deve aggiungere una sola regola nuova sopra strada e fiume, comprensibile nei primi 3 secondi. Fatto: ferrovia (come tipo di blocco del percorso). Candidati: lago ghiacciato (si scivola; i rottami crepano il ghiaccio), città con semafori (il traffico segue un ritmo), aeroporto (il getto dei motori spinge; col deltaplano fa da corrente), porto con gru e container (le ombre annunciano le cadute), palude di notte (fango, ninfee che affondano, idroscivolanti).
+
+Domande aperte: alternanza per sezione, a stagioni o con un bivio scelto nella tana (mappa alla Slay the Spire); come combinare tavolozza del bioma, stile e ora del giorno senza perdere leggibilità.
+
 ## Nuovi ambienti
 
 - **Ferrovia**: il treno è l'unico veicolo che non diventa mai rottame. È inarrestabile e trasforma tutto ciò che tocca: un "boss" senza bisogno di intelligenza artificiale.

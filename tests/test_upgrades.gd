@@ -62,10 +62,17 @@ func _process(_delta: float) -> bool:
 				t.check(m.bomb.state == 1 and hit == 2, "l'esplosione trasforma in rottami e scaglia le auto vicine (%d su 2)" % hit)
 				_thermal_setup()
 		2: # correnti calde
-			# Dopo il teletrasporto il primo passo di fisica non conta.
-			if f == 2:
+			# Prima qualche istante fermi in aria, poi si apre il deltaplano: così
+			# Spazio non diventa un salto da terra.
+			if f < 10:
+				Lib.place(frog, m.wreck.global_position + Vector3(0, 4, 0))
+			if f == 10:
+				Input.action_press("jump")
+				frog.glider_power.gliding = true
+			if f == 12:
+				m.y = frog.global_position.y
 				m.charge = frog.glider_power.charge
-			if f == 60:
+			if f == 70:
 				t.check(frog.global_position.y > m.y + 1.0, "nel fumo di un rottame il deltaplano sale (+%.1f m)" % (frog.global_position.y - m.y))
 				t.check(frog.glider_power.charge >= m.charge - 0.01, "nelle correnti calde la carica non si consuma")
 				Input.action_release("jump")
@@ -81,35 +88,50 @@ func _process(_delta: float) -> bool:
 	return false
 
 
+## Una piattaforma di terreno dietro la partenza, dove il percorso non genera
+## niente: nessun treno o auto può disturbare le prove.
+func _test_ground() -> void:
+	var ground := StaticBody3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = Vector3(120, 1, 120)
+	var collision := CollisionShape3D.new()
+	collision.shape = shape
+	ground.add_child(collision)
+	main.add_child(ground)
+	ground.global_position = Vector3(0, -0.5, 320)
+
+
 ## Tre auto in marcia vicine e ferme; la prima viene armata come da un pugno.
 func _explosion_setup() -> void:
 	_next(1)
-	var driving: Array = Lib.cars(main).filter(func(c): return c.state == 0)
+	_test_ground()
+	# Solo auto piccole, affiancate senza sovrapporsi: un camion sovrapposto
+	# scaglierebbe via la "bomba" prima dell'esplosione.
+	var driving: Array = Lib.cars(main).filter(func(c): return c.state == 0 and c.model_type in ["compact", "sedan"])
 	for car in driving.slice(0, 3):
 		car.get_parent().set_physics_process(false)
 		car.set_physics_process(false)
-	var base := Vector3(0, 0, -200)
+	var base := Vector3(0, 0, 300)
 	m.bomb = driving[0]
 	m.others = [driving[1], driving[2]]
 	m.bomb.global_position = base + Vector3(0, m.bomb.size.y / 2.0, 0)
-	m.others[0].global_position = base + Vector3(4, m.others[0].size.y / 2.0, 0)
-	m.others[1].global_position = base + Vector3(0, m.others[1].size.y / 2.0, 4)
+	m.others[0].global_position = base + Vector3(0, m.others[0].size.y / 2.0, 3)
+	m.others[1].global_position = base + Vector3(0, m.others[1].size.y / 2.0, -3)
 	m.starts = [m.others[0].global_position, m.others[1].global_position]
 	m.bomb.set_physics_process(true)
 	m.bomb.receive_punch(Vector3.ZERO, true)
-	frog.global_position = Vector3(0, 40, -150)
+	# Diventando rottame conserverebbe la velocità di marcia e scapperebbe via.
+	m.bomb.linear_velocity = Vector3.ZERO
+	frog.global_position = Vector3(0, 40, 350)
 
 
 ## Un rottame fermo che fuma e la rana col deltaplano aperto poco sopra.
 func _thermal_setup() -> void:
 	_next(2)
 	upgrades.apply("thermals")
-	var wreck = Lib.cars(main).filter(func(c): return c.state == 0)[0]
+	var wreck = Lib.cars(main).filter(func(c): return c.state == 0 and c.is_physics_processing())[0]
 	wreck.become_wreck()
 	wreck.freeze = true
-	wreck.global_position = Vector3(10, 1, -260)
-	Lib.place(frog, wreck.global_position + Vector3(0, 4, 0))
-	Input.action_press("jump")
-	frog.glider_power.gliding = true
-	m.y = frog.global_position.y
+	wreck.global_position = Vector3(10, 1, 330)
+	m.wreck = wreck
 

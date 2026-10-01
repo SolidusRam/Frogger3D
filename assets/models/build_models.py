@@ -37,6 +37,10 @@ PREVIEW = {
     "house": (0.75, 0.68, 0.55, 1), "roof": (0.55, 0.2, 0.15, 1),
     "lamp_light": (1.0, 0.9, 0.6, 1), "mountain": (0.35, 0.33, 0.32, 1),
     "mountain_snow": (0.9, 0.92, 0.95, 1),
+    "loco": (0.7, 0.12, 0.1, 1), "loco_stripe": (0.95, 0.8, 0.1, 1),
+    "wagon": (0.45, 0.25, 0.15, 1), "wagon_deck": (0.5, 0.38, 0.22, 1),
+    "sign_white": (0.95, 0.95, 0.92, 1), "signal_off": (0.25, 0.05, 0.05, 1),
+    "signal_on": (1.0, 0.1, 0.05, 1),
 }
 
 
@@ -95,6 +99,8 @@ def cylinder(name, radius, depth, location, mat, sides=8, axis="X"):
     obj.name = name
     if axis == "X":
         obj.rotation_euler = (0, math.pi / 2, 0)
+    elif axis == "Y":
+        obj.rotation_euler = (math.pi / 2, 0, 0)
     bpy.ops.object.transform_apply(location=False, rotation=True, scale=False)
     obj.data.materials.append(material(mat))
     return obj
@@ -266,6 +272,93 @@ def build_glider():
     save("glider")
 
 
+# --- Ferrovia ---------------------------------------------------------------
+# I rotabili hanno l'origine a terra, al centro: davanti verso +Y. Larghi 3 m.
+
+def bogies(length, radius=0.45):
+    """Due carrelli con due assi ciascuno, sotto i due capi del rotabile."""
+    parts = []
+    for end in (1, -1):
+        for axle in (0.6, -0.6):
+            y = end * (length / 2 - 2.2) + axle
+            for side in (1, -1):
+                parts.append(cylinder("wheel", radius, 0.2, (side * 1.15, y, radius), "trim"))
+        parts.append(box("bogie", -1.0, 1.0, end * (length / 2 - 2.2) - 1.1, end * (length / 2 - 2.2) + 1.1, 0.35, 0.7, "trim"))
+    return parts
+
+
+def build_locomotive():
+    reset()
+    length = 14.0
+    parts = bogies(length)
+    parts.append(box("frame", -1.4, 1.4, -length / 2, length / 2, 0.7, 1.05, "trim"))
+    parts.append(box("hood", -1.35, 1.35, -length / 2 + 0.2, 2.8, 1.05, 3.2, "loco"))
+    parts.append(box("cab", -1.5, 1.5, 2.8, 5.2, 1.05, 3.8, "loco"))
+    parts.append(block("nose",
+                       [(-1.4, 5.2, 1.05), (1.4, 5.2, 1.05), (1.4, length / 2, 1.05), (-1.4, length / 2, 1.05)],
+                       [(-1.4, 5.2, 2.5), (1.4, 5.2, 2.5), (1.4, length / 2 - 0.4, 2.2), (-1.4, length / 2 - 0.4, 2.2)],
+                       "loco"))
+    parts.append(box("windshield", -1.3, 1.3, 5.2, 5.24, 2.6, 3.5, "glass"))
+    parts += mirrored_box("cab_window", 1.5, 1.52, 3.2, 4.8, 2.5, 3.4, "glass")
+    parts += mirrored_box("stripe", 1.35, 1.37, -length / 2 + 0.3, 2.8, 1.5, 1.8, "loco_stripe")
+    parts += mirrored_box("cab_stripe", 1.5, 1.52, 2.8, 5.2, 1.5, 1.8, "loco_stripe")
+    parts.append(box("nose_stripe", -1.41, 1.41, length / 2 - 0.05, length / 2, 1.3, 1.6, "loco_stripe"))
+    parts += mirrored_box("headlight", 0.6, 1.0, length / 2, length / 2 + 0.05, 1.7, 2.0, "headlight")
+    parts.append(box("top_light", -0.3, 0.3, 5.0, 5.24, 3.55, 3.75, "headlight"))
+    parts.append(box("plough", -1.4, 1.4, length / 2, length / 2 + 0.35, 0.3, 0.75, "trim"))
+    join("Locomotive", parts)
+    save("locomotive")
+
+
+def build_boxcar():
+    reset()
+    length = 12.0
+    parts = bogies(length)
+    parts.append(box("frame", -1.4, 1.4, -length / 2, length / 2, 0.7, 1.05, "trim"))
+    parts.append(box("body", -1.5, 1.5, -length / 2 + 0.1, length / 2 - 0.1, 1.05, 3.6, "wagon"))
+    parts += mirrored_box("door", 1.5, 1.53, -1.2, 1.2, 1.2, 3.3, "trim")
+    parts.append(box("roof", -1.55, 1.55, -length / 2 + 0.05, length / 2 - 0.05, 3.6, 3.7, "trim"))
+    join("Boxcar", parts)
+    save("boxcar")
+
+
+def build_flatcar():
+    reset()
+    length = 12.0
+    parts = bogies(length)
+    parts.append(box("frame", -1.4, 1.4, -length / 2, length / 2, 0.7, 1.0, "trim"))
+    parts.append(box("deck", -1.5, 1.5, -length / 2 + 0.1, length / 2 - 0.1, 1.0, 1.2, "wagon_deck"))
+    for y in (-4.5, -1.5, 1.5, 4.5):
+        parts += mirrored_box("stake", 1.4, 1.5, y - 0.08, y + 0.08, 1.2, 1.7, "wagon")
+    join("Flatcar", parts)
+    save("flatcar")
+
+
+def build_signal():
+    """Palo del passaggio a livello: croce di Sant'Andrea e due luci rosse
+    verso -Y (la direzione da cui arriva la rana). Le luci accese sono oggetti
+    separati, LampOn_*: Godot le accende e le spegne."""
+    reset()
+    parts = [cylinder("pole", 0.08, 3.4, (0, 0, 1.7), "metal", sides=6, axis="Z")]
+    for angle in (0.6, -0.6):
+        board = box("board", -0.9, 0.9, -0.03, 0.03, -0.11, 0.11, "sign_white")
+        board.rotation_euler = (0, angle, 0)
+        board.location = (0, -0.1, 3.0)
+        bpy.context.view_layer.objects.active = board
+        board.select_set(True)
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=False)
+        board.select_set(False)
+        parts.append(board)
+    # Schermo nero dietro le luci, per il contrasto anche in pieno giorno.
+    parts.append(box("lamp_screen", -0.95, 0.95, -0.12, 0.05, 1.75, 2.45, "trim"))
+    for x in (-0.5, 0.5):
+        parts.append(cylinder("lamp_off", 0.28, 0.06, (x, -0.16, 2.1), "signal_off", sides=8, axis="Y"))
+    join("Signal", parts)
+    for x, label in ((-0.5, "L"), (0.5, "R")):
+        cylinder("LampOn_" + label, 0.3, 0.08, (x, -0.18, 2.1), "signal_on", sides=8, axis="Y")
+    save("signal")
+
+
 # --- Scenario --------------------------------------------------------------
 
 def build_tree():
@@ -312,7 +405,8 @@ def build_mountain():
 BUILDERS = {
     "compact": build_compact, "sedan": build_sedan, "van": build_van, "truck": build_truck,
     "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
-    "mountain": build_mountain,
+    "mountain": build_mountain, "locomotive": build_locomotive, "boxcar": build_boxcar,
+    "flatcar": build_flatcar, "signal": build_signal,
 }
 
 if __name__ == "__main__":
