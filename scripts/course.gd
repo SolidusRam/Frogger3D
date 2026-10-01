@@ -103,8 +103,8 @@ func _add_chunk(kind: Kind) -> void:
 			river.lane_count = currents
 			river.lane_width = river_lane_width
 			river.length = ground_width
-			river.min_speed = minf(2.0 + difficulty * 0.3, 5.0)
-			river.max_speed = minf(5.0 + difficulty * 0.4, 8.0)
+			river.min_speed = minf(2.0 + difficulty * 0.3, 5.0) * Heat.river_speed_factor()
+			river.max_speed = minf(5.0 + difficulty * 0.4, 8.0) * Heat.river_speed_factor()
 			river.crocodile_chance = minf(0.2 + difficulty * 0.05, 0.5)
 			chunk.add_child(river)
 		Kind.DEN:

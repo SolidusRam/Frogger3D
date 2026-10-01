@@ -26,14 +26,19 @@ func _ready() -> void:
 	_prepopulate()
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if _spawn_area_is_clear():
 		_spawn_car(_start_x())
 
+	var loss_chance := Heat.loss_of_control_chance() * delta
 	for child in get_children():
 		var car := child as Car
-		if car and car.state == Car.State.DRIVING and car.position.x * direction > half_length + car.size.z:
+		if car == null or car.state != Car.State.DRIVING:
+			continue
+		if car.position.x * direction > half_length + car.size.z:
 			car.queue_free()
+		elif loss_chance > 0.0 and absf(car.position.x) < half_length and randf() < loss_chance:
+			car.lose_control()
 
 
 ## Riempie la corsia all'avvio, così il traffico non parte vuoto.
@@ -55,7 +60,11 @@ func _spawn_car(x: float) -> Car:
 	# Il muso (-Z locale) deve guardare nel verso della corsia.
 	car.rotation.y = -PI / 2.0 * direction
 	car.drive_direction = global_basis.x.normalized() * direction
-	car.cruise_speed = speed
+	# Il calore conta alla nascita: i nuovi veicoli sono più veloci, frenano
+	# peggio e si schiantano più facilmente.
+	car.cruise_speed = speed * Heat.traffic_speed_factor()
+	car.braking *= Heat.braking_factor()
+	car.crash_speed *= Heat.crash_speed_factor()
 	add_child(car)
 	_roll_next()
 	return car
@@ -81,7 +90,7 @@ func _spacing_after(car: Car) -> float:
 
 func _roll_next() -> void:
 	_next_is_truck = randf() < truck_chance
-	_next_gap = randf_range(min_gap, max_gap)
+	_next_gap = randf_range(min_gap, max_gap) * Heat.gap_factor()
 
 
 func _start_x() -> float:

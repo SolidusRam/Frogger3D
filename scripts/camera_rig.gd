@@ -32,7 +32,7 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("pause"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+	elif event is InputEventMouseButton and event.pressed and Input.mouse_mode != Input.MOUSE_MODE_CAPTURED and not _target_is_dead():
 		# Il clic che recupera il mouse non deve diventare un pugno.
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		get_viewport().set_input_as_handled()
@@ -53,3 +53,8 @@ func flat_basis() -> Basis:
 
 func _target_point() -> Vector3:
 	return _target.get_global_transform_interpolated().origin + Vector3.UP * target_height
+
+
+## A run finita il mouse resta libero per la schermata di fine.
+func _target_is_dead() -> bool:
+	return _target is Frog and _target.is_dead

@@ -10,6 +10,12 @@ signal wrecked(car: Car)
 
 enum State { DRIVING, WRECK }
 
+## Rottami presenti al massimo nello stesso momento: oltre, il più vecchio
+## sprofonda subito. Tiene la fisica sotto controllo anche al calore massimo.
+const MAX_WRECKS := 80
+
+static var _wrecks: Array[Car] = []
+
 const COLORS: Array[Color] = [
 	Color(0.85, 0.2, 0.2), Color(0.95, 0.75, 0.15), Color(0.2, 0.45, 0.85),
 	Color(0.9, 0.5, 0.15), Color(0.6, 0.3, 0.75), Color(0.9, 0.9, 0.9),
@@ -94,7 +100,21 @@ func become_wreck() -> void:
 	max_contacts_reported = 8
 	body_entered.connect(_on_wreck_body_entered)
 	_paint.albedo_color = _paint.albedo_color.darkened(0.45)
+	_wrecks.append(self)
+	tree_exiting.connect(_wrecks.erase.bind(self))
+	if _wrecks.size() > MAX_WRECKS:
+		_wrecks.pop_front()._sink_and_free()
+	Heat.add(Heat.per_wreck)
 	wrecked.emit(self)
+
+
+## Con il calore alto il veicolo può perdere il controllo da solo: diventa un
+## rottame e sbanda di lato, e da lì partono le catene.
+func lose_control() -> void:
+	become_wreck()
+	var side := drive_direction.cross(Vector3.UP) * (1.0 if randf() < 0.5 else -1.0)
+	apply_central_impulse(side * mass * randf_range(3.0, 6.0))
+	apply_torque_impulse(Vector3.UP * mass * randf_range(-4.0, 4.0))
 
 
 ## Il pugno della rana: il veicolo diventa un rottame e vola via.
@@ -168,6 +188,7 @@ func _knockback_for(frog: Node3D, velocity: Vector3) -> Vector3:
 
 
 func _sink_and_free() -> void:
+	_wrecks.erase(self)
 	set_physics_process(false)
 	collision_layer = 0
 	collision_mask = 0

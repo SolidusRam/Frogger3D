@@ -43,9 +43,10 @@ Il calore sale anche se il giocatore non fa nulla; i poteri lo accelerano, ma so
 | Poteri | Super salto, pugno alle macchine, deltaplano: poteri base, disponibili da subito; in futuro poteri nuovi o potenziamenti di quelli base |
 | Struttura della run | Infinita: si gioca finché non si muore |
 | Giocatori | Singleplayer per ora; multiplayer cooperativo possibile in futuro |
-| Tana | Checkpoint lungo il percorso, non la fine: salva i progressi, ma la morte chiude la run |
+| Tana | Checkpoint lungo il percorso, non la fine: salva il record su disco e diventa il punto di ripartenza se si cade fuori dal mondo, ma la morte chiude la run |
+| Fine della run | Quando la vita finisce: schermata con distanza, tane, tempo, calore massimo e record; Invio o il pulsante fanno ricominciare da zero |
 | Percorso | Infinito, a sezioni: strade e fiumi separati da strisce sicure, poi una tana. Ogni sezione ha più corsie e veicoli e correnti più veloci; i fiumi hanno sempre terra su entrambi i lati. Muri invisibili ai lati della zona di gioco |
-| Calore | Un'unica barra, per strada e palude insieme; sale di continuo col tempo; usare i poteri lo fa salire più in fretta; non cala mai |
+| Calore | Un'unica barra da 0 a 100 in 5 livelli, per strada e palude insieme; sale di continuo col tempo (0,15 al secondo); i poteri (pugno +1, deltaplano +2, super salto +3) e ogni rottame (+0,6) lo fanno salire più in fretta; non cala mai. Effetti al massimo: veicoli e correnti più veloci (+50% e +40%), veicoli più fitti (-50% di spazio), frenata -60%, schianti più facili; dal 60% le auto perdono il controllo da sole. Al massimo 80 rottami insieme |
 | Ritmo | Ondate di pericolo sopra una base che cresce sempre |
 | Ricompensa | Provocare caos dà esperienza o oggetti, in stile Megabonk |
 | Vita | Statistiche e vita che crescono durante la run; auto, acqua e coccodrilli tolgono vita: un solo colpo non basta a perdere |

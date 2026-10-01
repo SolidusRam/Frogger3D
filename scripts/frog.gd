@@ -105,6 +105,8 @@ var _river: River
 var _water_damage_owed := 0.0
 var _punch_query := PhysicsShapeQueryParameters3D.new()
 
+var is_dead := false
+
 @onready var health := max_health
 
 
@@ -123,6 +125,9 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if is_dead:
+		_fall_while_dead(delta)
+		return
 	_stun_time = maxf(_stun_time - delta, 0.0)
 	_invulnerable_time = maxf(_invulnerable_time - delta, 0.0)
 	_punch_cooldown_left = maxf(_punch_cooldown_left - delta, 0.0)
@@ -200,6 +205,17 @@ func respawn() -> void:
 	reset_physics_interpolation()
 
 
+## Da morta la rana cade o galleggia, senza controlli né poteri.
+func _fall_while_dead(delta: float) -> void:
+	velocity.x = move_toward(velocity.x, 0.0, air_acceleration * delta)
+	velocity.z = move_toward(velocity.z, 0.0, air_acceleration * delta)
+	if _river != null and global_position.y < _river.surface_y() - float_depth:
+		velocity.y = move_toward(velocity.y, 1.0, 30.0 * delta)
+	else:
+		velocity.y -= _gravity_down * delta
+	move_and_slide()
+
+
 ## Colpisce i veicoli davanti a sé, nella direzione in cui guarda la telecamera.
 func punch() -> void:
 	_punch_cooldown_left = punch_cooldown
@@ -242,7 +258,7 @@ func super_jump(direction: Vector3) -> void:
 
 ## Un colpo da un veicolo o da un pericolo: toglie vita e sbalza la rana.
 func take_hit(damage: int, knockback: Vector3) -> void:
-	if _invulnerable_time > 0.0:
+	if _invulnerable_time > 0.0 or is_dead:
 		return
 	velocity = knockback
 	_stun_time = stun_duration
@@ -253,14 +269,22 @@ func take_hit(damage: int, knockback: Vector3) -> void:
 
 
 func _lose_health(amount: int) -> void:
+	if is_dead:
+		return
 	health = maxi(health - amount, 0)
 	health_changed.emit(health, max_health)
 	if health == 0:
-		died.emit()
-		# Provvisorio: la morte con fine della run arriva al punto 8.
-		health = max_health
-		health_changed.emit(health, max_health)
-		respawn()
+		_die()
+
+
+## La morte chiude la run: la rana non risponde più e si gira a pancia in su.
+func _die() -> void:
+	is_dead = true
+	_close_glider()
+	_super_jumping = false
+	var tween := create_tween()
+	tween.tween_property(visual, "rotation:z", PI, 0.4)
+	died.emit()
 
 
 ## Apre, tiene aperto e chiude il deltaplano; a terra lo ricarica.

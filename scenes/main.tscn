@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
+[ext_resource type="Script" path="res://scripts/game.gd" id="game_script"]
 [ext_resource type="PackedScene" path="res://scenes/frog.tscn" id="frog_scene"]
 [ext_resource type="Script" path="res://scripts/course.gd" id="course_script"]
-[ext_resource type="Script" path="res://scripts/debug_hud.gd" id="hud_script"]
+[ext_resource type="Script" path="res://scripts/hud.gd" id="hud_script"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 
@@ -15,7 +16,11 @@ sky = SubResource("sky")
 ambient_light_source = 3
 tonemap_mode = 2
 
-[node name="Main" type="Node3D"]
+[node name="Main" type="Node3D" node_paths=PackedStringArray("frog", "course", "hud")]
+script = ExtResource("game_script")
+frog = NodePath("Frog")
+course = NodePath("Course")
+hud = NodePath("Hud")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("environment")
@@ -34,39 +39,3 @@ frog = NodePath("../Frog")
 script = ExtResource("hud_script")
 frog = NodePath("../Frog")
 course = NodePath("../Course")
-
-[node name="HealthLabel" type="Label" parent="Hud"]
-offset_left = 16.0
-offset_top = 12.0
-offset_right = 316.0
-offset_bottom = 48.0
-theme_override_font_sizes/font_size = 24
-text = "Vita"
-
-[node name="PowersLabel" type="Label" parent="Hud"]
-offset_left = 16.0
-offset_top = 48.0
-offset_right = 316.0
-offset_bottom = 110.0
-theme_override_font_sizes/font_size = 20
-text = "Poteri"
-
-[node name="ProgressLabel" type="Label" parent="Hud"]
-offset_left = 16.0
-offset_top = 112.0
-offset_right = 416.0
-offset_bottom = 142.0
-theme_override_font_sizes/font_size = 20
-text = "Distanza"
-
-[node name="DenLabel" type="Label" parent="Hud"]
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -300.0
-offset_top = 80.0
-offset_right = 300.0
-offset_bottom = 140.0
-grow_horizontal = 2
-theme_override_font_sizes/font_size = 40
-horizontal_alignment = 1
