@@ -3,7 +3,6 @@ extends Node3D
 ## (fermo-immagine e rallentatore), chiude la run alla morte della rana,
 ## salva il record e fa ricominciare.
 
-const RECORD_PATH := "user://record.cfg"
 
 @export var frog: Frog
 @export var course: Course
@@ -11,6 +10,8 @@ const RECORD_PATH := "user://record.cfg"
 @export var environment: WorldEnvironment
 @export var sun: DirectionalLight3D
 @export var post: ColorRect
+## File del record; i test ne usano uno loro per non toccare quello vero.
+@export var record_path := "user://record.cfg"
 
 @export_group("Tempi speciali")
 ## Fermo-immagine quando il pugno colpisce un'auto.
@@ -153,13 +154,13 @@ func _save_record_if_better(distance: float) -> bool:
 	record_distance = distance
 	var config := ConfigFile.new()
 	config.set_value("record", "distance", distance)
-	config.save(RECORD_PATH)
+	config.save(record_path)
 	hud.set_record(record_distance)
 	return true
 
 
 func _load_record() -> float:
 	var config := ConfigFile.new()
-	if config.load(RECORD_PATH) != OK:
+	if config.load(record_path) != OK:
 		return 0.0
 	return config.get_value("record", "distance", 0.0)
