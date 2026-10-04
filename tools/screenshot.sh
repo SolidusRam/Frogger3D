@@ -3,9 +3,9 @@
 # virtuale (Xvfb) col renderer di compatibilità, più slavato del gioco vero.
 # Uso:  tools/screenshot.sh SCRIPT SCENA CALORE FILE.png
 #   tools/screenshot.sh shot_biome aereo 0 /tmp/aereo.png
-#   tools/screenshot.sh shot_biome porto 100 /tmp/porto_notte.png
+#   tools/screenshot.sh shot_port panorama 100 /tmp/porto_notte.png
 #   tools/screenshot.sh shot_rail passaggio 0 /tmp/treno.png
-# Scene: shot_biome = aereo | getto | dietro | gru | caduta | porto | insegue;
+# Scene: shot_biome = aereo | getto | dietro;  shot_port = panorama | nave | caccia;
 #        shot_rail  = arrivo | passaggio | tetto.
 # WAYLAND_DISPLAY va tolto: se il display virtuale fallisse, Godot aprirebbe
 # la finestra sul vero schermo.

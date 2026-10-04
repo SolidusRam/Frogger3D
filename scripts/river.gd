@@ -14,6 +14,8 @@ extends Node3D
 ## Quota della superficie rispetto alle sponde (che stanno a 0).
 @export var water_level := -0.4
 @export var depth := 3.0
+## Acqua ferma, come quella del porto: niente correnti, tronchi o coccodrilli.
+@export var still := false
 
 @export_group("Galleggiamento dei rottami")
 ## Oltre 1 il rottame galleggia: a 2 resta immerso per circa metà.
@@ -29,6 +31,8 @@ var _water: Area3D
 
 func _ready() -> void:
 	_build_bed_and_water()
+	if still:
+		return
 	for i in lane_count:
 		var lane := RiverLane.new()
 		lane.position.z = _lane_offset(i)
@@ -55,6 +59,8 @@ func surface_y() -> float:
 
 ## Velocità della corrente nel punto dato (zero fuori dalle correnti).
 func current_at(point: Vector3) -> Vector3:
+	if still:
+		return Vector3.ZERO
 	var local_z := to_local(point).z
 	for i in lane_count:
 		if absf(local_z - _lane_offset(i)) <= lane_width / 2.0:

@@ -41,7 +41,7 @@ Il calore sale anche se il giocatore non fa nulla; i poteri lo accelerano, ma so
 | Grafica | 3D low-poly in stile Megabonk, modelli fatti in Blender. Stile scelto: PS1 sgranato (gli altri, Base e Arcade, restano disponibili con F2). Tutti i materiali vengono da una tavolozza per stile, scelti per nome del materiale. I modelli si costruiscono con assets/models/build_models.py (Blender): ogni modello ha il suo .blend da ritoccare a mano e il .glb per Godot |
 | Ferrovia | Da 1 a 3 binari. Il treno (locomotiva e 3-5 vagoni tra carri chiusi, alti, e pianali, bassi) è l'unico veicolo che non diventa mai rottame: travolge auto e rottami e toglie 60 di vita alla rana; sul tetto si viaggia sicuri. Avviso leale: le luci dei pali lampeggiano 2,5 s prima che il muso entri nella zona di gioco, e l'avviso non cala col calore; il calore rende i treni più veloci solo fino al +30% |
 | Aeroporto | Dalla terza sezione. Aerei di linea in rullaggio, enormi e lenti (7 m/s, fino a +30% col calore), che non diventano mai rottami: fusoliera, motori e carrelli travolgono (35 alla rana), sotto le ali si passa, su ali e fusoliera si sta sicuri. Il pericolo è dietro: per 7 m dietro ogni motore una fiamma visibile brucia (60 di vita al secondo); poi il getto, un cono che si allarga fino a 8 m e sale fino a 12 m, reso visibile da strisce d'aria, spinge via la rana (vento fino a 16 m/s) e scaglia i rottami. Sotto le ali, accanto ai motori, corrono due strade di servizio con i trenini bagagli (un trattorino e 2-4 carrelli carichi di valigie e pacchi, 5-8 m/s): non diventano mai rottami, ci si sale sopra, fa male solo il muso del trattorino (15). Quando il getto investe i carrelli porta via il carico e lo scaglia all'indietro a 12-25 m/s, aperto a ventaglio: un bagaglio che arriva addosso veloce toglie 10. Il pugno fa volare i bagagli, anche dai carrelli. Col deltaplano il getto è un ascensore: si sale fino a 10 m/s, si rallenta, il vento spinge la metà e la carica non si consuma (con super salto e deltaplano aperto dentro il getto si arriva a circa 11 m). |
-| Porto | Dalla terza sezione. Nastri trasportatori che portano di lato (3-5 m/s) e due gru a portale che lasciano cadere container. Quando mira alla rana, la gru la insegue e calcola dove sarà quando il container tocca terra (il nastro compreso): l'ombra lampeggia mentre insegue, poi resta accesa fissa negli ultimi 0,6 s, quando la gru si blocca (0,45 s al calore massimo). L'avviso dura 1,5 s (1,1 al calore massimo); il container è spinto giù e pesa, e tocca terra in circa 0,7 s (prima 1,4). Toglie 50; a terra resta come ostacolo e piattaforma e i nastri lo trascinano. Col calore la gru mira più spesso (dal 25% a quasi sempre), è più veloce (da 6 a 11 m/s) e ricarica prima |
+| Porto | Dalla terza sezione. Una banchina, una corsia d'acqua ferma larga 14 m (due corsie, con navi in versi opposti, dalla quinta sezione) e una banchina sicura; tra due corsie un molo. L'acqua ha le regole del fiume. Le navi portacontainer (circa 41 x 10 m, 3-5 m/s) passano una dopo l'altra come tronchi enormi: si sale col salto normale (ponte a 0,7 m); il ponte di comando a poppa e il castello di prua sono troppo alti. Sul ponte i container stanno in 20 caselle (5 lungo la nave, 4 di traverso) e si impilano: muri alti 2,6 m, un labirinto. Le navi arrivano già in parte cariche (dal 20% al 45% delle caselle, con la distanza). La prua spinge e non fa male. Su ogni corsia due gru a portale, una per metà, con le gambe sulle banchine; il carrello scorre lungo il braccio, così il container può cadere su qualunque casella. La gru insegue la casella mentre la nave avanza: l'ombra, disegnata sulla casella e in viaggio con la nave, lampeggia mentre la gru insegue e resta accesa fissa negli ultimi 0,6 s (0,45 al calore massimo), quando la gru si blocca. Avviso 1,5 s (1,1 al calore massimo); il container è spinto giù e cade in circa 0,7 s; toglie 50 e resta sulla nave. In acqua affonda. Sotto il livello 3 di calore le gru caricano seguendo lo schema: mai sulla casella della rana, e lasciando sempre un passaggio tra le caselle vuote (fino al 40-60% delle caselle, poi impilano). Dal livello 3 la gru più vicina a dove sarà la rana le dà la caccia quando è su una nave |
 | Veicoli | Quattro tipi: utilitaria, berlina, furgone, camion (danno 20, 25, 30, 40). Ruote che girano, fari e fanali che si accendono di notte, collisione su misura (si sta sul cofano; la cabina del camion è più bassa del rimorchio) |
 | Sfondo | Montagne all'orizzonte e una pianura sotto il piano di gioco, che seguono la rana; ai lati alberi, case e lampioni |
 | Colori e calore | Il calore sposta l'ora del giorno come nel dinosauro di Google: giorno, tramonto, notte; lampo invertito a ogni nuovo livello. Di notte le minacce restano leggibili (nello stile arcade brillano) |
@@ -70,6 +70,33 @@ Il calore sale anche se il giocatore non fa nulla; i poteri lo accelerano, ma so
 | Urti | Fa male solo un veicolo che ti viene addosso: chi viaggia insieme a un veicolo, sopra o accanto, non si fa male, e nemmeno chi sbatte contro un veicolo fermo. I rottami che galleggiano sono zattere e non fanno mai male |
 | Caos | Deve essere emergente: nasce da regole semplici che si incrociano, non da eventi scritti a mano |
 
+## Difficoltà nei biomi
+
+Decisa il 4 ottobre 2026. Due assi con due compiti diversi:
+
+| Asse | Cosa cambia | Quando si legge |
+| --- | --- | --- |
+| Distanza (la sezione) | La **quantità**: più corsie, binari, navi, aerei più frequenti. È la struttura del blocco | Quando il blocco nasce |
+| Calore | Il **comportamento**: qualcosa che prima non succedeva | Dal vivo, anche nei blocchi già creati |
+
+Un **gradino di calore** è un comportamento nuovo che si sblocca a una soglia. Regole:
+
+1. È un comportamento, non un numero: "il treno va più veloce" non è un gradino, "il treno passando risucchia la rana" sì.
+2. Ha un avviso leale, col linguaggio visivo del gioco: luci che lampeggiano, ombra rossa, fiamma.
+3. Scatta subito, anche nei blocchi già in campo.
+4. L'HUD lo annuncia una volta, col messaggio del nuovo livello.
+5. Aggiunge alla regola del bioma senza cancellarla.
+
+Per ora **un gradino per bioma, tutti al livello 3** (60 di calore): "la soglia del caos". Un secondo gradino solo dopo aver provato il primo. Gli aumenti numerici esistenti restano, ma non contano come difficoltà.
+
+| Bioma | Distanza | Gradino al livello 3 | Stato |
+| --- | --- | --- | --- |
+| Strada | più corsie, più veloci | le auto perdono il controllo da sole | fatto |
+| Fiume | più correnti, più coccodrilli | i tronchi affondano: con la rana sopra cominciano dopo circa 1 s e vanno sotto in 2 s; avviso: tremano e fanno bolle | da fare |
+| Ferrovia | più binari | il rapido: treno bianco più corto e molto più veloce, la cui scia risucchia verso i binari chi sta entro 2-3 m; stesso avviso di 2,5 s | da fare |
+| Aeroporto | aerei più frequenti (da 9-15 s fino a 6-10 s) | il decollo: l'aereo si ferma, la fiamma cresce per 2 s, poi accelera fino a circa 35 m/s con un getto lungo il doppio | da fare |
+| Porto | una corsia, poi due; navi più cariche | la gru caccia la rana sul ponte | fatto |
+
 ## Roadmap
 
 Ogni passo si aggiunge solo quando il precedente è divertente. L'ordine dei passi da fare è una proposta e si può riordinare.
@@ -86,19 +113,24 @@ Il gioco base è finito e giocabile: una run infinita in cui si muore e si ricom
 | Poteri | Pugno, super salto, deltaplano, ognuno come nodo separato della rana |
 | Grafica | Modelli low-poly in Blender, stile PS1 (più Base e Arcade con F2), il giorno che scende verso la notte col calore, fermo-immagine e rallentatore sulle catene di rottami |
 | Power-up nelle tane | Scelta uno tra tre a gioco fermo; slot-attrezzo (guantoni, molle, ala, corpo). Fatti: guantoni esplosivi, correnti calde, quattro numerici |
-| Biomi | Ferrovia (treni inarrestabili, avviso leale); aeroporto (fiamma e getto dei motori, trenini bagagli il cui carico vola via nel getto, il getto come ascensore per il deltaplano); porto (nastri, gru che inseguono la rana: da rifare, vedi sotto) |
-| Primi segni del mondo che reagisce | Col calore le auto perdono il controllo da sole, e le gru mirano alla rana e la inseguono |
+| Biomi | Ferrovia (treni inarrestabili, avviso leale); aeroporto (fiamma e getto dei motori, trenini bagagli il cui carico vola via nel getto, il getto come ascensore per il deltaplano); porto (acqua e navi portacontainer: le gru caricano le navi mentre ci sei sopra, un labirinto che si chiude; dal livello 3 cacciano la rana) |
+| Difficoltà nei biomi | Criteri decisi (sezione sopra); gradini fatti: strada e porto |
 | Strumenti | 14 test automatici (tests/run.sh) e screenshot senza finestre (tools/screenshot.sh) |
 
 ### Da provare giocando
 
-- Aeroporto e porto dopo le ultime modifiche: il super salto con il deltaplano nel getto, il momento giusto per attraversare dietro l'aereo, l'ombra fissa delle gru.
+- Il porto nuovo: salire sulla nave, attraversare il labirinto di container, leggere l'ombra sulla casella; dal livello 3 di calore la gru che dà la caccia.
+- L'aeroporto: il super salto con il deltaplano nel getto, il momento giusto per attraversare dietro l'aereo.
 - I bagagli scagliati dal getto: piccoli e veloci, vanno visti con la telecamera dietro la rana. Se si perdono: più grandi, più lenti o con una scia.
 - Il calore che ora conta solo i rottami entro 50 m dalla rana.
 
 ### Da fare, in ordine proposto
 
-Prima di tutto: **rifare il porto**. Le gru sui nastri sono statiche, non ci si interagisce e la difficoltà non si sente (il container cade sempre sulla stessa riga del molo, che la rana attraversa in mezzo secondo). Proposta da approvare in idee-future.md: acqua e navi portacontainer, insieme ai criteri per la difficoltà in tutti i biomi (la distanza cambia la quantità, il calore aggiunge un comportamento: un gradino per bioma al livello 3).
+Prima di tutto, **finire i gradini di calore** (sezione "Difficoltà nei biomi"):
+
+- l'annuncio dei gradini nell'HUD;
+- i gradini di aeroporto, ferrovia e fiume, e la frequenza degli aerei con la distanza;
+- la seconda fase del porto, dopo averlo provato: la nave che si inclina col carico (fino a circa 10°) e i container che scivolano in acqua e galleggiano. Qui il pugno trova un ruolo: spostare il peso.
 
 1. **Esperienza dal caos**: è la metà mancante del ciclo. Gli incidenti danno esperienza, e le catene valgono più delle auto singole; il passaggio di livello fa scegliere una statistica. Prima va sciolto il nodo con l'ingorgo (vedi idee-future.md): l'esperienza a terra fa dell'ingorgo il posto più comodo per raccoglierla.
 2. **Reazioni del mondo**: auto che danno la caccia, coccodrilli aggressivi. Ogni reazione ha un avviso visibile, come l'ombra delle gru.

@@ -152,22 +152,15 @@ func _add_chunk(kind: Kind) -> void:
 			taxiway.play_half_width = play_half_width
 			chunk.add_child(taxiway)
 		Kind.PORT:
-			# Nastri trasportatori tra le gambe di due gru a portale.
-			depth = 16.0
-			_add_ground(chunk, depth, "concrete")
-			var belts := 2 if difficulty < 4 else 3
-			for i in belts:
-				var belt := Conveyor.new()
-				belt.position.z = (i - (belts - 1) / 2.0) * 4.0
-				belt.direction = 1.0 if i % 2 == 0 else -1.0
-				belt.speed = randf_range(3.0, 5.0)
-				chunk.add_child(belt)
-			# Due gru, una per metà: insieme coprono tutto il molo.
-			for side in [-1.0, 1.0]:
-				var crane := Crane.new()
-				crane.play_half_width = play_half_width
-				crane.position.x = side * randf_range(10.0, 25.0)
-				chunk.add_child(crane)
+			# Una corsia d'acqua con le navi, due nelle sezioni avanzate.
+			var lanes := 1 if difficulty < 3 else 2
+			depth = Port.depth_for(lanes)
+			var port := Port.new()
+			port.lanes = lanes
+			port.difficulty = difficulty
+			port.length = rail_ground_width
+			port.play_half_width = play_half_width
+			chunk.add_child(port)
 		Kind.DEN:
 			depth = den_depth
 			_add_ground(chunk, depth, "den_grass")

@@ -1,7 +1,7 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
-## Screenshot di aeroporto e porto. SCENE: aereo | getto | dietro | gru |
-## caduta | porto | insegue. HEAT, SHOT.
+## Screenshot dell'aeroporto (il porto ha tools/shot_port.gd).
+## SCENE: aereo | getto | dietro. HEAT, SHOT.
 var frame := 0
 var main: Node
 var frog: Node3D
@@ -9,12 +9,10 @@ var course: Node3D
 var chunk: Node3D
 var subject: Node3D
 var done_at := -1
-var drop_seen := -1
 var lit_frames := 0
 var scene := OS.get_environment("SCENE")
-var kind := 6 if scene in ["aereo", "getto", "dietro"] else 7
-var aerial := scene in ["porto", "insegue"]
-var prefix := "AIRPORT" if kind == 6 else "PORT"
+var kind := 6
+var prefix := "AIRPORT"
 
 func _initialize() -> void:
 	get_root().size = Vector2i(1280, 720)
@@ -69,17 +67,8 @@ func _process(_d: float) -> bool:
 				chunk = c
 		if chunk == null:
 			print("niente blocco"); quit(); return false
-		var back := 9.0 if kind == 7 else -0.8
-		frog.global_position = Vector3(4, 0.1, chunk.get_meta("near_z") + back)
+		frog.global_position = Vector3(4, 0.1, chunk.get_meta("near_z") - 0.8)
 		frog.reset_physics_interpolation()
-		if aerial:
-			# Vista dall'alto: nastri, ombra e gru insieme.
-			frog.global_position = Vector3(4, 0.1, chunk.get_meta("near_z") + 2.0)
-			frog.get_node("CameraRig/Pitch").rotation.x = -0.75
-			frog.get_node("CameraRig/Pitch/SpringArm3D").spring_length = 16.0
-		elif kind == 7:
-			# Per il porto lo sguardo si alza: deve entrare tutta la gru.
-			frog.get_node("CameraRig/Pitch").rotation.x = -0.02
 	if frame > 4 and done_at < 0:
 		match scene:
 			"aereo":
@@ -105,48 +94,6 @@ func _process(_d: float) -> bool:
 					if frame > 150 and x > -6.0 and x < 0.0 and not frog.has_meta("set"):
 						frog.set_meta("set", frame)
 						subject = p
-			"insegue":
-				var belts := by_script(chunk, "conveyor.gd")
-				var cranes := by_script(chunk, "crane.gd")
-				if frame == 5:
-					for c in cranes:
-						c.aim_chance = 1.0
-					frog.global_position = belts[0].global_position + Vector3(0, 0.5, 0)
-					frog.reset_physics_interpolation()
-					frog.get_node("CameraRig/Pitch").rotation.x = -0.6
-					frog.get_node("CameraRig/Pitch/SpringArm3D").spring_length = 12.0
-				if frog.global_position.x < -25.0 or frog.global_position.x > 25.0:
-					frog.global_position.x = 0.0
-					frog.reset_physics_interpolation()
-				var locked := cranes.filter(func(c): return c.is_locked() and absf(c.global_position.x - frog.global_position.x) < 3.0)
-				lit_frames = lit_frames + 1 if not locked.is_empty() else 0
-				# Di lato: rana, ombra fissa e container appeso.
-				for c in cranes:
-					if absf(c.global_position.x - frog.global_position.x) < 8.0:
-						shoot_from(frog.global_position + Vector3(-6, 8, 11), frog.global_position + Vector3(0, 3, 0))
-				if lit_frames >= 2 and frame > 60 and done_at < 0:
-					done_at = frame
-			"porto":
-				var crane: Node3D = by_script(chunk, "crane.gd")[0]
-				# La rana davanti alla gru: la telecamera guarda verso di lei.
-				frog.global_position = Vector3(crane.global_position.x + 2.0, 0.1, chunk.get_meta("near_z") + 2.0)
-				frog.velocity = Vector3.ZERO
-				aim_camera(Vector3(crane.global_position.x, 0, crane.global_position.z))
-				# Lo screenshot prende il fotogramma già disegnato: l'ombra deve
-				# essere accesa da qualche fotogramma.
-				lit_frames = lit_frames + 1 if crane.is_warning() and crane._shadow.visible else 0
-				if lit_frames == 3 and frame > 60:
-					done_at = frame
-			"gru", "caduta":
-				var crane: Node3D = by_script(chunk, "crane.gd")[0]
-				aim_camera(Vector3(crane.global_position.x, 7, crane.global_position.z))
-				if scene == "gru" and crane.is_warning() and crane._shadow.visible and frame > 60:
-					done_at = frame
-				if scene == "caduta":
-					if crane.phase == 2 and drop_seen < 0:
-						drop_seen = frame
-					if drop_seen > 0 and frame == drop_seen + 22:
-						done_at = frame
 	if scene == "getto" and frog.has_meta("set"):
 		# Come un giocatore: super salto dietro il motore, deltaplano nel getto.
 		var p: Node3D = subject

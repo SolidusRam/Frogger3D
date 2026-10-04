@@ -46,6 +46,8 @@ PREVIEW = {
     "crane": (0.95, 0.65, 0.1, 1), "crane_cab": (0.2, 0.45, 0.3, 1),
     "tug": (0.95, 0.75, 0.1, 1), "beacon": (1.0, 0.55, 0.05, 1), "dolly": (0.35, 0.37, 0.4, 1),
     "cardboard": (0.7, 0.52, 0.32, 1), "tape": (0.85, 0.75, 0.55, 1),
+    "ship_hull": (0.55, 0.12, 0.1, 1), "ship_deck": (0.3, 0.32, 0.3, 1),
+    "ship_bridge": (0.92, 0.92, 0.9, 1), "ship_stripe": (0.1, 0.12, 0.2, 1),
 }
 
 
@@ -482,9 +484,10 @@ def build_parcel():
 # --- Porto -------------------------------------------------------------------
 
 def build_crane():
-    """Gru a portale: scavalca il blocco lungo Y (14 m tra le gambe) e scorre
-    lungo X. Origine a terra, al centro. Il container appeso lo aggiunge
-    Godot sotto il carrello, a 12 m."""
+    """Gru a portale: scavalca una corsia d'acqua lungo Y (14 m tra le gambe,
+    sulle due banchine) e scorre lungo X. Origine a terra, al centro. Il
+    carrello è un modello a parte (crane_trolley), perché scorre lungo il
+    braccio."""
     reset()
     parts = []
     half = 7.0
@@ -497,14 +500,51 @@ def build_crane():
         parts.append(cylinder("wheel_b", 0.35, 0.3, (-2.2, y, 0.35), "trim", sides=8, axis="X"))
     for x in (1.6, -1.6):
         parts.append(box("girder", x - 0.35, x + 0.35, -half - 1.5, half + 1.5, 15.0, 16.0, "crane"))
-    parts.append(box("trolley", -1.3, 1.3, -1.6, 1.6, 15.2, 16.4, "crane"))
     parts.append(box("cab", -1.9, -1.3, -half - 1.4, -half + 0.2, 13.6, 15.0, "crane_cab"))
     parts.append(box("cab_window", -1.95, -1.9, -half - 1.2, -half, 14.1, 14.8, "glass"))
-    parts.append(box("cable_a", -0.05, 0.05, -1.2, -1.1, 13.0, 15.2, "metal"))
-    parts.append(box("cable_b", -0.05, 0.05, 1.1, 1.2, 13.0, 15.2, "metal"))
-    parts.append(box("spreader", -1.3, 1.3, -3.1, 3.1, 12.8, 13.0, "metal"))
     join("Crane", parts)
     save("crane")
+
+
+def build_crane_trolley():
+    """Il carrello della gru, con i cavi e lo spreader: scorre lungo Y tra le
+    travi. Lo spreader è lungo X, come i container sulle navi. Origine a
+    terra sotto il carrello: le quote sono quelle della gru."""
+    reset()
+    parts = [box("trolley", -1.3, 1.3, -1.6, 1.6, 15.2, 16.4, "crane")]
+    for x in (-1.1, 1.1):
+        parts.append(box("cable", x - 0.05, x + 0.05, -0.05, 0.05, 13.0, 15.2, "metal"))
+    parts.append(box("spreader", -3.1, 3.1, -1.3, 1.3, 12.8, 13.0, "metal"))
+    join("CraneTrolley", parts)
+    save("crane_trolley")
+
+
+def build_ship():
+    """Nave portacontainer: la prua guarda verso +X (non +Y: in gioco la nave
+    corre lungo X), il ponte è a 0,7 m, la linea di galleggiamento a -0,4.
+    Dietro c'è il ponte di comando, davanti il castello di prua: tutti e due
+    troppo alti per il salto normale. In mezzo, il ponte libero per i
+    container (da x = -14,6 a 17)."""
+    reset()
+    parts = [box("hull", -20, 17, -5, 5, -2.5, 0.6, "ship_hull")]
+    parts.append(box("deck", -14.6, 17, -5, 5, 0.6, 0.7, "ship_deck"))
+    parts.append(box("stripe", -20.05, 17, -5.05, 5.05, -0.6, -0.3, "ship_stripe"))
+    bow = [(17, -5), (21.5, -1.2), (21.5, 1.2), (17, 5)]
+    parts.append(block("bow",
+                       [(17, -4, -2.5), (21, -0.5, -2.5), (21, 0.5, -2.5), (17, 4, -2.5)],
+                       [(x, y, 0.6) for x, y in bow], "ship_hull"))
+    parts.append(block("forecastle",
+                       [(x, y, 0.6) for x, y in bow],
+                       [(x, y, 3.4) for x, y in bow], "ship_hull"))
+    parts.append(box("forecastle_top", 17, 21.3, -4.6, 4.6, 3.4, 3.5, "ship_deck"))
+    parts.append(box("bridge", -20, -14.6, -5, 5, 0.6, 9.0, "ship_bridge"))
+    parts.append(box("bridge_windows", -14.65, -14.55, -4.6, 4.6, 7.4, 8.3, "glass"))
+    for y in (-5.05, 5.0):
+        parts.append(box("side_windows", -19.5, -15.1, y, y + 0.05, 7.4, 8.3, "glass"))
+    parts.append(box("funnel", -19.2, -17.0, -1.1, 1.1, 9.0, 11.0, "ship_hull"))
+    parts.append(box("funnel_band", -19.25, -16.95, -1.15, 1.15, 10.0, 10.5, "ship_stripe"))
+    join("Ship", parts)
+    save("ship")
 
 
 def build_container():
@@ -571,7 +611,8 @@ BUILDERS = {
     "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
     "mountain": build_mountain, "locomotive": build_locomotive, "boxcar": build_boxcar,
     "flatcar": build_flatcar, "signal": build_signal, "airplane": build_airplane,
-    "crane": build_crane, "container": build_container, "tug": build_tug, "dolly": build_dolly,
+    "crane": build_crane, "crane_trolley": build_crane_trolley, "ship": build_ship,
+    "container": build_container, "tug": build_tug, "dolly": build_dolly,
     "suitcase": build_suitcase, "parcel": build_parcel,
 }
 
