@@ -9,6 +9,15 @@ signal wreck_created(car: Node3D)
 
 const MAX := 100.0
 const LEVELS := 5
+## I gradini di calore: a questo livello il mondo cambia comportamento, in
+## ogni bioma (vedi "Difficoltà nei biomi" in docs/regole-design.md).
+const STEP_LEVEL := 3
+## Cosa cambia al livello STEP_LEVEL, per l'annuncio nell'HUD: una riga per
+## gradino già fatto. Un gradino nuovo si aggiunge qui.
+const STEPS: Array[String] = [
+	"Le auto perdono il controllo",
+	"Le gru del porto ti danno la caccia",
+]
 
 @export_group("Crescita")
 ## Calore al secondo anche senza fare niente.

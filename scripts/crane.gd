@@ -6,10 +6,10 @@ extends AnimatableBody3D
 ## avanza e lascia cadere il container. L'ombra lampeggia mentre la gru
 ## insegue, poi resta accesa fissa per lock_time secondi, quando la gru si è
 ## bloccata e il container sta per cadere.
-## Sotto il livello HUNT_LEVEL di calore la gru carica seguendo lo schema:
-## mai dove sta la rana, e lasciando sempre un passaggio tra le caselle vuote.
-## Dal livello HUNT_LEVEL (il gradino del porto) la gru più vicina dà la
-## caccia alla rana quando è su una nave, e prevede dove la nave la porterà.
+## Sotto il livello Heat.STEP_LEVEL di calore la gru carica seguendo lo
+## schema: mai dove sta la rana, e lasciando sempre un passaggio tra le
+## caselle vuote. Da quel livello (il gradino del porto) la gru più vicina dà
+## la caccia alla rana quando è su una nave, e prevede dove la nave la porterà.
 ## Le gambe sono solide e spingono via chi è in mezzo.
 
 const MODEL := preload("res://assets/models/crane.glb")
@@ -18,7 +18,6 @@ const TROLLEY_MODEL := preload("res://assets/models/crane_trolley.glb")
 const HANG_Y := 11.5
 ## Fin dove arriva il carrello, dal centro della corsia.
 const TROLLEY_RANGE := 4.5
-const HUNT_LEVEL := 3
 ## Il container non cade e basta: lo spreader lo spinge giù, e pesa.
 const DROP_SPEED := 6.0
 const DROP_GRAVITY_SCALE := 2.5
@@ -179,10 +178,10 @@ func _choose_target() -> void:
 	phase = Phase.MOVING
 
 
-## Dal livello HUNT_LEVEL, se la rana è su una nave di questa corsia e questa
+## Dal livello Heat.STEP_LEVEL, se la rana è su una nave di questa corsia e questa
 ## è la gru più vicina a dove la rana sarà fra poco.
 func _should_hunt() -> bool:
-	if Heat.level() < HUNT_LEVEL or _frog == null or lane == null:
+	if Heat.level() < Heat.STEP_LEVEL or _frog == null or lane == null:
 		return false
 	if lane.ship_under(_frog.global_position) == null:
 		return false

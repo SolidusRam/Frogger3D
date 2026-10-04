@@ -2,6 +2,8 @@ class_name Hud
 extends CanvasLayer
 ## L'HUD: vita e calore in alto a sinistra, distanza e tane in alto a destra,
 ## poteri in basso a sinistra, messaggi al centro e schermata di fine run.
+## Quando il calore raggiunge il livello dei gradini, un pannello annuncia una
+## volta cosa cambia nel mondo.
 ## Costruito da codice per restare in un solo file finché i modelli e la
 ## grafica definitiva non arrivano.
 
@@ -28,6 +30,9 @@ var _record_label: Label
 var _super_jump_bar: ProgressBar
 var _glide_bar: ProgressBar
 var _message: Label
+var _steps: PanelContainer
+var _steps_list: Label
+var _steps_tween: Tween
 var _game_over: PanelContainer
 var _game_over_text: Label
 var _chain_label: Label
@@ -46,6 +51,7 @@ func _ready() -> void:
 	_build_top_right()
 	_build_powers()
 	_build_message()
+	_build_steps()
 	_build_chain_label()
 	_build_offer()
 	_build_equipment()
@@ -95,6 +101,8 @@ func _on_heat_changed(value: float, level: int) -> void:
 	_heat_bar.value = value
 	if level > _last_heat_level:
 		_show_message("Calore: livello %d" % level)
+		if _last_heat_level < Heat.STEP_LEVEL and level >= Heat.STEP_LEVEL:
+			_show_steps()
 	_last_heat_level = level
 	_heat_label.text = "Calore: livello %d / %d" % [level, Heat.LEVELS]
 	_set_fill(_heat_bar, HEAT_COLORS[level])
@@ -175,6 +183,32 @@ func _show_message(text: String) -> void:
 	tween.tween_property(_message, "modulate:a", 0.0, 0.5)
 
 
+## Il pannello dei gradini: "la soglia del caos" e cosa cambia, una riga per
+## gradino. Resta qualche secondo in più di un messaggio: va letto.
+func _show_steps() -> void:
+	var lines := PackedStringArray()
+	for step in Heat.STEPS:
+		lines.append("• " + step)
+	_steps_list.text = "\n".join(lines)
+	_steps.modulate.a = 1.0
+	_steps.scale = Vector2(1.15, 1.15)
+	if _steps_tween:
+		_steps_tween.kill()
+	_steps_tween = create_tween().set_ignore_time_scale(true)
+	_steps_tween.tween_property(_steps, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_steps_tween.tween_interval(4.5)
+	_steps_tween.tween_property(_steps, "modulate:a", 0.0, 0.6)
+
+
+## Vero mentre il pannello dei gradini si vede.
+func steps_visible() -> bool:
+	return _steps.modulate.a > 0.0
+
+
+func steps_text() -> String:
+	return _steps_list.text
+
+
 func _build_top_left() -> void:
 	var box := VBoxContainer.new()
 	box.position = Vector2(16, 12)
@@ -239,6 +273,32 @@ func _build_message() -> void:
 	_message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_message.modulate.a = 0.0
 	add_child(_message)
+
+
+func _build_steps() -> void:
+	_steps = PanelContainer.new()
+	_steps.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
+	_steps.offset_left = -300
+	_steps.offset_right = 300
+	_steps.offset_top = 150
+	_steps.pivot_offset = Vector2(300, 0)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.1, 0.02, 0.02, 0.8)
+	style.border_color = HEAT_COLORS[Heat.STEP_LEVEL]
+	style.set_border_width_all(3)
+	style.set_content_margin_all(14)
+	_steps.add_theme_stylebox_override("panel", style)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 6)
+	_steps.add_child(box)
+	var title := _label(30, "LA SOGLIA DEL CAOS")
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_color_override("font_color", HEAT_COLORS[Heat.STEP_LEVEL])
+	box.add_child(title)
+	_steps_list = _label(22)
+	box.add_child(_steps_list)
+	_steps.modulate.a = 0.0
+	add_child(_steps)
 
 
 func _build_chain_label() -> void:

@@ -84,7 +84,7 @@ Un **gradino di calore** è un comportamento nuovo che si sblocca a una soglia. 
 1. È un comportamento, non un numero: "il treno va più veloce" non è un gradino, "il treno passando risucchia la rana" sì.
 2. Ha un avviso leale, col linguaggio visivo del gioco: luci che lampeggiano, ombra rossa, fiamma.
 3. Scatta subito, anche nei blocchi già in campo.
-4. L'HUD lo annuncia una volta, col messaggio del nuovo livello.
+4. L'HUD lo annuncia una volta, col messaggio del nuovo livello: un pannello "La soglia del caos" con una riga per gradino, per circa 5 s. L'elenco sta in Heat.STEPS; un gradino nuovo ci aggiunge la sua riga.
 5. Aggiunge alla regola del bioma senza cancellarla.
 
 Per ora **un gradino per bioma, tutti al livello 3** (60 di calore): "la soglia del caos". Un secondo gradino solo dopo aver provato il primo. Gli aumenti numerici esistenti restano, ma non contano come difficoltà.
@@ -114,21 +114,20 @@ Il gioco base è finito e giocabile: una run infinita in cui si muore e si ricom
 | Grafica | Modelli low-poly in Blender, stile PS1 (più Base e Arcade con F2), il giorno che scende verso la notte col calore, fermo-immagine e rallentatore sulle catene di rottami |
 | Power-up nelle tane | Scelta uno tra tre a gioco fermo; slot-attrezzo (guantoni, molle, ala, corpo). Fatti: guantoni esplosivi, correnti calde, quattro numerici |
 | Biomi | Ferrovia (treni inarrestabili, avviso leale); aeroporto (fiamma e getto dei motori, trenini bagagli il cui carico vola via nel getto, il getto come ascensore per il deltaplano); porto (acqua e navi portacontainer: le gru caricano le navi mentre ci sei sopra, un labirinto che si chiude; dal livello 3 cacciano la rana) |
-| Difficoltà nei biomi | Criteri decisi (sezione sopra); gradini fatti: strada e porto |
+| Difficoltà nei biomi | Criteri decisi (sezione sopra); gradini fatti: strada e porto; l'HUD annuncia la soglia del caos |
 | Strumenti | 14 test automatici (tests/run.sh) e screenshot senza finestre (tools/screenshot.sh) |
 
 ### Da provare giocando
 
 - Il porto nuovo: salire sulla nave, attraversare il labirinto di container, leggere l'ombra sulla casella; dal livello 3 di calore la gru che dà la caccia.
 - L'aeroporto: il super salto con il deltaplano nel getto, il momento giusto per attraversare dietro l'aereo.
-- I bagagli scagliati dal getto: piccoli e veloci, vanno visti con la telecamera dietro la rana. Se si perdono: più grandi, più lenti o con una scia.
+- I bagagli scagliati dal getto. Prova del giocatore (4 ottobre): non sono un vero problema, e una volta volati via la pista si attraversa facilmente. Da rivedere insieme al gradino del decollo.
 - Il calore che ora conta solo i rottami entro 50 m dalla rana.
 
 ### Da fare, in ordine proposto
 
 Prima di tutto, **finire i gradini di calore** (sezione "Difficoltà nei biomi"):
 
-- l'annuncio dei gradini nell'HUD;
 - i gradini di aeroporto, ferrovia e fiume, e la frequenza degli aerei con la distanza;
 - la seconda fase del porto, dopo averlo provato: la nave che si inclina col carico (fino a circa 10°) e i container che scivolano in acqua e galleggiano. Qui il pugno trova un ruolo: spostare il peso.
 
