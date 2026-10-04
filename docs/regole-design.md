@@ -59,7 +59,7 @@ Il caos serve a passare: auto ribaltate che bloccano una corsia, rottami che fan
 | Percorso | Infinito, a sezioni: strade, fiumi, ferrovie (dalla seconda sezione), aeroporti e porti (dalla terza), separati da strisce sicure, poi una tana. Ogni sezione ha più corsie e veicoli e correnti più veloci; i fiumi hanno sempre terra su entrambi i lati. Muri invisibili ai lati della zona di gioco |
 | Calore | Un'unica barra da 0 a 100 in 5 livelli, per strada e palude insieme; sale di continuo col tempo (0,15 al secondo); i poteri (pugno +1, deltaplano +2, super salto +3) e ogni rottame entro 50 m dalla rana (+0,6: conta il caos che si vede, non quello di un aeroporto lontano) lo fanno salire più in fretta; non cala mai. Effetti al massimo: veicoli e correnti più veloci (+80% e +40%), veicoli un po' più radi (+25% di spazio): meno auto ma più veloci, così il traffico minaccia invece di ingorgarsi, frenata -60%, schianti più facili; dal 60% le auto perdono il controllo da sole. Al massimo 80 rottami insieme |
 | Ritmo | Ondate di pericolo sopra una base che cresce sempre |
-| Genere | Roguelite con run infinite (deciso il 4 ottobre 2026). Come si rigioca fra una run e l'altra (sblocchi) è ancora da decidere |
+| Genere | Roguelite con run infinite (deciso il 4 ottobre 2026). La run è infinita ma la distanza non ha tetto: una buona run finisce fra i 15 e i 20 minuti. Fra una run e l'altra si sbloccano opzioni con le imprese, e si scelgono rane con attrezzi di partenza diversi |
 | Ricompensa | La forza si guadagna nelle tane, scegliendo un potenziamento. Il caos non dà forza (decisione del 4 ottobre 2026, "per ora"): è un attrezzo per passare e costa calore |
 | Pubblicazione | Il gioco si pubblica comunque, senza budget: esce quando è pronto. Il nome definitivo verrà più avanti, prima della pagina Steam ("Frogger" è un marchio di Konami) |
 | Vita | Vita e potenziamenti che crescono durante la run, dalle tane; auto, acqua e coccodrilli tolgono vita: un solo colpo non basta a perdere |
@@ -139,14 +139,17 @@ Il gioco si pubblica comunque, senza budget: quattro fasi, e si passa alla succe
 | 3. Demo | I primi minuti, per una Steam Next Fest (tre all'anno) | Chi prova la demo la rigioca e mette il gioco in wishlist |
 | 4. Uscita | Accesso anticipato o versione completa, a 5-8 € | — |
 
-### Fase 1: da fare, in ordine proposto
+### Fase 1: da fare, in ordine
 
-1. **Finire i gradini di calore** (sezione "Difficoltà nei biomi"): aeroporto, ferrovia e fiume, e la frequenza degli aerei con la distanza. Poi la seconda fase del porto, dopo averlo provato: la nave che si inclina col carico (fino a circa 10°) e i container che scivolano in acqua e galleggiano; qui il pugno trova un ruolo, spostare il peso.
-2. **Più power-up**: ora che la forza viene solo dalle tane, sono il cuore delle build. Obiettivo 25-30, con combinazioni da scoprire (catalogo in idee-future.md).
-3. **La ragione per rigiocare**: gli sblocchi fra una run e l'altra, e la durata attesa di una run. Da decidere.
-4. **Suono** ed effetti sonori del caos; poi la musica.
+Decisa il 4 ottobre 2026.
+
+1. **I gradini di calore** (sezione "Difficoltà nei biomi"): aeroporto (il decollo, e aerei più frequenti con la distanza), ferrovia (il rapido), fiume (i tronchi che affondano). Poi la seconda fase del porto, dopo averlo provato: la nave che si inclina col carico (fino a circa 10°) e i container che scivolano in acqua e galleggiano; qui il pugno trova un ruolo, spostare il peso.
+2. **La fine della run**: la distanza senza tetto. Corsie, velocità, binari e navi continuano a crescere con le sezioni, tarati perché una buona run finisca fra i 15 e i 20 minuti. Niente plateau in cui un giocatore prudente vada avanti per sempre.
+3. **Power-up con livelli e fusioni**: riprendere un modificatore lo fa salire di livello (fino al 3); due modificatori precisi insieme si fondono in un terzo più forte (per esempio correnti calde e guantoni esplosivi: "Napalm"). Bastano 15-20 power-up ben fatti, dal catalogo in idee-future.md.
+4. **Sblocchi a imprese e rane diverse**: la ragione per rigiocare. Nella run il caos non dà forza, ma certe imprese sbloccano opzioni per le run successive (per esempio una catena di 10 rottami sblocca i guantoni magnetici). Le rane hanno attrezzi di partenza diversi (la pugile, la paracadutista, la saltatrice). Sblocchi di opzioni, mai di forza.
 5. **La cornice**: menu, pausa, opzioni (audio, grafica, tasti), testi in inglese, controller, un tutorial per il primo minuto.
-6. **Prova esterna** con 5-10 persone.
+6. **Suono**: effetti in stile retrò (generati con strumenti come sfxr, o da librerie CC0), poi musica CC0 o con solo il credito.
+7. **Prova esterna** con 5-10 persone.
 
 Dopo la fase 1, o quando servono: **reazioni del mondo** (auto che danno la caccia, coccodrilli aggressivi), **ondate**, **altri biomi** (lago ghiacciato, città con semafori, palude) e forse il bivio nella tana. Il **multiplayer** cooperativo solo dopo l'uscita, se lo facciamo.
 

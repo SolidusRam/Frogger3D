@@ -33,9 +33,9 @@ Il 4 ottobre 2026 l'utente ha deciso che, per ora, il caos non dà forza: la for
 
 Se il caos non dà forza, deve servire a passare, altrimenti la strategia migliore è evitarlo. Oggi serve già in parte: un'auto ribaltata blocca una corsia, un rottame fa da zattera, il fumo solleva il deltaplano (correnti calde), un'esplosione svuota la strada (guantoni esplosivi). Da tenere d'occhio nelle prove: il giocatore usa il pugno per passare, o lo evita perché scalda? I power-up nuovi dovrebbero dare al caos sempre più usi.
 
-## Meta-progressione del roguelite (da decidere)
+## Meta-progressione del roguelite
 
-Proposta di Claude, non ancora discussa: una run infinita ma tarata per finire in 15-20 minuti; fra una run e l'altra si sbloccano opzioni, non forza (power-up che entrano nel mazzo delle tane, rane con attrezzi di partenza diversi); ogni tot tane cambia la "zona".
+Decisa il 4 ottobre 2026 (sblocchi a imprese, rane diverse, run da 15-20 minuti): sta nella roadmap di regole-design.md. Da scegliere più avanti: quali imprese, quali rane, quali fusioni.
 
 ## La tana che "mette in banca"
 
