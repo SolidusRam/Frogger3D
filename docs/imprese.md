@@ -42,11 +42,34 @@ Nel Frogger originale la mosca nella tana dava punti in più: qui le mosche sono
 **Cosa comprano** (deciso): come in Vampire Survivors, **forza permanente**: potenziamenti delle statistiche e miglioramenti delle carte, che valgono per le run successive. Qui la regola "sblocchi di opzioni, mai forza" non vale: vale per le imprese, non per le mosche.
 
 **Nel gioco** (fatto il 4 ottobre 2026; numeri da tarare giocando):
-- **Dove**: su circa un'auto su 12, un tronco o un coccodrillo su 6, un vagone su 3, un aereo o una nave su 2 (sull'ala, sopra una casella). Vale 1; la **mosca d'oro** (il 20% delle mosche su treni e aerei) vale 5. Si prende toccandola (raggio 1,1 m) o con la lingua, che la mangia a distanza senza agganciarsi e che col mirino la preferisce. Ogni tana ne dà 3; una tana senza carte da offrire dà vita piena e 8 mosche.
+- **Dove**: su circa un'auto su 12, un tronco o un coccodrillo su 6, un vagone su 3, un aereo o una nave su 2 (sull'ala, sopra una casella). Vale 1; la **mosca d'oro** (il 20% delle mosche su treni e aerei) è una valuta a sé, per la maestria delle carte. Si prende toccandola (raggio 1,1 m) o con la lingua, che la mangia a distanza senza agganciarsi e che col mirino la preferisce. Ogni tana ne dà 3; una tana senza carte da offrire dà vita piena e 8 mosche.
 - **Quando si spendono**: la fine della run le somma al totale (una run di prova no). Lo **stagno** si apre dal menu iniziale e dalla fine della run.
 - **Statistiche** (livelli massimi; prezzo base, il livello n costa base × n): Vita +10 (5; 15), Corazza -5% di danno (4; 25), Riposo +15% di vita in tana (3; 20), Riflessi +0,25 s di invulnerabilità (2; 20), Zampe veloci +4% (4; 20), Zampe forti +8% di salto (3; 20), Nuotatrice +15% in acqua e -15% di danno dall'acqua (3; 15), Molle tese +0,5 m di super salto (3; 25), Ricarica -6% (4; 30), Pugno +10% (3; 20), Ala +0,3 s (4; 20), Vantaggio: incendio 5 m più lontano (4; 30), Sangue freddo -6% di calore dai poteri (4; 30), Lingua lunga +0,7 m di raggio per le mosche (3; 10), Golosa +10% di mosche (3; 30), Fortuna +50% di mosche d'oro (3; 25), Più scelta: una carta in più nelle tane (1; 150), Seconda vita: una volta per run ci si rialza con metà vita (1; 200).
-- **Carte migliorate** (due per carta, valgono quando la si equipaggia): guantoni esplosivi (raggio 8 m; le esplosioni non feriscono la rana), montante (auto più in alto; +40% di spinta), guantone a molla (5,5 m; zona larga il doppio), molle-trampolino (3,6 m; rimbalzando ribalti l'auto sotto), schianto sismico (+2 m; ricarica in 1 s), correnti calde (si sale più in fretta; fumo 9 s), ala a reazione (scalda la metà; 20 m/s), pelle impermeabile (nuoto veloce; dall'acqua si salta fuori come da terra), lingua (16 m; ricarica dimezzata).
-- **Rimborso**: si azzera tutto e le mosche tornano indietro, come in Vampire Survivors.
+- **La maestria delle carte** (decisa il 4 ottobre 2026, al posto dei miglioramenti comprati): ogni carta con slot ha due miglioramenti speciali, che cambiano come si usa la carta. Ognuno ha una prova legata all'uso della carta; superata la prova, si attiva allo stagno con le **mosche d'oro** (2 per il primo, 4 per il secondo), che sono una valuta a sé: la mosca d'oro non vale più 5 mosche. Le prove "in tutto" si sommano fra le run; quelle "in un colpo" o "di fila" tengono il risultato migliore. Una run di prova non le fa avanzare.
+
+  | Carta | Miglioramento | Prova |
+  | --- | --- | --- |
+  | Guantoni esplosivi | Reazione a catena: le auto distrutte esplodono a loro volta (fino a 3 passaggi) | Fai esplodere 30 auto |
+  | | Razzo: l'esplosione vicina non ferisce, lancia in alto | Distruggi 4 auto con una sola esplosione |
+  | Montante | Meteora: l'auto lanciata ricade con un'onda | Lancia 30 auto col montante |
+  | | Doppio montante: il pugno arriva anche in alto | Un'auto lanciata ne ribalta un'altra ricadendo |
+  | Guantone a molla | Perforante: tutte le auto sulla linea | Colpisci 25 auto da più di 3 m |
+  | | Tira e molla: l'auto viene tirata, poi scagliata più forte | Colpisci 2 auto con un solo pugno |
+  | Molle-trampolino | Crescendo: ogni rimbalzo di fila più alto | Rimbalza 50 volte sui tetti |
+  | | Bombardiera: rimbalzando si ribalta l'auto sotto | Rimbalza 6 volte di fila |
+  | Schianto sismico | Doppia onda: mezzo secondo dopo, un'onda più larga | Ribalta 40 auto con lo schianto |
+  | | Dal cielo: più si cade dall'alto, più l'onda è grande | Ribalta 5 auto con un solo schianto |
+  | Correnti calde | Fenice: nel fumo si recupera vita | Sali per 100 m nel fumo |
+  | | Camino: anche il fumo davanti all'incendio solleva | Resta 6 s di fila in una colonna di fumo |
+  | Ala a reazione | Postbruciatore: le auto sotto l'ala diventano rottami | Vola 800 m con l'ala a reazione |
+  | | Raffreddata: in volo il calore non sale | Vola 60 m in un solo volo |
+  | Pelle impermeabile | Tuffo: in acqua, Ctrl, si va sotto tronchi e coccodrilli | Nuota per 300 m |
+  | | Ondata: saltando fuori dall'acqua si spingono via auto e rottami | Resta 15 s di fila in acqua |
+  | Lingua | Fionda: lasciando dopo un traino si parte a velocità doppia | Fatti trascinare 20 volte |
+  | | Lingua doppia: mentre la lingua trascina, le mosche vicine finiscono in bocca | Fatti trascinare per 50 m in un solo traino |
+
+  Da rivedere in futuro: il bilanciamento dei miglioramenti e delle prove.
+- **Rimborso**: si azzera tutto e le mosche (anche quelle d'oro) tornano indietro, come in Vampire Survivors; le prove superate restano superate.
 
 Ancora da fare: i gettoni della tana (Rilancia, Salta, Esilia) e le cose da vedere (cappelli, colori, stili). Altre statistiche possibili: spinta dello schianto, durata della seconda vita, mosche d'oro anche su auto e navi.
 

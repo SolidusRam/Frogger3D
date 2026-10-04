@@ -238,3 +238,9 @@ func _set_special(id: String, first: bool, second: bool) -> void:
 		"jet_wing":
 			frog.glider_power.afterburner = first
 			frog.glider_power.cooled = second
+		"waterproof":
+			frog.can_dive = first
+			frog.splash_wave = second
+		"tongue":
+			frog.tongue_power.slingshot = first
+			frog.tongue_power.double_tongue = second

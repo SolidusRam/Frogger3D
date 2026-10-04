@@ -27,7 +27,8 @@ func _physics_process(delta: float) -> void:
 	_set_mouth_open(_cycle_time < open_duration)
 	if _mouth_open:
 		for body in _mouth.get_overlapping_bodies():
-			if body is Frog:
+			# Chi è immerso col tuffo passa sotto la bocca.
+			if body is Frog and not body.submerged:
 				# Di lato, fuori dalla corrente: in avanti il coccodrillo, che va
 				# alla stessa velocità dell'acqua, la raggiungerebbe di nuovo.
 				var side := drift_velocity.normalized().cross(Vector3.UP)

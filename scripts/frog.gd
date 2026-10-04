@@ -111,6 +111,17 @@ var bounce_streak := 0
 var cooldown_factor := 1.0
 ## Pelle impermeabile (power-up): l'acqua non toglie vita.
 var waterproof := false
+## Miglioramenti speciali della pelle impermeabile: il tuffo (in acqua, con
+## Ctrl, ci si immerge e si passa sotto tronchi e coccodrilli) e l'ondata
+## (saltando fuori dall'acqua si spingono via auto e rottami vicini).
+var can_dive := false
+var splash_wave := false
+## Vero mentre la rana è immersa col tuffo.
+var submerged := false
+@export var dive_depth := 2.0
+@export var splash_radius := 5.0
+## Secondi di fila in acqua (per la prova della pelle impermeabile).
+var _water_time := 0.0
 ## Velocità di nuoto senza carte (la pelle impermeabile migliorata la
 ## moltiplica).
 var base_swim_speed := 2.5
@@ -138,6 +149,9 @@ func _physics_process(delta: float) -> void:
 	super_jump_power.tick(delta)
 	tongue_power.tick(delta)
 	slam_power.tick(delta)
+	if not is_swimming():
+		submerged = false
+		_water_time = 0.0
 
 	var input := Vector2.ZERO
 	if can_act():
@@ -448,6 +462,27 @@ func _free_spot(from: Vector3, away: float) -> Vector3:
 	return from
 
 
+## L'ondata: saltando fuori dall'acqua, auto e rottami vicini vengono spinti
+## via (le auto in marcia diventano rottami).
+func _splash() -> void:
+	var query := PhysicsShapeQueryParameters3D.new()
+	var sphere := SphereShape3D.new()
+	sphere.radius = splash_radius
+	query.shape = sphere
+	query.transform = Transform3D(Basis(), global_position)
+	query.collision_mask = 4
+	for result in get_world_3d().direct_space_state.intersect_shape(query, 16):
+		var body := result.collider as RigidBody3D
+		if body == null:
+			continue
+		if body is Car and body.state == Car.State.DRIVING:
+			body.become_wreck()
+		if body.freeze:
+			continue
+		var away := body.global_position - global_position
+		body.linear_velocity = Vector3(away.x, 0.0, away.z).normalized() * 9.0 + Vector3.UP * 4.0
+
+
 ## Da morta la rana cade o galleggia, senza controlli né poteri.
 func _fall_while_dead(delta: float) -> void:
 	velocity.x = move_toward(velocity.x, 0.0, air_acceleration * delta)
@@ -470,13 +505,22 @@ func _swim(direction: Vector3, delta: float) -> void:
 	velocity.x = horizontal.x
 	velocity.z = horizontal.z
 
-	var float_y := _river.surface_y() - float_depth
+	# Il tuffo: con Ctrl tenuto la rana va sott'acqua.
+	submerged = can_dive and Input.is_action_pressed("slam")
+	var float_y := _river.surface_y() - (dive_depth if submerged else float_depth)
 	var target_vertical := clampf((float_y - global_position.y) * 6.0, -4.0, 4.0)
 	velocity.y = move_toward(velocity.y, target_vertical, 30.0 * delta)
+
+	if waterproof:
+		Progress.trial_add("waterproof", 0, Vector2(velocity.x, velocity.z).length() * delta)
+		_water_time += delta
+		Progress.trial_best("waterproof", 1, _water_time)
 
 	if Input.is_action_just_pressed("jump") and can_act():
 		velocity.y = jump_velocity * water_jump_factor
 		squash(Vector3(0.8, 1.3, 0.8), 0.25)
+		if splash_wave:
+			_splash()
 
 	if not waterproof:
 		_water_damage_owed += water_damage_per_second * delta

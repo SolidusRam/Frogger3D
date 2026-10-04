@@ -80,6 +80,9 @@ func _physics_process(_delta: float) -> bool:
 				cars = Lib.cars(main).filter(func(c): return c.state == 0 and c.model_type in ["compact", "sedan"]).slice(0, 24)
 				for car in cars:
 					car.get_parent().set_physics_process(false)
+					# Fuori dai blocchi del percorso, che si cancellano quando la
+					# rana va lontano.
+					car.reparent(main)
 					car.global_position = Vector3(0, -50, 0)
 				_next(1)
 		1: # guantoni esplosivi: prova, reazione a catena
@@ -298,5 +301,69 @@ func _physics_process(_delta: float) -> bool:
 			if f == 40:
 				t.check(frog.glider_power.gliding and root.get_node("Heat").value == m.heat, "raffreddata: in volo il calore non sale")
 				Input.action_release("jump")
+				_next(14)
+		14: # pelle impermeabile: tuffo e prove
+			var river: Node3D = Lib.by_script(main, "river.gd")[0]
+			if f == 1:
+				_equip("waterproof", true, false)
+				# Le correnti del fiume vuote: niente tronchi né coccodrilli addosso.
+				for lane in Lib.by_script(river, "river_lane.gd"):
+					lane.set_physics_process(false)
+					for child in lane.get_children():
+						child.queue_free()
+				Lib.place(frog, Vector3(0, river.surface_y() - 0.3, river.global_position.z))
+			if f == 20:
+				Input.action_press("slam")
+			if f == 80:
+				t.check(frog.submerged and frog.global_position.y < river.surface_y() - 1.5, "tuffo: in acqua, con Ctrl, la rana va sotto (%.1f m)" % (frog.global_position.y - river.surface_y()))
+				t.check(_trial("waterproof", 1) > 1.0, "la prova della pelle impermeabile conta i secondi di fila in acqua")
+				Input.action_release("slam")
+				_next(15)
+		15: # ondata
+			var river: Node3D = Lib.by_script(main, "river.gd")[0]
+			if f == 1:
+				_equip("waterproof", false, true)
+				Lib.place(frog, Vector3(10, river.surface_y() - 0.3, river.global_position.z))
+				m.car = _fresh(Vector3(13, river.surface_y() + 0.5, river.global_position.z))
+			if f == 30:
+				Input.action_press("jump")
+			if f == 32:
+				Input.action_release("jump")
+			if f == 40:
+				t.check(m.car.state == 1, "ondata: saltando fuori dall'acqua l'auto vicina viene spinta via")
+				_next(16)
+		16: # lingua: fionda e prove
+			if f == 1:
+				_equip("tongue", true, false)
+				Lib.place(frog, BASE + Vector3(0, 0.1, 45))
+				m.car = _fresh(BASE + Vector3(0, 0, 45) + _forward() * 8.0)
+				frog.tongue_power.cooldown_left = 0.0
+			if f == 3:
+				Input.action_press("tongue")
+			if f > 40 and f <= 100:
+				m.car.global_position.x += 8.0 / 60.0
+			if f == 100:
+				Input.action_release("tongue")
+			if f == 102:
+				t.check(frog.velocity.x > 16.0, "fionda: lasciando dopo un traino si parte a velocità doppia (%.1f m/s)" % frog.velocity.x)
+				t.check(_trial("tongue", 0) >= 1.0 and _trial("tongue", 1) > 3.0, "le prove della lingua contano i traini e i metri trascinati")
+				_next(17)
+		17: # lingua doppia
+			if f == 1:
+				_equip("tongue", false, true)
+				Lib.place(frog, BASE + Vector3(-20, 0.1, 45))
+				m.car = _fresh(BASE + Vector3(-20, 0, 45) + _forward() * 8.0)
+				frog.tongue_power.cooldown_left = 0.0
+			if f == 3:
+				Input.action_press("tongue")
+			if f == 20:
+				m.flies = main.run_flies
+				var fly: Node3D = load("res://scripts/fly.gd").new()
+				main.add_child(fly)
+				fly.global_position = frog.global_position + Vector3(3, 1, 0)
+				fly.set_physics_process(false)
+			if f == 25:
+				t.check(main.run_flies == m.flies + 1, "lingua doppia: mentre la lingua trascina, le mosche vicine finiscono in bocca")
+				Input.action_release("tongue")
 				t.finish(self)
 	return false

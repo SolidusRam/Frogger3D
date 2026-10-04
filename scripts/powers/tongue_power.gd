@@ -26,6 +26,12 @@ extends Node
 
 ## Equipaggiata nella tana.
 var enabled := false
+## Miglioramenti speciali: la fionda (lasciando dopo un traino si parte a
+## velocità doppia) e la lingua doppia (mentre una lingua trascina, l'altra
+## mangia le mosche vicine).
+var slingshot := false
+var double_tongue := false
+@export var double_tongue_reach := 6.0
 var cooldown_left := 0.0
 ## Vero mentre la lingua è agganciata a qualcosa.
 var attached := false
@@ -41,6 +47,9 @@ var _tongue: MeshInstance3D
 var _sight: MeshInstance3D
 var _flick_to := Vector3.ZERO
 var _flick_left := 0.0
+## Metri percorsi trascinata in questo traino (per la prova della lingua).
+var _tow_distance := 0.0
+var _tow_last := Vector3.ZERO
 
 
 func setup(frog: Frog) -> void:
@@ -111,6 +120,10 @@ func use() -> bool:
 	_last_anchor = target.to_global(_anchor_local)
 	_length = _mouth().distance_to(_last_anchor)
 	_frog.squash(Vector3(0.85, 0.85, 1.25), 0.2)
+	if not _is_loose(target):
+		Progress.trial_add("tongue", 0, 1)
+		_tow_distance = 0.0
+		_tow_last = _frog.global_position
 	return true
 
 
@@ -141,6 +154,18 @@ func apply(delta: float) -> void:
 			relative += direction * outward
 		relative += direction * minf((distance - _length) * 12.0, pull_speed)
 	_frog.velocity = carried + relative
+	var moved := _frog.global_position - _tow_last
+	_tow_distance += Vector2(moved.x, moved.z).length()
+	_tow_last = _frog.global_position
+	if double_tongue:
+		_eat_nearby_flies()
+
+
+## La lingua doppia: le mosche vicine finiscono in bocca da sole.
+func _eat_nearby_flies() -> void:
+	for fly: Node3D in _frog.get_tree().get_nodes_in_group("flies"):
+		if fly.global_position.distance_to(_frog.global_position) < double_tongue_reach:
+			fly.collect()
 
 
 ## Il rottame agganciato viene tirato verso la rana, fino a tether_length.
@@ -161,6 +186,10 @@ func release() -> void:
 		return
 	attached = false
 	if not _is_loose(_target):
+		Progress.trial_best("tongue", 1, _tow_distance)
+		if slingshot:
+			_frog.velocity.x *= 2.0
+			_frog.velocity.z *= 2.0
 		_frog.velocity.y = maxf(_frog.velocity.y, release_hop)
 	_target = null
 	cooldown_left = cooldown
