@@ -65,6 +65,15 @@ func _physics_process(_delta: float) -> bool:
 				var stats: int = pond._stats_box.get_child_count()
 				var cards: int = pond._cards_box.get_child_count()
 				t.check(stats == progress.STATS.size() and cards == progress.CARD_UPGRADES.size(), "lo stagno mostra statistiche e carte (%d e %d)" % [stats, cards])
+				# Comprare dal pulsante: la schermata si rifà mentre il pulsante sta
+				# ancora mandando il segnale.
+				progress.add_flies(500)
+				pond.refresh()
+				var first: Node = pond._stats_box.get_child(0)
+				var buy: Button = first.get_child(first.get_child_count() - 1)
+				var level_before: int = progress.level("health")
+				buy.pressed.emit()
+				t.check(progress.level("health") == level_before + 1 and pond._stats_box.get_child_count() == stats, "si compra dal pulsante e la schermata si aggiorna")
 				pond.queue_free()
 				# Il menu iniziale porta al gioco.
 				change_scene_to_file("res://scenes/menu.tscn")

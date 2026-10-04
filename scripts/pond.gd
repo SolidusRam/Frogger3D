@@ -52,10 +52,12 @@ func _ready() -> void:
 
 func refresh() -> void:
 	_flies_label.text = "Mosche: %d" % Progress.flies
-	for child in _stats_box.get_children():
-		child.free()
-	for child in _cards_box.get_children():
-		child.free()
+	# Le righe vecchie escono subito, ma si cancellano a fine fotogramma: il
+	# pulsante appena premuto sta ancora mandando il suo segnale.
+	for box in [_stats_box, _cards_box]:
+		for child in box.get_children():
+			box.remove_child(child)
+			child.queue_free()
 	for stat: String in Progress.STATS:
 		var info: Dictionary = Progress.STATS[stat]
 		var level := Progress.level(stat)
