@@ -4,7 +4,7 @@ extends AnimatableBody3D
 ## Sotto le ali si passa; fusoliera, motori e carrelli travolgono rana e
 ## veicoli; sulle ali e sulla fusoliera si sta sicuri. Dietro ogni motore c'è
 ## una fiamma che brucia, e poi un getto a cono che spinge via la rana e
-## scaglia i rottami: col deltaplano aperto la solleva in alto. Corre lungo
+## scaglia rottami e bagagli: col deltaplano aperto la solleva in alto. Corre lungo
 ## l'asse X locale del raccordo.
 
 const MODEL := preload("res://assets/models/airplane.glb")
@@ -122,6 +122,9 @@ func _push() -> void:
 		for body in area.get_overlapping_bodies():
 			var distance: float = (body.global_position - area.global_position).dot(backward)
 			var strength := 1.0 - 0.6 * clampf(distance / BLAST_LENGTH, 0.0, 1.0)
+			# Il getto porta via i bagagli dai carrelli, poi li scaglia.
+			if body is Baggage and body.loaded:
+				body.release()
 			if body is Frog:
 				body.apply_wind(backward * BLAST_WIND * strength, BLAST_LIFT * strength)
 			elif body is RigidBody3D and not body.freeze:

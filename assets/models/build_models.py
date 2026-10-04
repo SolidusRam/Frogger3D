@@ -44,6 +44,8 @@ PREVIEW = {
     "plane": (0.92, 0.93, 0.95, 1), "plane_wing": (0.75, 0.77, 0.8, 1),
     "plane_engine": (0.55, 0.57, 0.6, 1), "plane_tail": (0.15, 0.3, 0.7, 1),
     "crane": (0.95, 0.65, 0.1, 1), "crane_cab": (0.2, 0.45, 0.3, 1),
+    "tug": (0.95, 0.75, 0.1, 1), "beacon": (1.0, 0.55, 0.05, 1), "dolly": (0.35, 0.37, 0.4, 1),
+    "cardboard": (0.7, 0.52, 0.32, 1), "tape": (0.85, 0.75, 0.55, 1),
 }
 
 
@@ -410,6 +412,73 @@ def build_airplane():
     save("airplane")
 
 
+# I mezzi del trenino bagagli hanno l'origine a terra, al centro, come i
+# rotabili: davanti verso +Y. Passano sotto le ali (2,4 m): restano sotto 1,9.
+
+def build_tug():
+    """Trattorino portabagagli: 1,4 x 2,6 m, cofano davanti, sedile dietro
+    sotto un tettuccio su quattro montanti."""
+    reset()
+    parts = [box("chassis", -0.7, 0.7, -1.3, 1.3, 0.3, 0.6, "tug")]
+    parts.append(block("hood",
+                       [(-0.68, 0.0, 0.6), (0.68, 0.0, 0.6), (0.68, 1.3, 0.6), (-0.68, 1.3, 0.6)],
+                       [(-0.6, 0.0, 1.05), (0.6, 0.0, 1.05), (0.6, 1.2, 0.9), (-0.6, 1.2, 0.9)], "tug"))
+    parts.append(box("seat", -0.45, 0.45, -1.0, -0.4, 0.6, 0.85, "trim"))
+    parts.append(box("seat_back", -0.45, 0.45, -1.15, -1.0, 0.6, 1.25, "trim"))
+    for x in (0.62, -0.62):
+        for y in (0.0, -1.2):
+            parts.append(box("post", x - 0.04, x + 0.04, y - 0.04, y + 0.04, 0.6, 1.7, "metal"))
+    parts.append(box("canopy", -0.7, 0.7, -1.3, 0.1, 1.7, 1.78, "tug"))
+    parts.append(box("beacon", -0.12, 0.12, -0.6, -0.36, 1.78, 1.9, "beacon"))
+    parts += mirrored_box("headlight", 0.3, 0.55, 1.3, 1.34, 0.7, 0.85, "headlight")
+    parts.append(box("bumper", -0.7, 0.7, 1.3, 1.42, 0.25, 0.45, "trim"))
+    parts.append(box("hitch", -0.08, 0.08, -1.55, -1.3, 0.35, 0.45, "metal"))
+    join("Tug", parts)
+    wheels(0.3, 0.22, 0.62, (0.85, -0.85), 0.3)
+    save("tug")
+
+
+def build_dolly():
+    """Carrello portabagagli: pianale a 0,55 m (1,5 x 2,6), sponde basse e
+    timone davanti. I bagagli li carica Godot sul pianale."""
+    reset()
+    parts = [box("bed", -0.75, 0.75, -1.3, 1.3, 0.4, 0.55, "dolly")]
+    for x in (0.72, -0.72):
+        for y in (-1.25, 0.0, 1.25):
+            parts.append(box("stake", x - 0.03, x + 0.03, y - 0.03, y + 0.03, 0.55, 0.85, "metal"))
+        parts.append(box("rail", x - 0.03, x + 0.03, -1.28, 1.28, 0.8, 0.85, "metal"))
+    parts.append(box("drawbar", -0.05, 0.05, 1.3, 1.85, 0.38, 0.46, "metal"))
+    join("Dolly", parts)
+    for i, y in enumerate((0.85, -0.85)):
+        for side, label in ((1, "R"), (-1, "L")):
+            cylinder("Wheel_%d%s" % (i, label), 0.2, 0.15, (side * 0.62, y, 0.2), "tire")
+    save("dolly")
+
+
+def build_suitcase():
+    """Valigia sdraiata: 0,5 x 0,75 x 0,3 m, origine al centro. Il colore
+    ("paint") lo sceglie Godot."""
+    reset()
+    parts = [box("shell", -0.25, 0.25, -0.375, 0.375, -0.15, 0.15, "paint")]
+    parts.append(box("zip", -0.26, 0.26, -0.385, 0.385, -0.02, 0.02, "trim"))
+    parts.append(box("handle", -0.1, 0.1, 0.375, 0.42, 0.04, 0.1, "trim"))
+    parts.append(box("tag", 0.25, 0.27, -0.1, 0.05, -0.08, 0.06, "sign_white"))
+    join("Suitcase", parts)
+    save("suitcase")
+
+
+def build_parcel():
+    """Pacco di cartone: 0,6 x 0,6 x 0,5 m con il nastro adesivo, origine al
+    centro."""
+    reset()
+    parts = [box("box", -0.3, 0.3, -0.3, 0.3, -0.25, 0.25, "cardboard")]
+    parts.append(box("tape_top", -0.06, 0.06, -0.31, 0.31, 0.25, 0.26, "tape"))
+    for y in (0.3, -0.31):
+        parts.append(box("tape_side", -0.06, 0.06, y, y + 0.01, 0.0, 0.26, "tape"))
+    join("Parcel", parts)
+    save("parcel")
+
+
 # --- Porto -------------------------------------------------------------------
 
 def build_crane():
@@ -502,7 +571,8 @@ BUILDERS = {
     "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
     "mountain": build_mountain, "locomotive": build_locomotive, "boxcar": build_boxcar,
     "flatcar": build_flatcar, "signal": build_signal, "airplane": build_airplane,
-    "crane": build_crane, "container": build_container,
+    "crane": build_crane, "container": build_container, "tug": build_tug, "dolly": build_dolly,
+    "suitcase": build_suitcase, "parcel": build_parcel,
 }
 
 if __name__ == "__main__":

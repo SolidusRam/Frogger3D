@@ -1,7 +1,7 @@
 class_name PunchPower
 extends Node
 ## Il pugno: colpisce i veicoli davanti alla rana, nella direzione in cui
-## guarda la telecamera, e li trasforma in rottami. L'attrezzo sono i guantoni,
+## guarda la telecamera, e li trasforma in rottami; i bagagli volano via. L'attrezzo sono i guantoni,
 ## che scattano in avanti alternandosi. I potenziamenti cambiano questi valori.
 
 ## Distanza e raggio della zona colpita davanti alla rana.
@@ -64,6 +64,8 @@ func use() -> void:
 		if car and not hits.has(car):
 			hits.append(car)
 			car.receive_punch((forward + Vector3.UP * lift) * impulse, explosive)
+		elif result.collider is Baggage:
+			result.collider.receive_punch((forward + Vector3.UP * lift) * impulse)
 	_frog.power_used.emit(&"punch")
 	if not hits.is_empty():
 		_frog.punched.emit(hits)
