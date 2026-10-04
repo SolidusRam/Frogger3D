@@ -1,0 +1,66 @@
+extends SceneTree
+## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
+## Screenshot delle schermate: menu | stagno | maestria | hud | carte | fine | prova.
+## HEAT, SHOT.
+var frame := 0
+var main: Node
+var scene := OS.get_environment("SCENE")
+const PROGRESS := "user://progressi_shot.cfg"
+
+
+func _initialize() -> void:
+	get_root().size = Vector2i(1280, 720)
+	seed(11)
+	var progress: GDScript = load("res://scripts/progress.gd")
+	progress.load_from(PROGRESS)
+	progress.flies = 137
+	progress.golden = 3
+	progress.stat_levels = {"health": 2, "speed": 1, "choice": 1}
+	progress.trials = {"explosive_gloves:0": 30.0, "uppercut:0": 12.0, "slam:1": 3.0}
+	progress.save()
+	if scene == "menu" or scene == "stagno" or scene == "maestria":
+		var menu: Node = load("res://scenes/menu.tscn").instantiate()
+		menu.progress_path = PROGRESS
+		root.add_child(menu)
+		current_scene = menu
+		return
+	main = load("res://scenes/main.tscn").instantiate()
+	main.record_path = "user://record_shot.cfg"
+	main.progress_path = PROGRESS
+	root.add_child(main)
+	current_scene = main
+
+
+func _process(_d: float) -> bool:
+	frame += 1
+	if frame == 2 and main:
+		var heat = root.get_node("Heat")
+		heat.value = float(OS.get_environment("HEAT"))
+		heat.changed.emit(heat.value, heat.level())
+		main.get_node("Wildfire").stopped = true
+	if frame == 10:
+		match scene:
+			"stagno", "maestria":
+				current_scene._open_pond()
+				if scene == "maestria":
+					var tabs: TabContainer = current_scene._pond.find_children("*", "TabContainer", true, false)[0]
+					tabs.current_tab = 1
+			"carte":
+				main.offer_upgrade()
+			"fine":
+				main.get_node("Frog").take_hit(1000, Vector3.ZERO)
+			"prova":
+				for child in main.get_children():
+					if child.get_script() and child.get_script().resource_path.ends_with("test_mode.gd"):
+						child._set_open(true)
+			"hud":
+				main.get_node("Upgrades").apply("tongue")
+				main.get_node("Upgrades").apply("explosive_gloves")
+				main.get_node("Hud").show_equipment(main.get_node("Upgrades"))
+	if frame == 50:
+		get_root().get_texture().get_image().save_png(OS.get_environment("SHOT"))
+		print("salvato ", OS.get_environment("SHOT"))
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(PROGRESS))
+		DirAccess.remove_absolute(ProjectSettings.globalize_path("user://record_shot.cfg"))
+		quit()
+	return false
