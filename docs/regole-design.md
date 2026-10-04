@@ -155,6 +155,8 @@ Decisa il 4 ottobre 2026.
 6. **Suono**: effetti in stile retrò (generati con strumenti come sfxr, o da librerie CC0), poi musica CC0 o con solo il credito.
 7. **Prova esterna** con 5-10 persone.
 
+**Da rifare: l'aeroporto.** L'idea è interessante ma non convince ancora del tutto (prova del giocatore, 4 ottobre 2026): i bagagli scagliati non sono un vero problema, e una volta volati via la pista si attraversa facilmente. Il decollo è il primo tentativo di rimedio; il rework va pensato insieme al resto dei biomi.
+
 Dopo la fase 1, o quando servono: **reazioni del mondo** (auto che danno la caccia, coccodrilli aggressivi), **ondate**, **altri biomi** (lago ghiacciato, città con semafori, palude) e forse il bivio nella tana. Il **multiplayer** cooperativo solo dopo l'uscita, se lo facciamo.
 
 ## Domande aperte
