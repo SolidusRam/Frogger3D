@@ -191,6 +191,56 @@ func _physics_process(_delta: float) -> bool:
 				var flying: Array = m.bags.filter(func(b): return not b.loaded and b.global_position.z < LANE.z + 26.0)
 				t.check(m.train.cargo().size() < m.bags.size(), "il pugno porta via i bagagli dal carrello (%d su %d)" % [m.bags.size() - m.train.cargo().size(), m.bags.size()])
 				t.check(not flying.is_empty(), "il pugno li fa volare lontano (%d oltre 2,5 m)" % flying.size())
+				_next(8)
+		8: # il gradino: dal livello 3 metà degli aerei decolla
+			var heat: Node = root.get_node("Heat")
+			if f == 1:
+				heat.running = false
+				heat.value = 0.0
+				var taxiway: Node3D = load("res://scripts/taxiway.gd").new()
+				taxiway.difficulty = 4
+				taxiway.takeoff_chance = 1.0
+				taxiway.position = LANE + Vector3(0, 0, -60)
+				main.add_child(taxiway)
+				t.check(taxiway.min_interval == 6.0 and taxiway.max_interval == 10.0, "con la distanza gli aerei arrivano più spesso (%.0f-%.0f s)" % [taxiway.min_interval, taxiway.max_interval])
+				var takeoffs := 0
+				for i in 20:
+					taxiway._send_plane(-200.0)
+				for child in taxiway.get_children():
+					if child.get_script() and child.get_script().resource_path.get_file() == "airplane.gd" and child.takeoff:
+						takeoffs += 1
+				t.check(takeoffs == 0, "a calore basso nessun aereo decolla")
+				taxiway.queue_free()
+				heat.value = 61.0
+				frog.heal_full()
+				if plane:
+					plane.queue_free()
+				plane = load("res://scripts/airplane.gd").create(1.0, 7.0)
+				plane.takeoff = true
+				plane.hold_x = 0.0
+				plane.position = LANE + Vector3(-10, 0, 0)
+				main.add_child(plane)
+				Lib.place(frog, LANE + Vector3(0, 30, 30))
+			if plane.is_spooling() and not m.has("spool_at"):
+				m.spool_at = f
+				m.hold = plane.global_position.x
+			if m.has("spool_at"):
+				var g: int = f - m.spool_at
+				if g == 90:
+					# A 30 m dietro il motore: oltre il getto normale (22 m).
+					Lib.place(frog, plane.to_global(Vector3(6, 0, 30)) + Vector3(0, 0.1, 0))
+					m.x = frog.global_position.x
+				if g == 115:
+					t.check(absf(plane.global_position.x - m.hold) < 0.01, "per decollare l'aereo si ferma sul raccordo")
+					t.check(plane.power > 1.8, "fermo, i motori salgono di giri (%.2f)" % plane.power)
+					var pushed: float = m.x - frog.global_position.x
+					t.check(pushed > 1.5, "il getto del decollo arriva al doppio della distanza (%.1f m a 30 m)" % pushed)
+					Lib.place(frog, LANE + Vector3(0, 30, 30))
+				if g == 300:
+					t.check(plane.is_rolling() and plane.speed > 18.0, "poi corre lungo il raccordo (%.0f m/s)" % plane.speed)
+					t.finish(self)
+			if f > 900:
+				t.check(false, "l'aereo si ferma per decollare entro 15 s")
 				t.finish(self)
 	return false
 

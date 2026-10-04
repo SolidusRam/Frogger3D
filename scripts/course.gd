@@ -150,6 +150,7 @@ func _add_chunk(kind: Kind) -> void:
 			taxiway.direction = 1.0 if randf() < 0.5 else -1.0
 			taxiway.length = rail_ground_width
 			taxiway.play_half_width = play_half_width
+			taxiway.difficulty = difficulty
 			chunk.add_child(taxiway)
 		Kind.PORT:
 			# Una corsia d'acqua con le navi, due nelle sezioni avanzate.

@@ -98,7 +98,7 @@ Per ora **un gradino per bioma, tutti al livello 3** (60 di calore): "la soglia 
 | Strada | più corsie, più veloci | le auto perdono il controllo da sole | fatto |
 | Fiume | più correnti, più coccodrilli | i tronchi affondano: con la rana sopra (anche in aria appena sopra: saltellare non basta) tremano, dopo 1 s cominciano ad affondare facendo bolle e vanno sotto in 2 s; quando la rana scende tornano a galla. I coccodrilli no | fatto |
 | Ferrovia | più binari | il rapido: metà dei treni, bianco, locomotiva e due carrozze, 55 m/s (il doppio). Stesso avviso di 2,5 s. La sua scia, dal muso a 12 m dopo la coda, tira verso i binari chi sta entro 3 m dalla fiancata, fino a 9 m/s (di più vicino); camminando ci si allontana | fatto |
-| Aeroporto | aerei più frequenti (da 9-15 s fino a 6-10 s) | il decollo: l'aereo si ferma, la fiamma cresce per 2 s, poi accelera fino a circa 35 m/s con un getto lungo il doppio | da fare |
+| Aeroporto | aerei più frequenti: da uno ogni 9-15 s fino a 6-10 s (dalla quarta sezione di aeroporti in poi) | il decollo: metà degli aerei si ferma sul raccordo con la coda nella zona di gioco; per 2 s i motori salgono di giri, fiamma (fino a 14 m) e getto (fino a 44 m) si allungano e il vento arriva a 26 m/s; poi l'aereo accelera fino a 35 m/s e fuori dalla zona di gioco si alza in volo | fatto |
 | Porto | una corsia, poi due; navi più cariche | la gru caccia la rana sul ponte | fatto |
 
 ## Roadmap
@@ -118,7 +118,7 @@ Il gioco base è finito e giocabile: una run infinita in cui si muore e si ricom
 | Grafica | Modelli low-poly in Blender, stile PS1 (più Base e Arcade con F2), il giorno che scende verso la notte col calore, fermo-immagine e rallentatore sulle catene di rottami |
 | Power-up nelle tane | Scelta uno tra tre a gioco fermo; slot-attrezzo (guantoni, molle, ala, corpo). Fatti: guantoni esplosivi, correnti calde, quattro numerici |
 | Biomi | Ferrovia (treni inarrestabili, avviso leale); aeroporto (fiamma e getto dei motori, trenini bagagli il cui carico vola via nel getto, il getto come ascensore per il deltaplano); porto (acqua e navi portacontainer: le gru caricano le navi mentre ci sei sopra, un labirinto che si chiude; dal livello 3 cacciano la rana) |
-| Difficoltà nei biomi | Criteri decisi (sezione sopra); gradini fatti: strada e porto |
+| Difficoltà nei biomi | Criteri decisi (sezione sopra); un gradino al livello 3 in ogni bioma: auto che sbandano, tronchi che affondano, il rapido, il decollo, le gru che cacciano |
 | Strumenti | 14 test automatici (tests/run.sh) e screenshot senza finestre (tools/screenshot.sh) |
 
 ### Da provare giocando
@@ -127,6 +127,7 @@ Il gioco base è finito e giocabile: una run infinita in cui si muore e si ricom
 - L'aeroporto: il super salto con il deltaplano nel getto, il momento giusto per attraversare dietro l'aereo.
 - I bagagli scagliati dal getto. Prova del giocatore (4 ottobre): non sono un vero problema, e una volta volati via la pista si attraversa facilmente. Da rivedere insieme al gradino del decollo.
 - Il calore che ora conta solo i rottami entro 50 m dalla rana.
+- I gradini al livello 3 di calore: i tronchi che affondano, il rapido e la sua scia, il decollo (l'aereo fermo col getto lungo il doppio), le gru che cacciano.
 
 ### Il percorso verso l'uscita
 
@@ -143,7 +144,7 @@ Il gioco si pubblica comunque, senza budget: quattro fasi, e si passa alla succe
 
 Decisa il 4 ottobre 2026.
 
-1. **I gradini di calore** (sezione "Difficoltà nei biomi"): aeroporto (il decollo, e aerei più frequenti con la distanza), ferrovia (il rapido), fiume (i tronchi che affondano). Poi la seconda fase del porto, dopo averlo provato: la nave che si inclina col carico (fino a circa 10°) e i container che scivolano in acqua e galleggiano; qui il pugno trova un ruolo, spostare il peso.
+1. **I gradini di calore** (sezione "Difficoltà nei biomi"): fatti tutti e cinque il 4 ottobre 2026, da provare giocando. Resta la seconda fase del porto, dopo averlo provato: la nave che si inclina col carico (fino a circa 10°) e i container che scivolano in acqua e galleggiano; qui il pugno trova un ruolo, spostare il peso.
 2. **La fine della run**: la distanza senza tetto. Corsie, velocità, binari e navi continuano a crescere con le sezioni, tarati perché una buona run finisca fra i 15 e i 20 minuti. Niente plateau in cui un giocatore prudente vada avanti per sempre.
 3. **Power-up con livelli e fusioni**: riprendere un modificatore lo fa salire di livello (fino al 3); due modificatori precisi insieme si fondono in un terzo più forte (per esempio correnti calde e guantoni esplosivi: "Napalm"). Bastano 15-20 power-up ben fatti, dal catalogo in idee-future.md.
 4. **Sblocchi a imprese e rane diverse**: la ragione per rigiocare. Nella run il caos non dà forza, ma certe imprese sbloccano opzioni per le run successive (per esempio una catena di 10 rottami sblocca i guantoni magnetici). Le rane hanno attrezzi di partenza diversi (la pugile, la paracadutista, la saltatrice). Sblocchi di opzioni, mai di forza.

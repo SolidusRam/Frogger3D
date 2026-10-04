@@ -5,13 +5,20 @@ extends Node3D
 ## arrivare: non serve un avviso. Sotto le ali, accanto ai motori, corrono due
 ## strade di servizio con i trenini bagagli: quando il getto li investe porta
 ## via valigie e pacchi e li scaglia all'indietro, addosso a chi attraversa
-## dietro l'aereo. Corre lungo l'asse X locale.
+## dietro l'aereo. Dal livello Heat.STEP_LEVEL di calore metà degli aerei
+## decolla: si ferma sul raccordo e parte col getto lungo il doppio. Con la
+## distanza gli aerei arrivano più spesso. Corre lungo l'asse X locale.
 
 var direction := 1.0
 var length := 400.0
 var play_half_width := 37.0
+## Secondi tra un aereo e l'altro: con la distanza (difficulty) scendono fino
+## a 6-10.
 var min_interval := 9.0
 var max_interval := 15.0
+var difficulty := 0
+## Quanti aerei decollano dal livello dei gradini.
+var takeoff_chance := 0.5
 ## Velocità base; il calore la alza fino al +30%.
 var base_speed := 7.0
 var max_heat_bonus := 0.3
@@ -27,6 +34,8 @@ var _timer := 0.0
 
 
 func _ready() -> void:
+	min_interval = maxf(9.0 - 0.75 * difficulty, 6.0)
+	max_interval = maxf(15.0 - 1.25 * difficulty, 10.0)
 	_build_markings()
 	for side in [-1.0, 1.0]:
 		_add_service_road(side * SERVICE_ROAD_Z)
@@ -49,6 +58,10 @@ func _physics_process(delta: float) -> void:
 func _send_plane(x: float) -> void:
 	var plane := Airplane.create(direction, base_speed * (1.0 + max_heat_bonus * Heat.ratio()))
 	plane.position.x = x
+	plane.play_half_width = play_half_width
+	plane.takeoff = Heat.level() >= Heat.STEP_LEVEL and randf() < takeoff_chance
+	# Si ferma con la coda nella zona di gioco: il getto lungo la copre tutta.
+	plane.hold_x = -direction * randf_range(0.0, 12.0)
 	add_child(plane)
 
 
