@@ -86,7 +86,8 @@ func _ready() -> void:
 	# precedente.
 	Car.smoke_seconds = Car.SMOKE_SECONDS
 	Car.explosion_radius = Car.EXPLOSION_RADIUS
-	Car.explosion_hurts_frog = true
+	Car.chain_explosions = false
+	Car.explosion_rocket = false
 
 
 ## Gli slot di una carta: due per una fusione, uno per un modificatore,
@@ -178,53 +179,50 @@ func _remove(id: String) -> void:
 		slots[slot] = ""
 
 
-## Accende o spegne un modificatore, coi miglioramenti comprati allo stagno
-## (Progress.card_level: 0, 1 o 2).
+## Accende o spegne un modificatore. I miglioramenti speciali della carta
+## (Progress.upgrade_active, attivati allo stagno) valgono solo da accesa.
 func _set_modifier(id: String, on: bool) -> void:
-	var level := Progress.card_level(id) if on else 0
+	var first := on and Progress.CARD_UPGRADES.has(id) and Progress.upgrade_active(id, 0)
+	var second := on and Progress.CARD_UPGRADES.has(id) and Progress.upgrade_active(id, 1)
 	match id:
 		"explosive_gloves":
 			frog.punch_power.set_explosive(on)
-			Car.explosion_radius = 8.0 if level >= 1 else Car.EXPLOSION_RADIUS
-			Car.explosion_hurts_frog = level < 2
 		"uppercut":
 			frog.punch_power.set_uppercut(on)
-			frog.punch_power.uppercut_lift = 1.8 if level >= 1 else 1.2
-			frog.punch_power.uppercut_push = 1.4 if level >= 2 else 1.0
 		"long_glove":
 			frog.punch_power.set_long_reach(on)
-			frog.punch_power.long_reach_distance = 5.5 if level >= 1 else 4.0
-			frog.punch_power.long_reach_radius = 2.5 if level >= 2 else 1.25
 		"trampoline":
 			frog.trampoline = on
-			frog.trampoline_height = 3.6 if level >= 1 else 2.6
-			frog.trampoline_wrecks = level >= 2
 			frog.super_jump_power.set_spring_color("spring_bounce" if on else "")
 		"slam":
 			frog.slam_power.enabled = on
-			frog.slam_power.radius = 6.0 + (2.0 if level >= 1 else 0.0)
-			frog.slam_power.cooldown = (1.0 if level >= 2 else 2.0) * frog.cooldown_factor
 			frog.super_jump_power.set_spring_color("spring_heavy" if on else "")
 		"thermals":
 			frog.glider_power.set_thermals(on)
-			frog.glider_power.thermal_rise_speed = 6.0 if level >= 1 else 4.0
-			Car.smoke_seconds = 9.0 if level >= 2 else Car.SMOKE_SECONDS
 		"jet_wing":
 			frog.glider_power.set_jet(on)
-			frog.glider_power.jet_heat_per_second = 0.75 if level >= 1 else 1.5
-			frog.glider_power.jet_speed = 20.0 if level >= 2 else 16.0
 		"waterproof":
 			frog.set_waterproof(on)
-			frog.swim_speed = frog.base_swim_speed * (1.6 if level >= 1 else 1.0)
-			frog.water_jump_factor = 1.15 if level >= 2 else 0.85
 		"tongue":
 			frog.tongue_power.enabled = on
-			frog.tongue_power.reach = 16.0 if level >= 1 else 12.0
-			frog.tongue_power.cooldown = (0.5 if level >= 2 else 1.0) * frog.cooldown_factor
 		"napalm":
 			Car.smoke_seconds = 15.0 if on else Car.SMOKE_SECONDS
 			frog.glider_power.wide_thermals = on
 		"earthquake":
-			var bonus := 2.0 if Progress.card_level("slam") >= 1 else 0.0
-			frog.slam_power.radius = (10.0 if on else 6.0) + bonus
+			frog.slam_power.radius = 10.0 if on else 6.0
 			frog.slam_power.launch_speed = 13.0 if on else 9.0
+	_set_special(id, first, second)
+
+
+## I miglioramenti speciali della carta id (Progress.CARD_UPGRADES).
+func _set_special(id: String, first: bool, second: bool) -> void:
+	match id:
+		"explosive_gloves":
+			Car.chain_explosions = first
+			Car.explosion_rocket = second
+		"uppercut":
+			frog.punch_power.meteor = first
+			frog.punch_power.double_uppercut = second
+		"long_glove":
+			frog.punch_power.piercing = first
+			frog.punch_power.yank = second

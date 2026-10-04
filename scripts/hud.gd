@@ -89,8 +89,8 @@ func set_fire_distance(distance: float, danger: float) -> void:
 	(_vignette.material as ShaderMaterial).set_shader_parameter("strength", danger)
 
 
-func set_flies(count: int) -> void:
-	_flies_label.text = "Mosche: %d" % count
+func set_flies(count: int, golden := 0) -> void:
+	_flies_label.text = "Mosche: %d" % count + ("   d'oro: %d" % golden if golden > 0 else "")
 
 
 func set_record(distance: float) -> void:
@@ -106,6 +106,7 @@ func show_game_over(stats: Dictionary) -> void:
 		"Calore massimo: livello %d" % stats.heat_level,
 		"Nuovo record!" if stats.new_record else "Record: %d m" % roundi(stats.record),
 		"Mosche: +%d (in tutto %d)" % [stats.flies, stats.total_flies],
+		"Mosche d'oro: +%d (in tutto %d)" % [stats.golden, stats.total_golden],
 	]
 	_game_over_text.text = "\n".join(lines)
 	_game_over.visible = true

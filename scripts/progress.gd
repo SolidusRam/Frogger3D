@@ -2,10 +2,11 @@ class_name Progress
 extends RefCounted
 ## I progressi fra una run e l'altra: le mosche raccolte e cosa ci si è
 ## comprato allo stagno. Come in Vampire Survivors le mosche comprano forza
-## permanente: statistiche a livelli e carte migliorate (due miglioramenti
-## per ogni carta con slot). Il prezzo sale a ogni livello. Si può chiedere
-## il rimborso di tutto. Salvati in un file a parte dal record; i test ne
-## usano uno loro.
+## permanente: statistiche a livelli, col prezzo che sale a ogni livello. Le
+## carte invece migliorano con la maestria: ogni miglioramento ha una prova
+## legata all'uso della carta, e superata la prova si attiva con le mosche
+## d'oro. Si può chiedere il rimborso di tutto. Salvati in un file a parte dal
+## record; i test ne usano uno loro.
 
 ## Statistiche: nome, effetto per livello, livelli massimi, prezzo base (il
 ## livello n costa base × n).
@@ -30,50 +31,61 @@ const STATS := {
 	"revival": {"name": "Seconda vita", "text": "Una volta per run ti rialzi con metà vita", "max": 1, "cost": 200},
 }
 
-## I due miglioramenti di ogni carta con slot, in ordine.
+## La maestria delle carte: due miglioramenti speciali per ogni carta con
+## slot, che cambiano come si usa la carta. Ognuno ha la sua prova, legata
+## all'uso della carta; superata la prova, il miglioramento si attiva allo
+## stagno con le mosche d'oro. Prove "total": si sommano fra le run; "best":
+## il migliore risultato in un colpo solo (o di fila).
 const CARD_UPGRADES := {
 	"explosive_gloves": [
-		{"text": "Raggio dell'esplosione da 6 a 8 m", "cost": 40},
-		{"text": "Le esplosioni non ti fanno male", "cost": 80},
+		{"name": "Reazione a catena", "text": "Le auto distrutte da un'esplosione esplodono a loro volta.", "trial": "Fai esplodere 30 auto", "goal": 30, "kind": "total", "cost": 2},
+		{"name": "Razzo", "text": "Un'esplosione vicina non ti ferisce: ti lancia in alto.", "trial": "Distruggi 4 auto con una sola esplosione", "goal": 4, "kind": "best", "cost": 4},
 	],
 	"uppercut": [
-		{"text": "Le auto volano ancora più in alto", "cost": 30},
-		{"text": "+40% di spinta col montante", "cost": 60},
+		{"name": "Meteora", "text": "L'auto lanciata ricade con un'onda che ribalta le auto intorno.", "trial": "Lancia 30 auto col montante", "goal": 30, "kind": "total", "cost": 2},
+		{"name": "Doppio montante", "text": "Il pugno arriva anche in alto: un'auto ancora in aria la rilanci.", "trial": "Un'auto lanciata col montante ne ribalta un'altra ricadendo", "goal": 1, "kind": "total", "cost": 4},
 	],
 	"long_glove": [
-		{"text": "Il pugno arriva a 5,5 m", "cost": 30},
-		{"text": "Il pugno colpisce una zona larga il doppio", "cost": 60},
+		{"name": "Perforante", "text": "Il pugno colpisce tutte le auto sulla sua linea.", "trial": "Colpisci 25 auto da più di 3 m", "goal": 25, "kind": "total", "cost": 2},
+		{"name": "Tira e molla", "text": "Il guantone afferra l'auto, la tira a sé e la scaglia via più forte.", "trial": "Colpisci 2 auto con un solo pugno", "goal": 2, "kind": "best", "cost": 4},
 	],
 	"trampoline": [
-		{"text": "Rimbalzi fino a 3,6 m", "cost": 30},
-		{"text": "Rimbalzando ribalti l'auto sotto di te", "cost": 60},
+		{"name": "Crescendo", "text": "Ogni rimbalzo di fila è più alto del precedente.", "trial": "Rimbalza 50 volte sui tetti", "goal": 50, "kind": "total", "cost": 2},
+		{"name": "Bombardiera", "text": "Ogni rimbalzo ribalta l'auto sotto di te.", "trial": "Rimbalza 6 volte di fila", "goal": 6, "kind": "best", "cost": 4},
 	],
 	"slam": [
-		{"text": "L'onda arriva 2 m più lontano", "cost": 40},
-		{"text": "Si ricarica in 1 s invece che in 2", "cost": 60},
+		{"name": "Doppia onda", "text": "Mezzo secondo dopo, una seconda onda più larga.", "trial": "Ribalta 40 auto con lo schianto", "goal": 40, "kind": "total", "cost": 2},
+		{"name": "Dal cielo", "text": "Anche col deltaplano aperto; più cadi dall'alto, più l'onda è grande.", "trial": "Ribalta 5 auto con un solo schianto", "goal": 5, "kind": "best", "cost": 4},
 	],
 	"thermals": [
-		{"text": "Nel fumo si sale più in fretta", "cost": 30},
-		{"text": "I rottami fumano 9 s invece di 6", "cost": 60},
+		{"name": "Fenice", "text": "Nella colonna di fumo recuperi vita.", "trial": "Sali per 100 m nel fumo", "goal": 100, "kind": "total", "cost": 2},
+		{"name": "Camino", "text": "Anche il fumo dell'incendio ti solleva come una corrente calda.", "trial": "Resta 6 s di fila in una colonna di fumo", "goal": 6, "kind": "best", "cost": 4},
 	],
 	"jet_wing": [
-		{"text": "Scalda la metà", "cost": 40},
-		{"text": "Vola a 20 m/s", "cost": 60},
+		{"name": "Postbruciatore", "text": "Dietro l'ala una scia di fuoco ribalta le auto sotto di te.", "trial": "Vola 800 m con l'ala a reazione", "goal": 800, "kind": "total", "cost": 2},
+		{"name": "Raffreddata", "text": "In volo il calore non sale più.", "trial": "Vola 60 m in un solo volo", "goal": 60, "kind": "best", "cost": 4},
 	],
 	"waterproof": [
-		{"text": "Nuoti molto più veloce", "cost": 30},
-		{"text": "Dall'acqua salti fuori come da terra", "cost": 40},
+		{"name": "Tuffo", "text": "In acqua, Ctrl: ti immergi e passi sotto tronchi e coccodrilli.", "trial": "Nuota per 300 m", "goal": 300, "kind": "total", "cost": 2},
+		{"name": "Ondata", "text": "Saltando fuori dall'acqua sollevi un'onda che spinge via auto e rottami.", "trial": "Resta 15 s di fila in acqua", "goal": 15, "kind": "best", "cost": 4},
 	],
 	"tongue": [
-		{"text": "La lingua arriva a 16 m", "cost": 40},
-		{"text": "La lingua si ricarica in metà tempo", "cost": 60},
+		{"name": "Fionda", "text": "Lasciando dopo un traino parti a velocità doppia.", "trial": "Fatti trascinare 20 volte", "goal": 20, "kind": "total", "cost": 2},
+		{"name": "Lingua doppia", "text": "Mentre una lingua ti trascina, l'altra mangia le mosche vicine.", "trial": "Fatti trascinare per 50 m in un solo traino", "goal": 50, "kind": "best", "cost": 4},
 	],
 }
 
 static var path := "user://progressi.cfg"
 static var flies := 0
+## Le mosche d'oro: servono solo ad attivare i miglioramenti delle carte.
+static var golden := 0
 static var stat_levels := {}
-static var card_levels := {}
+## Miglioramenti attivati ("carta:indice") e avanzamento delle prove.
+static var card_active := {}
+static var trials := {}
+## Le prove di questa run: si aggiungono a trials a fine run (una run di
+## prova no).
+static var run_trials := {}
 
 
 static func load_from(file_path: String) -> void:
@@ -81,15 +93,20 @@ static func load_from(file_path: String) -> void:
 	var config := ConfigFile.new()
 	var ok := config.load(path) == OK
 	flies = config.get_value("stagno", "mosche", 0) if ok else 0
+	golden = config.get_value("stagno", "mosche_oro", 0) if ok else 0
 	stat_levels = config.get_value("stagno", "statistiche", {}) if ok else {}
-	card_levels = config.get_value("stagno", "carte", {}) if ok else {}
+	card_active = config.get_value("stagno", "carte_attive", {}) if ok else {}
+	trials = config.get_value("stagno", "prove", {}) if ok else {}
+	run_trials = {}
 
 
 static func save() -> void:
 	var config := ConfigFile.new()
 	config.set_value("stagno", "mosche", flies)
+	config.set_value("stagno", "mosche_oro", golden)
 	config.set_value("stagno", "statistiche", stat_levels)
-	config.set_value("stagno", "carte", card_levels)
+	config.set_value("stagno", "carte_attive", card_active)
+	config.set_value("stagno", "prove", trials)
 	config.save(path)
 
 
@@ -97,19 +114,9 @@ static func level(stat: String) -> int:
 	return stat_levels.get(stat, 0)
 
 
-static func card_level(card: String) -> int:
-	return card_levels.get(card, 0)
-
-
-## Il prezzo del prossimo livello (-1 se è già al massimo).
 static func stat_cost(stat: String) -> int:
 	var info: Dictionary = STATS[stat]
 	return -1 if level(stat) >= info.max else info.cost * (level(stat) + 1)
-
-
-static func card_cost(card: String) -> int:
-	var upgrades: Array = CARD_UPGRADES[card]
-	return -1 if card_level(card) >= upgrades.size() else upgrades[card_level(card)].cost
 
 
 static func buy_stat(stat: String) -> bool:
@@ -122,36 +129,93 @@ static func buy_stat(stat: String) -> bool:
 	return true
 
 
-static func buy_card(card: String) -> bool:
-	var cost := card_cost(card)
-	if cost < 0 or cost > flies:
+# --- La maestria delle carte ------------------------------------------------
+
+static func _key(card: String, index: int) -> String:
+	return "%s:%d" % [card, index]
+
+
+## Vero se il miglioramento index della carta è stato attivato.
+static func upgrade_active(card: String, index: int) -> bool:
+	return card_active.get(_key(card, index), false)
+
+
+## A che punto è la prova: le run passate più questa.
+static func trial_value(card: String, index: int) -> float:
+	var key := _key(card, index)
+	var saved: float = trials.get(key, 0.0)
+	var now: float = run_trials.get(key, 0.0)
+	return saved + now if CARD_UPGRADES[card][index].kind == "total" else maxf(saved, now)
+
+
+static func trial_done(card: String, index: int) -> bool:
+	return trial_value(card, index) >= CARD_UPGRADES[card][index].goal
+
+
+## Una prova "total" avanza di amount.
+static func trial_add(card: String, index: int, amount: float) -> void:
+	var key := _key(card, index)
+	run_trials[key] = run_trials.get(key, 0.0) + amount
+
+
+## Una prova "best": vale il risultato migliore.
+static func trial_best(card: String, index: int, value: float) -> void:
+	var key := _key(card, index)
+	run_trials[key] = maxf(run_trials.get(key, 0.0), value)
+
+
+## Fine run: le prove di questa run si aggiungono a quelle salvate.
+static func commit_run() -> void:
+	for key: String in run_trials:
+		var card := key.get_slice(":", 0)
+		var index := int(key.get_slice(":", 1))
+		if CARD_UPGRADES[card][index].kind == "total":
+			trials[key] = trials.get(key, 0.0) + run_trials[key]
+		else:
+			trials[key] = maxf(trials.get(key, 0.0), run_trials[key])
+	run_trials = {}
+	save()
+
+
+## Attiva un miglioramento: prova superata e mosche d'oro abbastanza.
+static func activate(card: String, index: int) -> bool:
+	var cost: int = CARD_UPGRADES[card][index].cost
+	if upgrade_active(card, index) or not trial_done(card, index) or cost > golden:
 		return false
-	flies -= cost
-	card_levels[card] = card_level(card) + 1
+	golden -= cost
+	card_active[_key(card, index)] = true
 	save()
 	return true
 
 
-## Tutto ciò che è stato speso, cioè quanto torna col rimborso.
+## Le mosche spese nelle statistiche, cioè quante tornano col rimborso.
 static func spent() -> int:
 	var total := 0
 	for stat: String in stat_levels:
 		for n in stat_levels[stat]:
 			total += STATS[stat].cost * (n + 1)
-	for card: String in card_levels:
-		for n in card_levels[card]:
-			total += CARD_UPGRADES[card][n].cost
 	return total
 
 
-## Come in Vampire Survivors: si azzera tutto e le mosche tornano indietro.
+## Le mosche d'oro spese nei miglioramenti delle carte.
+static func spent_golden() -> int:
+	var total := 0
+	for key: String in card_active:
+		total += CARD_UPGRADES[key.get_slice(":", 0)][int(key.get_slice(":", 1))].cost
+	return total
+
+
+## Come in Vampire Survivors: si azzera tutto e le mosche (anche quelle
+## d'oro) tornano indietro. Le prove superate restano superate.
 static func refund() -> void:
 	flies += spent()
+	golden += spent_golden()
 	stat_levels = {}
-	card_levels = {}
+	card_active = {}
 	save()
 
 
-static func add_flies(amount: int) -> void:
+static func add_flies(amount: int, golden_amount := 0) -> void:
 	flies += amount
+	golden += golden_amount
 	save()

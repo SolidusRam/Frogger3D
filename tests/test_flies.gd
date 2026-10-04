@@ -1,6 +1,6 @@
 extends SceneTree
 ## Mosche: stanno sopra le cose che si muovono, si prendono toccandole (la
-## d'oro vale 5), la lingua le mangia a distanza senza agganciarsi, ogni
+## d'oro è una valuta a sé), la lingua le mangia a distanza senza agganciarsi, ogni
 ## tana ne dà 3, a fine run si sommano al totale salvato; una run di prova
 ## non le conta.
 
@@ -73,7 +73,7 @@ func _physics_process(_delta: float) -> bool:
 				_new_fly(car, Vector3(0, car.size.y / 2.0 + 0.7, 0.4), true)
 				Lib.place(frog, car.global_position + Vector3(0, car.size.y / 2.0 + 0.1, 0.5))
 			if f == 20:
-				t.check(main.run_flies == 6, "toccandole si prendono: una vale 1, la d'oro 5 (%d)" % main.run_flies)
+				t.check(main.run_flies == 1 and main.run_golden == 1, "toccandole si prendono: una mosca e una mosca d'oro (%d e %d)" % [main.run_flies, main.run_golden])
 				_next(2)
 		2: # la lingua le mangia a distanza
 			if f == 1:

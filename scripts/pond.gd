@@ -1,9 +1,11 @@
 class_name Pond
 extends PanelContainer
 ## Lo stagno: dove si spendono le mosche, fra una run e l'altra. Due schede:
-## le statistiche (a livelli, il prezzo sale a ogni livello) e le carte
-## migliorate (due miglioramenti per ogni carta con slot). Si può chiedere
-## il rimborso di tutto. Lo usano il menu iniziale e la fine della run.
+## le statistiche, comprate con le mosche (a livelli, il prezzo sale a ogni
+## livello), e la maestria delle carte: ogni carta ha due miglioramenti
+## speciali, ognuno con la sua prova; superata la prova si attiva con le
+## mosche d'oro. Si può chiedere il rimborso di tutto. Lo usano il menu
+## iniziale e la fine della run.
 
 signal closed
 
@@ -30,13 +32,13 @@ func _ready() -> void:
 	_flies_label = _label("", 26)
 	_flies_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 	header.add_child(_flies_label)
-	box.add_child(_label("Le mosche raccolte comprano forza per le prossime run.", 16))
+	box.add_child(_label("Le mosche comprano statistiche; le mosche d'oro attivano i miglioramenti delle carte, una volta superata la loro prova.", 16))
 
 	var tabs := TabContainer.new()
 	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	box.add_child(tabs)
 	_stats_box = _page(tabs, "Statistiche")
-	_cards_box = _page(tabs, "Carte")
+	_cards_box = _page(tabs, "Maestria delle carte")
 
 	var footer := HBoxContainer.new()
 	footer.add_theme_constant_override("separation", 16)
@@ -51,7 +53,7 @@ func _ready() -> void:
 
 
 func refresh() -> void:
-	_flies_label.text = "Mosche: %d" % Progress.flies
+	_flies_label.text = "Mosche: %d   d'oro: %d" % [Progress.flies, Progress.golden]
 	# Le righe vecchie escono subito, ma si cancellano a fine fotogramma: il
 	# pulsante appena premuto sta ancora mandando il suo segnale.
 	for box in [_stats_box, _cards_box]:
@@ -64,13 +66,15 @@ func refresh() -> void:
 		var cost := Progress.stat_cost(stat)
 		_stats_box.add_child(_row(info.name, info.text, "%d/%d" % [level, info.max], cost, _buy_stat.bind(stat)))
 	for card: String in Progress.CARD_UPGRADES:
-		var upgrades: Array = Progress.CARD_UPGRADES[card]
-		var level := Progress.card_level(card)
-		var next: String = upgrades[level].text if level < upgrades.size() else "Migliorata del tutto"
-		_cards_box.add_child(_row(Upgrades.CATALOG[card].name, next, "%d/%d" % [level, upgrades.size()], Progress.card_cost(card), _buy_card.bind(card)))
+		var title := _label(Upgrades.CATALOG[card].name, 22)
+		title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		_cards_box.add_child(title)
+		for index in Progress.CARD_UPGRADES[card].size():
+			_cards_box.add_child(_upgrade_row(card, index))
 	var spent := Progress.spent()
-	_refund_button.text = "Rimborsa tutto (+%d)" % spent
-	_refund_button.disabled = spent == 0
+	var spent_golden := Progress.spent_golden()
+	_refund_button.text = "Rimborsa tutto (+%d, +%d d'oro)" % [spent, spent_golden]
+	_refund_button.disabled = spent == 0 and spent_golden == 0
 
 
 func _buy_stat(stat: String) -> void:
@@ -78,9 +82,37 @@ func _buy_stat(stat: String) -> void:
 	refresh()
 
 
-func _buy_card(card: String) -> void:
-	Progress.buy_card(card)
+func _activate(card: String, index: int) -> void:
+	Progress.activate(card, index)
 	refresh()
+
+
+## Un miglioramento: nome ed effetto, la prova col suo avanzamento, e il
+## pulsante per attivarlo.
+func _upgrade_row(card: String, index: int) -> HBoxContainer:
+	var info: Dictionary = Progress.CARD_UPGRADES[card][index]
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 12)
+	var text := VBoxContainer.new()
+	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var effect := _label("%s: %s" % [info.name, info.text], 17)
+	effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	text.add_child(effect)
+	var value: float = minf(Progress.trial_value(card, index), info.goal)
+	var trial := _label("Prova: %s (%d/%d)" % [info.trial, floori(value), info.goal], 15)
+	trial.modulate = Color(0.6, 1.0, 0.6) if Progress.trial_done(card, index) else Color(1, 1, 1, 0.7)
+	text.add_child(trial)
+	row.add_child(text)
+	var label := "Prova da superare"
+	if Progress.upgrade_active(card, index):
+		label = "Attivo"
+	elif Progress.trial_done(card, index):
+		label = "Attiva (%d d'oro)" % info.cost
+	var button := _button(label, _activate.bind(card, index))
+	button.custom_minimum_size.x = 190
+	button.disabled = label != "Attiva (%d d'oro)" % info.cost or info.cost > Progress.golden
+	row.add_child(button)
+	return row
 
 
 func _refund() -> void:

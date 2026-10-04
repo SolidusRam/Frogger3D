@@ -37,8 +37,10 @@ extends Node3D
 var run_time := 0.0
 ## Run di prova (vedi TestMode): il record non si salva.
 var test_run := false
-## Mosche raccolte in questa run (si sommano al totale a fine run).
+## Mosche raccolte in questa run, normali e d'oro (si sommano al totale a
+## fine run).
 var run_flies := 0
+var run_golden := 0
 ## Statistiche dello stagno che servono durante la run.
 var fly_magnet := 0.0
 var fly_value := 1.0
@@ -180,7 +182,13 @@ func add_flies(amount: int) -> void:
 	if randf() < value - whole:
 		whole += 1
 	run_flies += whole
-	hud.set_flies(run_flies)
+	hud.set_flies(run_flies, run_golden)
+
+
+## Una mosca d'oro: serve ad attivare i miglioramenti delle carte.
+func add_golden(amount: int) -> void:
+	run_golden += amount
+	hud.set_flies(run_flies, run_golden)
 
 
 ## Ferma il gioco e offre tre power-up (anche dalla modalità prova). Se la
@@ -211,9 +219,13 @@ func _on_frog_died() -> void:
 	Heat.running = false
 	var distance := course.distance()
 	var new_record := _save_record_if_better(distance)
-	# Come il record: una run di prova non conta.
-	if not test_run:
-		Progress.add_flies(run_flies)
+	# Come il record: una run di prova non conta, né per le mosche né per le
+	# prove delle carte.
+	if test_run:
+		Progress.run_trials = {}
+	else:
+		Progress.add_flies(run_flies, run_golden)
+		Progress.commit_run()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	hud.show_game_over({
 		"distance": distance,
@@ -223,7 +235,9 @@ func _on_frog_died() -> void:
 		"record": record_distance,
 		"new_record": new_record,
 		"flies": run_flies,
+		"golden": run_golden,
 		"total_flies": Progress.flies,
+		"total_golden": Progress.golden,
 	})
 
 

@@ -39,12 +39,23 @@ func _physics_process(_delta: float) -> bool:
 				t.check(progress.flies == 100, "si parte con 100 mosche")
 				t.check(progress.buy_stat("health") and progress.flies == 85 and progress.level("health") == 1, "Vita costa 15 al primo livello")
 				t.check(progress.stat_cost("health") == 30, "il prezzo sale a ogni livello (30)")
-				t.check(progress.buy_card("explosive_gloves") and progress.flies == 45, "un miglioramento di carta costa 40")
 				t.check(not progress.buy_stat("revival"), "senza mosche abbastanza non si compra")
+				# La maestria: la prova, poi le mosche d'oro.
+				progress.add_flies(0, 5)
+				t.check(not progress.activate("explosive_gloves", 0), "senza la prova superata il miglioramento non si attiva")
+				progress.trial_add("explosive_gloves", 0, 20)
+				progress.commit_run()
+				progress.trial_add("explosive_gloves", 0, 10)
+				t.check(progress.trial_done("explosive_gloves", 0), "le prove \"total\" si sommano fra le run (30)")
+				progress.trial_best("explosive_gloves", 1, 3)
+				progress.commit_run()
+				progress.trial_best("explosive_gloves", 1, 2)
+				t.check(progress.trial_value("explosive_gloves", 1) == 3.0, "le prove \"best\" tengono il risultato migliore")
+				t.check(progress.activate("explosive_gloves", 0) and progress.golden == 3, "superata la prova si attiva con 2 mosche d'oro")
 				progress.refund()
-				t.check(progress.flies == 100 and progress.level("health") == 0 and progress.card_level("explosive_gloves") == 0, "il rimborso restituisce tutto")
+				t.check(progress.flies == 100 and progress.golden == 5 and progress.level("health") == 0 and not progress.upgrade_active("explosive_gloves", 0), "il rimborso restituisce tutto, anche le mosche d'oro")
+				t.check(progress.trial_done("explosive_gloves", 0), "le prove superate restano superate")
 				progress.stat_levels = {"health": 2, "choice": 1, "fire": 1, "revival": 1}
-				progress.card_levels = {"explosive_gloves": 2}
 				progress.save()
 				_new_game()
 				step = 1
@@ -56,15 +67,12 @@ func _physics_process(_delta: float) -> bool:
 				t.check(main.get_node("Wildfire").max_gap == 55.0, "Vantaggio: l'incendio resta 5 m più lontano")
 				frog.take_hit(1000, Vector3.ZERO)
 				t.check(not frog.is_dead and frog.health == 60, "Seconda vita: ci si rialza con metà vita (%d)" % frog.health)
-				main.get_node("Upgrades").apply("explosive_gloves")
-				var car: GDScript = load("res://scripts/car.gd")
-				t.check(car.explosion_radius == 8.0 and not car.explosion_hurts_frog, "i guantoni esplosivi migliorati: raggio 8 m, non feriscono la rana")
 				# La schermata dello stagno.
 				var pond: Node = load("res://scripts/pond.gd").new()
 				root.add_child(pond)
 				var stats: int = pond._stats_box.get_child_count()
 				var cards: int = pond._cards_box.get_child_count()
-				t.check(stats == progress.STATS.size() and cards == progress.CARD_UPGRADES.size(), "lo stagno mostra statistiche e carte (%d e %d)" % [stats, cards])
+				t.check(stats == progress.STATS.size() and cards == progress.CARD_UPGRADES.size() * 3, "lo stagno mostra statistiche e la maestria delle carte (%d e %d)" % [stats, cards])
 				# Comprare dal pulsante: la schermata si rifà mentre il pulsante sta
 				# ancora mandando il segnale.
 				progress.add_flies(500)

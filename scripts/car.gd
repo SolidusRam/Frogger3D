@@ -23,10 +23,17 @@ static var smoke_seconds := SMOKE_SECONDS
 ## Raggio, spinta (velocità data ai veicoli vicini) e danno alla rana
 ## dell'esplosione dei guantoni esplosivi.
 const EXPLOSION_RADIUS := 6.0
-## Il raggio vero e se l'esplosione ferisce la rana: le carte migliorate allo
-## stagno li cambiano (vedi Upgrades).
+## Il raggio vero dell'esplosione, e i miglioramenti speciali dei guantoni
+## esplosivi (vedi Upgrades): la reazione a catena (le auto distrutte da
+## un'esplosione esplodono a loro volta, fino a CHAIN_DEPTH passaggi) e il
+## razzo (l'esplosione non ferisce la rana: la lancia in alto).
 static var explosion_radius := EXPLOSION_RADIUS
-static var explosion_hurts_frog := true
+static var chain_explosions := false
+static var explosion_rocket := false
+## Il montante migliorato: l'auto lanciata ricade con un'onda (meteora).
+static var meteor_radius := 4.0
+const CHAIN_DEPTH := 3
+const CHAIN_FUSE := 0.35
 const EXPLOSION_PUSH := 12.0
 const EXPLOSION_FROG_RADIUS := 4.5
 const EXPLOSION_FROG_DAMAGE := 30
@@ -135,6 +142,16 @@ var _wreck_age := 0.0
 var _last_floating_frame := -10
 ## Colpito dai guantoni esplosivi: esploderà al primo urto con un veicolo.
 var _armed := false
+## Reazione a catena: a che passaggio è questa auto, e fra quanto esplode.
+var _chain_depth := 0
+var _chain_fuse := -1.0
+## Vero dopo che l'auto è esplosa.
+var exploded := false
+## Tira e molla: per quanto ancora l'auto viene tirata verso chi l'ha presa,
+## e il colpo con cui poi viene scagliata.
+var _yank_left := -1.0
+var _yank_target: Node3D
+var _yank_blow := Vector3.ZERO
 
 
 func _ready() -> void:
@@ -167,6 +184,12 @@ func _physics_process(delta: float) -> void:
 			_wreck_age += delta
 			if _armed and _wreck_age > EXPLOSION_FUSE:
 				explode()
+			if _yank_left > 0.0:
+				_pull_toward_yanker(delta)
+			if _chain_fuse > 0.0:
+				_chain_fuse -= delta
+				if _chain_fuse <= 0.0:
+					explode()
 			if _wreck_age > wreck_lifetime or global_position.y < -10.0:
 				_sink_and_free()
 	_hit_overlapping_frogs()
@@ -223,8 +246,11 @@ func receive_punch(impulse: Vector3, explosive := false) -> void:
 ## L'esplosione dei guantoni esplosivi: i veicoli vicini diventano rottami e
 ## vengono scagliati via; la rana, se è troppo vicina, si fa male.
 func explode() -> void:
+	exploded = true
 	_armed = false
+	_chain_fuse = -1.0
 	var center := global_position
+	var wrecked := 0
 	var query := PhysicsShapeQueryParameters3D.new()
 	var sphere := SphereShape3D.new()
 	sphere.radius = explosion_radius
@@ -235,6 +261,11 @@ func explode() -> void:
 		var other := result.collider as Car
 		if other == null or other == self:
 			continue
+		if other.state == State.DRIVING:
+			wrecked += 1
+			if chain_explosions and _chain_depth < CHAIN_DEPTH:
+				other._chain_depth = _chain_depth + 1
+				other._chain_fuse = CHAIN_FUSE
 		other.become_wreck()
 		var away := other.global_position - center
 		# Al bordo del raggio arriva ancora metà della spinta.
@@ -244,12 +275,19 @@ func explode() -> void:
 	apply_central_impulse(Vector3.UP * mass * 5.0)
 	if _frog and not _frog.is_dead:
 		var to_frog := _frog.global_position - center
-		if explosion_hurts_frog and to_frog.length() < EXPLOSION_FROG_RADIUS:
-			var push := (Vector3(to_frog.x, 0.0, to_frog.z).normalized() + Vector3.UP).normalized() * 12.0
-			_frog.take_hit(EXPLOSION_FROG_DAMAGE, push)
+		if to_frog.length() < EXPLOSION_FROG_RADIUS:
+			var away := Vector3(to_frog.x, 0.0, to_frog.z).normalized()
+			if explosion_rocket:
+				# Il razzo: niente danno, un lancio in alto.
+				_frog.launch(away * 6.0 + Vector3.UP * 14.0)
+			else:
+				_frog.take_hit(EXPLOSION_FROG_DAMAGE, (away + Vector3.UP).normalized() * 12.0)
 		if to_frog.length() < 30.0:
 			_frog.camera_rig.shake(0.4, 0.35)
 	_emit_explosion()
+	# Maestria dei guantoni esplosivi.
+	Progress.trial_add("explosive_gloves", 0, wrecked)
+	Progress.trial_best("explosive_gloves", 1, wrecked)
 
 
 func _drive(delta: float) -> void:
@@ -283,9 +321,52 @@ func _on_wreck_body_entered(body: Node) -> void:
 	if _armed and other and _wreck_age > EXPLOSION_ARMING:
 		explode()
 		return
+	# Il montante migliorato: l'auto lanciata ricade con un'onda.
+	if has_meta("meteor") and _wreck_age > 0.3 and (body is StaticBody3D or other):
+		remove_meta("meteor")
+		_meteor_wave()
 	if other and other.state == State.DRIVING:
 		if (linear_velocity - other.motion_velocity()).length() > crash_speed:
 			other.become_wreck()
+			# Maestria del montante: un'auto lanciata ne ribalta un'altra.
+			if has_meta("uppercut"):
+				Progress.trial_add("uppercut", 1, 1)
+
+
+## Tira e molla (guantone a molla migliorato): l'auto, già rottame, viene
+## tirata verso target per time secondi, poi scagliata col colpo blow.
+func yank(target: Node3D, blow: Vector3, time: float) -> void:
+	_yank_target = target
+	_yank_blow = blow
+	_yank_left = time
+
+
+func _pull_toward_yanker(delta: float) -> void:
+	_yank_left -= delta
+	if is_instance_valid(_yank_target):
+		var toward := _yank_target.global_position - global_position
+		toward.y = 0.0
+		linear_velocity = toward.normalized() * 10.0 + Vector3.UP * 1.0 if toward.length() > 2.5 else Vector3.ZERO
+	if _yank_left <= 0.0:
+		apply_impulse(_yank_blow, Vector3.UP * size.y * 0.3)
+
+
+## La meteora: le auto vicine al punto di caduta diventano rottami e saltano.
+func _meteor_wave() -> void:
+	var query := PhysicsShapeQueryParameters3D.new()
+	var sphere := SphereShape3D.new()
+	sphere.radius = meteor_radius
+	query.shape = sphere
+	query.transform = Transform3D(Basis(), global_position)
+	query.collision_mask = 4
+	for result in get_world_3d().direct_space_state.intersect_shape(query, 16):
+		var other := result.collider as Car
+		if other == null or other == self:
+			continue
+		other.become_wreck()
+		var away := other.global_position - global_position
+		other.linear_velocity = (Vector3(away.x, 0.0, away.z).normalized() + Vector3.UP * 1.5).normalized() * 8.0
+	_emit_explosion()
 
 
 ## Fa male solo se è il veicolo ad andare addosso alla rana: deve muoversi

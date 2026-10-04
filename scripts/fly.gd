@@ -3,11 +3,10 @@ extends Node3D
 ## Una mosca: la valuta del gioco. Sta sopra le cose che si muovono (il tetto
 ## di un'auto, il dorso di un coccodrillo, un tronco, un vagone, l'ala di un
 ## aereo, il ponte di una nave) e viaggia con loro: per prenderla bisogna
-## salirci, o arrivarci con la lingua. Vale 1; la mosca d'oro, rara e solo su
-## treni e aerei, vale 5. Le mosche raccolte si spendono allo stagno.
+## salirci, o arrivarci con la lingua. La mosca d'oro, rara e solo su treni
+## e aerei, è una valuta a sé: serve ad attivare i miglioramenti delle carte.
+## Le mosche raccolte si spendono allo stagno.
 
-const VALUE := 1
-const GOLDEN_VALUE := 5
 ## La rana la prende entro questo raggio (più la statistica "Lingua lunga").
 const PICKUP_RADIUS := 1.1
 const GOLDEN_CHANCE := 0.2
@@ -102,7 +101,10 @@ func collect() -> void:
 	_taken = true
 	var game := get_tree().get_first_node_in_group("game")
 	if game:
-		game.add_flies(GOLDEN_VALUE if golden else VALUE)
+		if golden:
+			game.add_golden(1)
+		else:
+			game.add_flies(1)
 	set_physics_process(false)
 	var tween := create_tween()
 	tween.tween_property(self, "scale", Vector3.ONE * 1.8, 0.08)

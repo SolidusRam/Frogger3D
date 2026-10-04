@@ -23,10 +23,17 @@ var uppercut := false
 var long_reach := false
 @export var uppercut_lift := 1.2
 @export var long_reach_distance := 4.0
-## Carte migliorate allo stagno: spinta in più col montante, zona più larga
-## col guantone a molla.
-var uppercut_push := 1.0
-var long_reach_radius := 1.25
+## Miglioramenti speciali (la maestria delle carte, vedi Upgrades): meteora
+## e doppio montante; perforante e tira e molla.
+var meteor := false
+var double_uppercut := false
+var piercing := false
+var yank := false
+## Il doppio montante colpisce anche così in alto; tira e molla: quanto tira
+## l'auto e quanto più forte la scaglia.
+@export var high_punch_height := 3.0
+@export var yank_time := 0.25
+@export var yank_boost := 1.5
 
 var _frog: Frog
 var _gloves: Array[Node3D] = []
@@ -68,20 +75,62 @@ func use() -> void:
 
 	var hit_reach := long_reach_distance if long_reach else reach
 	var hit_lift := uppercut_lift if uppercut else lift
-	(_query.shape as SphereShape3D).radius = radius * (long_reach_radius if long_reach else 1.0)
-	var push := impulse * (uppercut_push if uppercut else 1.0)
-	_query.transform = Transform3D(Basis(), _frog.global_position + Vector3.UP * 0.6 + forward * hit_reach)
+	var blow := (forward + Vector3.UP * hit_lift) * impulse
+	var origin := _frog.global_position + Vector3.UP * 0.6
+	var space := _frog.get_world_3d().direct_space_state
+	var results: Array[Dictionary] = []
+	if long_reach and piercing:
+		# Perforante: tutta la linea fino alla portata.
+		var line := BoxShape3D.new()
+		line.size = Vector3(radius * 2.0, 2.0, hit_reach)
+		var along := Basis.looking_at(forward, Vector3.UP)
+		var query := PhysicsShapeQueryParameters3D.new()
+		query.shape = line
+		query.collision_mask = 4
+		query.transform = Transform3D(along, origin + forward * hit_reach / 2.0)
+		results.append_array(space.intersect_shape(query, 16))
+	else:
+		(_query.shape as SphereShape3D).radius = radius * (1.25 if long_reach else 1.0)
+		_query.transform = Transform3D(Basis(), origin + forward * hit_reach)
+		results.append_array(space.intersect_shape(_query, 8))
+	if uppercut and double_uppercut:
+		# Doppio montante: anche in alto, dove ricadono le auto lanciate.
+		_query.transform = Transform3D(Basis(), origin + Vector3.UP * high_punch_height + forward * hit_reach)
+		results.append_array(space.intersect_shape(_query, 8))
 	var hits: Array[Car] = []
-	for result in _frog.get_world_3d().direct_space_state.intersect_shape(_query, 8):
+	var far := 0
+	for result in results:
 		var car := result.collider as Car
 		if car and not hits.has(car):
 			hits.append(car)
-			car.receive_punch((forward + Vector3.UP * hit_lift) * push, explosive)
+			if car.global_position.distance_to(_frog.global_position) > 3.0:
+				far += 1
+			if uppercut:
+				car.set_meta("uppercut", true)
+				if meteor:
+					car.set_meta("meteor", true)
+			if long_reach and yank:
+				_yank(car, blow)
+			else:
+				car.receive_punch(blow, explosive)
 		elif result.collider is Baggage:
-			result.collider.receive_punch((forward + Vector3.UP * hit_lift) * push)
+			result.collider.receive_punch(blow)
 	_frog.power_used.emit(&"punch")
+	# Maestria di montante e guantone a molla.
+	if uppercut:
+		Progress.trial_add("uppercut", 0, hits.size())
+	if long_reach:
+		Progress.trial_add("long_glove", 0, far)
+		Progress.trial_best("long_glove", 1, hits.size())
 	if not hits.is_empty():
 		_frog.punched.emit(hits)
+
+
+## Tira e molla: il guantone afferra l'auto e la tira verso la rana, poi la
+## scaglia via più forte (lo fa l'auto, vedi Car.yank).
+func _yank(car: Car, blow: Vector3) -> void:
+	car.receive_punch(Vector3.ZERO, explosive)
+	car.yank(_frog, blow * yank_boost, yank_time)
 
 
 ## Equipaggia o toglie i guantoni esplosivi; si vede: diventano arancioni.
