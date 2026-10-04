@@ -44,6 +44,8 @@ const STEP_LEVEL := 3
 
 var value := 0.0
 var running := true
+## Statistica dello stagno "Sangue freddo": frazione del calore dai poteri.
+var power_heat_factor := 1.0
 
 
 func _process(delta: float) -> void:
@@ -89,17 +91,9 @@ func on_wreck(car: Node3D) -> void:
 
 
 func on_power_used(power: StringName) -> void:
-	match power:
-		&"punch":
-			add(per_punch)
-		&"super_jump":
-			add(per_super_jump)
-		&"glide":
-			add(per_glide)
-		&"tongue":
-			add(per_tongue)
-		&"slam":
-			add(per_slam)
+	var costs := {&"punch": per_punch, &"super_jump": per_super_jump, &"glide": per_glide, &"tongue": per_tongue, &"slam": per_slam}
+	if costs.has(power):
+		add(costs[power] * power_heat_factor)
 
 
 func traffic_speed_factor() -> float:

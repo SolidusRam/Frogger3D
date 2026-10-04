@@ -11,8 +11,16 @@ extends Node3D
 @export var sun: DirectionalLight3D
 @export var post: ColorRect
 @export var upgrades: Upgrades
-## File del record; i test ne usano uno loro per non toccare quello vero.
+## File del record e dei progressi (mosche, stagno); i test ne usano di loro
+## per non toccare quelli veri.
 @export var record_path := "user://record.cfg"
+@export var progress_path := "user://progressi.cfg"
+
+@export_group("Mosche")
+## Mosche date da ogni tana, e in più quando la tana non ha carte da offrire
+## (con la vita piena).
+@export var den_flies := 3
+@export var empty_den_flies := 8
 
 @export_group("Tempi speciali")
 ## Fermo-immagine quando il pugno colpisce un'auto.
@@ -29,6 +37,12 @@ extends Node3D
 var run_time := 0.0
 ## Run di prova (vedi TestMode): il record non si salva.
 var test_run := false
+## Mosche raccolte in questa run (si sommano al totale a fine run).
+var run_flies := 0
+## Statistiche dello stagno che servono durante la run.
+var fly_magnet := 0.0
+var fly_value := 1.0
+var den_regen := 0.0
 var max_heat_level := 0
 var record_distance := 0.0
 
@@ -41,8 +55,11 @@ var _slowmo_ready_at := 0
 
 
 func _ready() -> void:
+	add_to_group("game")
 	Engine.time_scale = 1.0
 	Heat.reset()
+	Progress.load_from(progress_path)
+	_apply_stats()
 	Style.bind(environment.environment, sun, post)
 	record_distance = _load_record()
 	frog.power_used.connect(Heat.on_power_used)
@@ -51,7 +68,9 @@ func _ready() -> void:
 	Heat.wreck_created.connect(_on_wreck_created)
 	course.den_reached.connect(_on_den_reached)
 	hud.restart_requested.connect(restart)
+	hud.menu_requested.connect(to_menu)
 	upgrades.equipped.connect(_on_equipped)
+	frog.revived.connect(hud.announce.bind("Seconda vita!"))
 	hud.set_record(record_distance)
 	add_child(TestMode.new())
 
@@ -72,6 +91,13 @@ func restart() -> void:
 	Engine.time_scale = 1.0
 	Heat.reset()
 	get_tree().reload_current_scene()
+
+
+func to_menu() -> void:
+	Engine.time_scale = 1.0
+	Heat.reset()
+	get_tree().paused = false
+	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
 
 ## Il fermo-immagine vince sul rallentatore; il tempo è misurato in ms reali,
@@ -139,13 +165,32 @@ func _on_den_reached(_count: int, distance: float) -> void:
 	_save_record_if_better(distance)
 	if _over:
 		return
+	add_flies(den_flies)
+	if den_regen > 0.0:
+		frog.health = mini(frog.health + roundi(frog.max_health * den_regen), frog.max_health)
+		frog.health_changed.emit(frog.health, frog.max_health)
 	offer_upgrade()
 
 
-## Ferma il gioco e offre tre power-up (anche dalla modalità prova).
+## Mosche raccolte (una mosca vale 1, una d'oro 5; la statistica "Golosa" ne
+## aggiunge, con l'arrotondamento a caso).
+func add_flies(amount: int) -> void:
+	var value := amount * fly_value
+	var whole := floori(value)
+	if randf() < value - whole:
+		whole += 1
+	run_flies += whole
+	hud.set_flies(run_flies)
+
+
+## Ferma il gioco e offre tre power-up (anche dalla modalità prova). Se la
+## tana non ha più carte da offrire, dà vita piena e mosche.
 func offer_upgrade() -> void:
 	var options := upgrades.make_offer()
 	if options.is_empty():
+		frog.heal_full()
+		add_flies(empty_den_flies)
+		hud.announce("Niente da scegliere: vita piena e %d mosche" % empty_den_flies)
 		return
 	get_tree().paused = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -166,6 +211,9 @@ func _on_frog_died() -> void:
 	Heat.running = false
 	var distance := course.distance()
 	var new_record := _save_record_if_better(distance)
+	# Come il record: una run di prova non conta.
+	if not test_run:
+		Progress.add_flies(run_flies)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	hud.show_game_over({
 		"distance": distance,
@@ -174,7 +222,40 @@ func _on_frog_died() -> void:
 		"heat_level": max_heat_level,
 		"record": record_distance,
 		"new_record": new_record,
+		"flies": run_flies,
+		"total_flies": Progress.flies,
 	})
+
+
+## Le statistiche comprate allo stagno, all'inizio di ogni run.
+func _apply_stats() -> void:
+	frog.max_health += 10 * Progress.level("health")
+	frog.heal_full()
+	frog.damage_factor = 1.0 - 0.05 * Progress.level("armor")
+	den_regen = 0.15 * Progress.level("regen")
+	frog.invulnerability_duration += 0.25 * Progress.level("invuln")
+	frog.move_speed *= 1.0 + 0.04 * Progress.level("speed")
+	frog.jump_height *= 1.0 + 0.08 * Progress.level("jump")
+	frog.compute_jump()
+	frog.swim_speed *= 1.0 + 0.15 * Progress.level("swim")
+	frog.base_swim_speed = frog.swim_speed
+	frog.water_damage_per_second *= 1.0 - 0.15 * Progress.level("swim")
+	frog.super_jump_power.height += 0.5 * Progress.level("super_jump")
+	frog.cooldown_factor = 1.0 - 0.06 * Progress.level("cooldown")
+	for power in [frog.super_jump_power, frog.punch_power, frog.tongue_power, frog.slam_power]:
+		power.cooldown *= frog.cooldown_factor
+	frog.punch_power.impulse *= 1.0 + 0.1 * Progress.level("punch")
+	frog.glider_power.duration += 0.3 * Progress.level("glide")
+	frog.glider_power.charge = frog.glider_power.duration
+	var fire: Wildfire = get_node("Wildfire")
+	fire.max_gap += 5.0 * Progress.level("fire")
+	fire.front_z = frog.global_position.z + fire.max_gap
+	Heat.power_heat_factor = 1.0 - 0.06 * Progress.level("calm")
+	fly_magnet = 0.7 * Progress.level("magnet")
+	fly_value = 1.0 + 0.1 * Progress.level("greed")
+	Fly.golden_factor = 1.0 + 0.5 * Progress.level("luck")
+	upgrades.offer_size = 3 + Progress.level("choice")
+	frog.extra_lives = Progress.level("revival")
 
 
 func _save_record_if_better(distance: float) -> bool:

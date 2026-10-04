@@ -8,6 +8,8 @@ extends CharacterBody3D
 
 signal health_changed(health: int, max_health: int)
 signal died
+## La seconda vita (statistica dello stagno) ha appena salvato la rana.
+signal revived
 ## Emesso a ogni pugno andato a segno, con i veicoli colpiti.
 signal punched(cars: Array[Car])
 ## Emesso a ogni uso di un potere (&"punch", &"super_jump", &"glide"): fa
@@ -99,16 +101,24 @@ var invincible := false
 ## Molle-trampolino (power-up): sui tetti delle auto si rimbalza da soli.
 var trampoline := false
 var trampoline_height := 2.6
+## Carta migliorata: rimbalzando si ribalta l'auto sotto.
+var trampoline_wrecks := false
+## Statistica dello stagno "Ricarica": frazione dei tempi di ricarica.
+var cooldown_factor := 1.0
 ## Pelle impermeabile (power-up): l'acqua non toglie vita.
 var waterproof := false
+## Velocità di nuoto senza carte (la pelle impermeabile migliorata la
+## moltiplica).
+var base_swim_speed := 2.5
+## Statistiche dello stagno: frazione del danno subito, vite in più.
+var damage_factor := 1.0
+var extra_lives := 0
 
 
 func _ready() -> void:
 	add_to_group("frog")
 	_spawn_position = global_position
-	jump_velocity = 2.0 * jump_height / jump_time_to_peak
-	gravity_up = 2.0 * jump_height / pow(jump_time_to_peak, 2)
-	gravity_down = 2.0 * jump_height / pow(jump_time_to_fall, 2)
+	compute_jump()
 	for power in $Powers.get_children():
 		power.setup(self)
 	_apply_palette()
@@ -170,6 +180,8 @@ func _physics_process(delta: float) -> void:
 		slam_power.apply(delta)
 	if trampoline and is_on_floor() and floor_body() is Car and velocity.y <= 0.0:
 		# Molle-trampolino: sui tetti delle auto si rimbalza da soli.
+		if trampoline_wrecks and floor_body().state == Car.State.DRIVING:
+			floor_body().become_wreck()
 		# Senza Spazio premuto si sale con la gravità di discesa.
 		launch(Vector3(velocity.x, sqrt(2.0 * gravity_down * trampoline_height), velocity.z))
 		squash(Vector3(1.3, 0.7, 1.3), 0.2)
@@ -238,6 +250,14 @@ func launch(new_velocity: Vector3) -> void:
 	velocity = new_velocity
 	_time_since_floor = INF
 	_time_since_jump_pressed = INF
+
+
+## Velocità e gravità del salto da altezza e tempi (di nuovo quando le
+## statistiche dello stagno cambiano l'altezza).
+func compute_jump() -> void:
+	jump_velocity = 2.0 * jump_height / jump_time_to_peak
+	gravity_up = 2.0 * jump_height / pow(jump_time_to_peak, 2)
+	gravity_down = 2.0 * jump_height / pow(jump_time_to_fall, 2)
 
 
 ## Pelle impermeabile (power-up): l'acqua non toglie vita; la rana diventa
@@ -344,7 +364,13 @@ func take_hit(damage: int, knockback: Vector3) -> void:
 func _lose_health(amount: int) -> void:
 	if is_dead or invincible:
 		return
-	health = maxi(health - amount, 0)
+	health = maxi(health - ceili(amount * damage_factor), 0)
+	if health == 0 and extra_lives > 0:
+		# La seconda vita: ci si rialza con metà vita e un attimo di respiro.
+		extra_lives -= 1
+		health = max_health / 2
+		_invulnerable_time = 2.0
+		revived.emit()
 	health_changed.emit(health, max_health)
 	if health == 0:
 		_die()

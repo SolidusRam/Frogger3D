@@ -6,6 +6,7 @@ extends CanvasLayer
 ## grafica definitiva non arrivano.
 
 signal restart_requested
+signal menu_requested
 
 const HEALTH_COLOR := Color(0.35, 0.8, 0.35)
 const HEALTH_LOW_COLOR := Color(0.9, 0.25, 0.2)
@@ -25,6 +26,7 @@ var _heat_label: Label
 var _distance_label: Label
 var _dens_label: Label
 var _record_label: Label
+var _flies_label: Label
 var _super_jump_bar: ProgressBar
 var _glide_bar: ProgressBar
 ## Lingua e schianto: si vedono solo quando sono equipaggiati.
@@ -37,6 +39,7 @@ var _fire_label: Label
 var _vignette: ColorRect
 var _game_over: PanelContainer
 var _game_over_text: Label
+var _pond: Pond
 var _chain_label: Label
 var _offer: PanelContainer
 var _offer_title: Label
@@ -86,6 +89,10 @@ func set_fire_distance(distance: float, danger: float) -> void:
 	(_vignette.material as ShaderMaterial).set_shader_parameter("strength", danger)
 
 
+func set_flies(count: int) -> void:
+	_flies_label.text = "Mosche: %d" % count
+
+
 func set_record(distance: float) -> void:
 	if _record_label:
 		_record_label.text = "Record: %d m" % roundi(distance)
@@ -98,6 +105,7 @@ func show_game_over(stats: Dictionary) -> void:
 		"Tempo: %d:%02d" % [floori(stats.time / 60.0), floori(stats.time) % 60],
 		"Calore massimo: livello %d" % stats.heat_level,
 		"Nuovo record!" if stats.new_record else "Record: %d m" % roundi(stats.record),
+		"Mosche: +%d (in tutto %d)" % [stats.flies, stats.total_flies],
 	]
 	_game_over_text.text = "\n".join(lines)
 	_game_over.visible = true
@@ -236,6 +244,10 @@ func _build_top_right() -> void:
 	_record_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_record_label.modulate = Color(1, 1, 1, 0.7)
 	box.add_child(_record_label)
+	_flies_label = _label(20, "Mosche: 0")
+	_flies_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_flies_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	box.add_child(_flies_label)
 
 
 func _build_powers() -> void:
@@ -383,8 +395,8 @@ func _build_game_over() -> void:
 	_game_over.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	_game_over.offset_left = -220
 	_game_over.offset_right = 220
-	_game_over.offset_top = -170
-	_game_over.offset_bottom = 170
+	_game_over.offset_top = -230
+	_game_over.offset_bottom = 230
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.05, 0.07, 0.1, 0.9)
 	style.set_corner_radius_all(12)
@@ -407,6 +419,24 @@ func _build_game_over() -> void:
 	button.add_theme_font_size_override("font_size", 22)
 	button.pressed.connect(restart_requested.emit)
 	box.add_child(button)
+	var pond_button := Button.new()
+	pond_button.text = "Lo stagno"
+	pond_button.add_theme_font_size_override("font_size", 22)
+	pond_button.pressed.connect(_open_pond)
+	box.add_child(pond_button)
+	var menu_button := Button.new()
+	menu_button.text = "Menu"
+	menu_button.add_theme_font_size_override("font_size", 22)
+	menu_button.pressed.connect(menu_requested.emit)
+	box.add_child(menu_button)
+	_pond = Pond.new()
+	_pond.visible = false
+	add_child(_pond)
+
+
+func _open_pond() -> void:
+	_pond.refresh()
+	_pond.visible = true
 
 
 func _label(font_size: int, text := "") -> Label:

@@ -57,6 +57,8 @@ func _spawn(x: float) -> Floater:
 	floater.rotation.y = -PI / 2.0 * direction
 	floater.drift_velocity = global_basis.x.normalized() * direction * speed
 	add_child(floater)
+	# Una mosca su circa un tronco o un coccodrillo su 6.
+	Fly.maybe_add(floater, 1.0 / 6.0, Vector3(0.0, floater.size.y / 2.0 + 0.7, 0.0))
 	_last = floater
 	_roll_next()
 	return floater

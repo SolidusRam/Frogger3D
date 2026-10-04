@@ -52,6 +52,8 @@ func build(wagon_count: int) -> void:
 		wagon.position.x = -direction * (offset + info.length / 2.0)
 		add_child(wagon)
 		_wagons.append(wagon)
+		# Una mosca su circa un vagone su 3, sul tetto; può essere d'oro.
+		Fly.maybe_add(wagon, 1.0 / 3.0, Vector3(0.0, info.height + 0.7, 0.0), true)
 		offset += info.length + GAP
 	length = offset - GAP
 

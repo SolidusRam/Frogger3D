@@ -9,6 +9,7 @@ extends CanvasLayer
 ##   --bioma=strada|fiume|ferrovia|aeroporto|porto|tana  --calore=0..5
 ##   --blocca-calore  --invincibile  --poteri  --senza-fuoco
 ##   --power=tongue,slam,napalm   (gli id sono quelli di Upgrades.CATALOG)
+##   --mosche=N   (mosche in più da spendere allo stagno: restano)
 ## Le opzioni restano attive anche dopo "Ricomincia". Una run in cui si usa
 ## la modalità prova non salva il record, e in alto compare PROVA.
 
@@ -91,6 +92,13 @@ func equip(id: String) -> void:
 	_set_open(_panel.visible)
 
 
+## Mosche in più da spendere allo stagno. Restano nei progressi: servono a
+## provare lo stagno senza doverle raccogliere.
+func give_flies(amount: int) -> void:
+	Progress.add_flies(amount)
+	_mark_test_run()
+
+
 func offer_upgrade() -> void:
 	_set_open(false)
 	_mark_test_run()
@@ -151,6 +159,8 @@ func _read_command_line() -> void:
 				set_fire_off(true)
 			"blocca-calore":
 				set_heat_locked(true)
+			"mosche":
+				give_flies(int(parts[1]))
 			"power":
 				for id in parts[1].split(","):
 					equip(id)
@@ -219,6 +229,7 @@ func _build() -> void:
 	box.add_child(_toggle("Blocca il calore al livello attuale", "heat_locked", set_heat_locked))
 	box.add_child(_toggle("Ferma l'incendio", "fire_off", set_fire_off))
 	box.add_child(_button("Apri una tana: scegli un power-up", offer_upgrade))
+	box.add_child(_button("+100 mosche (per lo stagno, restano)", give_flies.bind(100)))
 	box.add_child(_title("Equipaggia subito", 16))
 	var cards := GridContainer.new()
 	cards.columns = 3

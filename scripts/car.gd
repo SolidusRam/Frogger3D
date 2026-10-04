@@ -23,6 +23,10 @@ static var smoke_seconds := SMOKE_SECONDS
 ## Raggio, spinta (velocità data ai veicoli vicini) e danno alla rana
 ## dell'esplosione dei guantoni esplosivi.
 const EXPLOSION_RADIUS := 6.0
+## Il raggio vero e se l'esplosione ferisce la rana: le carte migliorate allo
+## stagno li cambiano (vedi Upgrades).
+static var explosion_radius := EXPLOSION_RADIUS
+static var explosion_hurts_frog := true
 const EXPLOSION_PUSH := 12.0
 const EXPLOSION_FROG_RADIUS := 4.5
 const EXPLOSION_FROG_DAMAGE := 30
@@ -223,7 +227,7 @@ func explode() -> void:
 	var center := global_position
 	var query := PhysicsShapeQueryParameters3D.new()
 	var sphere := SphereShape3D.new()
-	sphere.radius = EXPLOSION_RADIUS
+	sphere.radius = explosion_radius
 	query.shape = sphere
 	query.transform = Transform3D(Basis(), center)
 	query.collision_mask = 4 # veicoli
@@ -234,13 +238,13 @@ func explode() -> void:
 		other.become_wreck()
 		var away := other.global_position - center
 		# Al bordo del raggio arriva ancora metà della spinta.
-		var strength := 1.0 - 0.5 * clampf(away.length() / EXPLOSION_RADIUS, 0.0, 1.0)
+		var strength := 1.0 - 0.5 * clampf(away.length() / explosion_radius, 0.0, 1.0)
 		var direction := (Vector3(away.x, 0.0, away.z).normalized() + Vector3.UP * 0.8).normalized()
 		other.apply_central_impulse(direction * other.mass * EXPLOSION_PUSH * strength)
 	apply_central_impulse(Vector3.UP * mass * 5.0)
 	if _frog and not _frog.is_dead:
 		var to_frog := _frog.global_position - center
-		if to_frog.length() < EXPLOSION_FROG_RADIUS:
+		if explosion_hurts_frog and to_frog.length() < EXPLOSION_FROG_RADIUS:
 			var push := (Vector3(to_frog.x, 0.0, to_frog.z).normalized() + Vector3.UP).normalized() * 12.0
 			_frog.take_hit(EXPLOSION_FROG_DAMAGE, push)
 		if to_frog.length() < 30.0:
@@ -421,7 +425,7 @@ func _emit_explosion() -> void:
 	ball.global_position = global_position
 	ball.scale = Vector3.ONE * 0.5
 	var tween := ball.create_tween()
-	tween.tween_property(ball, "scale", Vector3.ONE * EXPLOSION_RADIUS * 0.7, 0.18).set_ease(Tween.EASE_OUT)
+	tween.tween_property(ball, "scale", Vector3.ONE * explosion_radius * 0.7, 0.18).set_ease(Tween.EASE_OUT)
 	tween.tween_property(ball, "scale", Vector3.ZERO, 0.25).set_ease(Tween.EASE_IN)
 	tween.tween_callback(ball.queue_free)
 	_emit_sparks(60)

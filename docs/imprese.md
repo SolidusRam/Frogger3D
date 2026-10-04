@@ -41,11 +41,14 @@ Nel Frogger originale la mosca nella tana dava punti in più: qui le mosche sono
 
 **Cosa comprano** (deciso): come in Vampire Survivors, **forza permanente**: potenziamenti delle statistiche e miglioramenti delle carte, che valgono per le run successive. Qui la regola "sblocchi di opzioni, mai forza" non vale: vale per le imprese, non per le mosche.
 
-Proposte di Claude, da scegliere:
-- **Quante e quanto valgono**: una mosca su circa un'auto su 12, un tronco o un coccodrillo su 6, un treno su 3, un aereo o una nave su 2. Vale 1; la **mosca d'oro**, rara e solo su treni e aerei, vale 5. Una manciata in ogni tana (di più quando la tana non ha carte).
-- **Statistiche** (ognuna a livelli, il prezzo sale a ogni livello): vita, velocità, altezza del salto, ricarica dei poteri, durata del deltaplano, vantaggio sull'incendio (parte più lontano), meno calore dai poteri, raggio di raccolta delle mosche, un gettone Rilancia in più a ogni run.
-- **Carte migliorate**: ogni carta con slot ha due miglioramenti da comprare (per esempio guantoni esplosivi: raggio da 6 a 8 m, poi esplosione immediata). Sono i "livelli" delle carte, ma comprati fra una run e l'altra.
-- **Gettoni della tana** (Rilancia, Salta, Esilia) e **cose da vedere** (cappelli, colori, stili).
+**Nel gioco** (fatto il 4 ottobre 2026; numeri da tarare giocando):
+- **Dove**: su circa un'auto su 12, un tronco o un coccodrillo su 6, un vagone su 3, un aereo o una nave su 2 (sull'ala, sopra una casella). Vale 1; la **mosca d'oro** (il 20% delle mosche su treni e aerei) vale 5. Si prende toccandola (raggio 1,1 m) o con la lingua, che la mangia a distanza senza agganciarsi e che col mirino la preferisce. Ogni tana ne dà 3; una tana senza carte da offrire dà vita piena e 8 mosche.
+- **Quando si spendono**: la fine della run le somma al totale (una run di prova no). Lo **stagno** si apre dal menu iniziale e dalla fine della run.
+- **Statistiche** (livelli massimi; prezzo base, il livello n costa base × n): Vita +10 (5; 15), Corazza -5% di danno (4; 25), Riposo +15% di vita in tana (3; 20), Riflessi +0,25 s di invulnerabilità (2; 20), Zampe veloci +4% (4; 20), Zampe forti +8% di salto (3; 20), Nuotatrice +15% in acqua e -15% di danno dall'acqua (3; 15), Molle tese +0,5 m di super salto (3; 25), Ricarica -6% (4; 30), Pugno +10% (3; 20), Ala +0,3 s (4; 20), Vantaggio: incendio 5 m più lontano (4; 30), Sangue freddo -6% di calore dai poteri (4; 30), Lingua lunga +0,7 m di raggio per le mosche (3; 10), Golosa +10% di mosche (3; 30), Fortuna +50% di mosche d'oro (3; 25), Più scelta: una carta in più nelle tane (1; 150), Seconda vita: una volta per run ci si rialza con metà vita (1; 200).
+- **Carte migliorate** (due per carta, valgono quando la si equipaggia): guantoni esplosivi (raggio 8 m; le esplosioni non feriscono la rana), montante (auto più in alto; +40% di spinta), guantone a molla (5,5 m; zona larga il doppio), molle-trampolino (3,6 m; rimbalzando ribalti l'auto sotto), schianto sismico (+2 m; ricarica in 1 s), correnti calde (si sale più in fretta; fumo 9 s), ala a reazione (scalda la metà; 20 m/s), pelle impermeabile (nuoto veloce; dall'acqua si salta fuori come da terra), lingua (16 m; ricarica dimezzata).
+- **Rimborso**: si azzera tutto e le mosche tornano indietro, come in Vampire Survivors.
+
+Ancora da fare: i gettoni della tana (Rilancia, Salta, Esilia) e le cose da vedere (cappelli, colori, stili). Altre statistiche possibili: spinta dello schianto, durata della seconda vita, mosche d'oro anche su auto e navi.
 
 ### Imprese
 

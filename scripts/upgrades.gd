@@ -77,11 +77,16 @@ var slots := {"gloves": "", "springs": "", "wing": "", "body": "", "tongue": ""}
 ## Quante volte è stato preso ogni potenziamento numerico.
 var stacks := {}
 var current_offer: Array[String] = []
+## Carte offerte da ogni tana (la statistica "Più scelta" ne aggiunge una).
+var offer_size := 3
 
 
 func _ready() -> void:
-	# Valori condivisi che una fusione può aver cambiato nella run precedente.
+	# Valori condivisi che una carta o una fusione può aver cambiato nella run
+	# precedente.
 	Car.smoke_seconds = Car.SMOKE_SECONDS
+	Car.explosion_radius = Car.EXPLOSION_RADIUS
+	Car.explosion_hurts_frog = true
 
 
 ## Gli slot di una carta: due per una fusione, uno per un modificatore,
@@ -101,7 +106,9 @@ func fusion_ready(id: String) -> bool:
 
 ## Prepara un'offerta: tre power-up diversi, solo per slot ancora liberi e
 ## senza i numerici già al massimo. Una fusione pronta c'è sempre.
-func make_offer(count := 3) -> Array[String]:
+func make_offer(count := -1) -> Array[String]:
+	if count < 0:
+		count = offer_size
 	var fusions: Array[String] = []
 	var pool: Array[String] = []
 	for id: String in CATALOG:
@@ -171,31 +178,53 @@ func _remove(id: String) -> void:
 		slots[slot] = ""
 
 
+## Accende o spegne un modificatore, coi miglioramenti comprati allo stagno
+## (Progress.card_level: 0, 1 o 2).
 func _set_modifier(id: String, on: bool) -> void:
+	var level := Progress.card_level(id) if on else 0
 	match id:
 		"explosive_gloves":
 			frog.punch_power.set_explosive(on)
+			Car.explosion_radius = 8.0 if level >= 1 else Car.EXPLOSION_RADIUS
+			Car.explosion_hurts_frog = level < 2
 		"uppercut":
 			frog.punch_power.set_uppercut(on)
+			frog.punch_power.uppercut_lift = 1.8 if level >= 1 else 1.2
+			frog.punch_power.uppercut_push = 1.4 if level >= 2 else 1.0
 		"long_glove":
 			frog.punch_power.set_long_reach(on)
+			frog.punch_power.long_reach_distance = 5.5 if level >= 1 else 4.0
+			frog.punch_power.long_reach_radius = 2.5 if level >= 2 else 1.25
 		"trampoline":
 			frog.trampoline = on
+			frog.trampoline_height = 3.6 if level >= 1 else 2.6
+			frog.trampoline_wrecks = level >= 2
 			frog.super_jump_power.set_spring_color("spring_bounce" if on else "")
 		"slam":
 			frog.slam_power.enabled = on
+			frog.slam_power.radius = 6.0 + (2.0 if level >= 1 else 0.0)
+			frog.slam_power.cooldown = (1.0 if level >= 2 else 2.0) * frog.cooldown_factor
 			frog.super_jump_power.set_spring_color("spring_heavy" if on else "")
 		"thermals":
 			frog.glider_power.set_thermals(on)
+			frog.glider_power.thermal_rise_speed = 6.0 if level >= 1 else 4.0
+			Car.smoke_seconds = 9.0 if level >= 2 else Car.SMOKE_SECONDS
 		"jet_wing":
 			frog.glider_power.set_jet(on)
+			frog.glider_power.jet_heat_per_second = 0.75 if level >= 1 else 1.5
+			frog.glider_power.jet_speed = 20.0 if level >= 2 else 16.0
 		"waterproof":
 			frog.set_waterproof(on)
+			frog.swim_speed = frog.base_swim_speed * (1.6 if level >= 1 else 1.0)
+			frog.water_jump_factor = 1.15 if level >= 2 else 0.85
 		"tongue":
 			frog.tongue_power.enabled = on
+			frog.tongue_power.reach = 16.0 if level >= 1 else 12.0
+			frog.tongue_power.cooldown = (0.5 if level >= 2 else 1.0) * frog.cooldown_factor
 		"napalm":
 			Car.smoke_seconds = 15.0 if on else Car.SMOKE_SECONDS
 			frog.glider_power.wide_thermals = on
 		"earthquake":
-			frog.slam_power.radius = 10.0 if on else 6.0
+			var bonus := 2.0 if Progress.card_level("slam") >= 1 else 0.0
+			frog.slam_power.radius = (10.0 if on else 6.0) + bonus
 			frog.slam_power.launch_speed = 13.0 if on else 9.0

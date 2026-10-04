@@ -90,6 +90,10 @@ func _spawn(x: float) -> Ship:
 	ship.position.x = x
 	add_child(ship)
 	ship.load_initial(initial_fill)
+	# Una mosca su una nave su 2, sopra una casella (sul ponte o sui container).
+	var cell := Vector2i(Fly.rng().randi() % Ship.COLUMNS, Fly.rng().randi() % Ship.ROWS)
+	var top := Ship.cell_position(cell, ship.level(cell)) - Vector3(0.0, ShippingContainer.SIZE.y / 2.0, 0.0)
+	Fly.maybe_add(ship, 0.5, top + Vector3.UP * 0.7)
 	_last = ship
 	return ship
 

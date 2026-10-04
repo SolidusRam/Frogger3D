@@ -63,6 +63,8 @@ func _send_plane(x: float) -> void:
 	# Si ferma con la coda nella zona di gioco: il getto lungo la copre tutta.
 	plane.hold_x = -direction * randf_range(0.0, 12.0)
 	add_child(plane)
+	# Una mosca su un aereo su 2, su un'ala; può essere d'oro.
+	Fly.maybe_add(plane, 0.5, Vector3(8.0 * (1.0 if Fly.rng().randf() < 0.5 else -1.0), 3.4, 0.5), true)
 
 
 func _add_service_road(z: float) -> void:

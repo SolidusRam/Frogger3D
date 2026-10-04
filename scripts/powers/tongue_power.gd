@@ -7,7 +7,8 @@ extends Node
 ## tether_length e resta tesa come una fune: ci si fa trascinare da un'auto,
 ## un tronco, una nave, un treno, un aereo. Lasciando, la rana vola via con lo
 ## slancio che ha. Un rottame invece lo si tira verso di sé finché si tiene
-## premuto; lasciato, prosegue con la sua spinta. Funziona anche dall'acqua.
+## premuto; lasciato, prosegue con la sua spinta. Le mosche, la lingua le
+## mangia al volo, e il mirino le preferisce. Funziona anche dall'acqua.
 
 @export var reach := 12.0
 ## Quanto può essere lontano dalla direzione della telecamera, in gradi.
@@ -91,6 +92,13 @@ func ready_ratio() -> float:
 ## scatta a vuoto e si ricarica in fretta.
 func use() -> bool:
 	var target := aimed if aimed else _find_target()
+	if target is Fly:
+		# Una mosca si mangia al volo: niente aggancio, niente calore.
+		_flick_to = target.global_position
+		_flick_left = 0.15
+		target.collect()
+		cooldown_left = 0.3
+		return true
 	if target == null:
 		cooldown_left = 0.3
 		_flick_to = _mouth() - _frog.camera_rig.flat_basis().z * 3.0
@@ -210,6 +218,19 @@ func _find_target() -> Node3D:
 	var standing_on := _frog.floor_body()
 	var best: Node3D = null
 	var best_score := INF
+	# Le mosche prima di tutto: il mirino le preferisce.
+	for fly: Node3D in _frog.get_tree().get_nodes_in_group("flies"):
+		var to_fly := fly.global_position - _frog.global_position
+		var flat_fly := Vector3(to_fly.x, 0.0, to_fly.z)
+		if to_fly.length() > reach or flat_fly.length() < 0.3:
+			continue
+		var fly_angle := rad_to_deg(forward.angle_to(flat_fly))
+		if fly_angle > max_angle:
+			continue
+		var fly_score := fly_angle + flat_fly.length() * 2.0 - 30.0
+		if fly_score < best_score:
+			best_score = fly_score
+			best = fly
 	for result in space.intersect_shape(query, 64):
 		var body := result.collider as Node3D
 		if body == null or body == standing_on:
@@ -231,8 +252,10 @@ func _find_target() -> Node3D:
 	return best
 
 
-## Il punto più alto del bersaglio sopra il suo centro.
+## Il punto più alto del bersaglio sopra il suo centro (una mosca: lei).
 func _top_of(target: Node3D) -> Vector3:
+	if target is Fly:
+		return target.global_position
 	var space := _frog.get_world_3d().direct_space_state
 	var ray := PhysicsRayQueryParameters3D.create(target.global_position + Vector3.UP * 12.0, target.global_position + Vector3.DOWN * 3.0, 4 | 8)
 	for i in 4:

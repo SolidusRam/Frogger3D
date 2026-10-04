@@ -59,6 +59,8 @@ func _spawn_car(x: float) -> Car:
 	car.braking *= Heat.braking_factor()
 	car.crash_speed *= Heat.crash_speed_factor()
 	add_child(car)
+	# Una mosca su circa un'auto su 12, sul tetto.
+	Fly.maybe_add(car, 1.0 / 12.0, Vector3(0.0, car.size.y / 2.0 + 0.7, 0.0))
 	_roll_next()
 	return car
 

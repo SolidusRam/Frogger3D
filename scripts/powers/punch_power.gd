@@ -23,6 +23,10 @@ var uppercut := false
 var long_reach := false
 @export var uppercut_lift := 1.2
 @export var long_reach_distance := 4.0
+## Carte migliorate allo stagno: spinta in più col montante, zona più larga
+## col guantone a molla.
+var uppercut_push := 1.0
+var long_reach_radius := 1.25
 
 var _frog: Frog
 var _gloves: Array[Node3D] = []
@@ -64,16 +68,17 @@ func use() -> void:
 
 	var hit_reach := long_reach_distance if long_reach else reach
 	var hit_lift := uppercut_lift if uppercut else lift
-	(_query.shape as SphereShape3D).radius = radius * (1.25 if long_reach else 1.0)
+	(_query.shape as SphereShape3D).radius = radius * (long_reach_radius if long_reach else 1.0)
+	var push := impulse * (uppercut_push if uppercut else 1.0)
 	_query.transform = Transform3D(Basis(), _frog.global_position + Vector3.UP * 0.6 + forward * hit_reach)
 	var hits: Array[Car] = []
 	for result in _frog.get_world_3d().direct_space_state.intersect_shape(_query, 8):
 		var car := result.collider as Car
 		if car and not hits.has(car):
 			hits.append(car)
-			car.receive_punch((forward + Vector3.UP * hit_lift) * impulse, explosive)
+			car.receive_punch((forward + Vector3.UP * hit_lift) * push, explosive)
 		elif result.collider is Baggage:
-			result.collider.receive_punch((forward + Vector3.UP * hit_lift) * impulse)
+			result.collider.receive_punch((forward + Vector3.UP * hit_lift) * push)
 	_frog.power_used.emit(&"punch")
 	if not hits.is_empty():
 		_frog.punched.emit(hits)

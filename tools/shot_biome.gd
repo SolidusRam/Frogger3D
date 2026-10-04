@@ -19,6 +19,7 @@ func _initialize() -> void:
 	seed(11)
 	main = load("res://scenes/main.tscn").instantiate()
 	main.record_path = "user://record_shot.cfg"
+	main.progress_path = "user://progressi_shot.cfg"
 	root.add_child(main)
 	current_scene = main
 	frog = main.get_node("Frog")
