@@ -174,6 +174,17 @@ func wind_lift() -> float:
 	return _wind_lift
 
 
+## Il corpo su cui la rana sta in piedi (null se è in aria o in acqua).
+func floor_body() -> Object:
+	if not is_on_floor():
+		return null
+	for i in get_slide_collision_count():
+		var collision := get_slide_collision(i)
+		if collision.get_normal().dot(Vector3.UP) > 0.7:
+			return collision.get_collider()
+	return null
+
+
 ## Lancia la rana con la velocità data, annullando salti in corso o anticipati.
 func launch(new_velocity: Vector3) -> void:
 	velocity = new_velocity

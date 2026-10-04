@@ -1,5 +1,7 @@
 extends SceneTree
-## Fiume: nuoto, salto dall'acqua, tronchi, coccodrilli, zattere.
+## Fiume: nuoto, salto dall'acqua, tronchi, coccodrilli, zattere. Il
+## gradino: dal livello 3 di calore il tronco affonda sotto la rana, con un
+## secondo di avviso, e torna su quando lei scende.
 
 const Lib := preload("res://tests/lib.gd")
 
@@ -75,6 +77,7 @@ func _physics_process(_delta: float) -> bool:
 				var frog_moved: float = frog.global_position.x - m.frog_x
 				t.check(absf(log_moved - frog_moved) < 0.6, "il tronco trasporta la rana")
 				t.check(frog.health == frog.max_health, "sul tronco non si fa male")
+				t.check(not m.log.is_sinking(), "a calore basso il tronco non affonda")
 				if m.has("croc"):
 					var croc: Node3D = m.croc
 					Lib.place(frog, croc.global_position - croc.global_basis.z * (croc.size.z / 2.0 - 0.5) + Vector3.UP * 0.2)
@@ -104,6 +107,31 @@ func _physics_process(_delta: float) -> bool:
 			if f == 360:
 				# Solo l'acqua può togliere vita: al massimo pochi punti, mai 20 o più in un colpo.
 				t.check(frog.health > frog.max_health - 20, "correre contro una zattera non fa male (vita %d)" % frog.health)
+				_next(4)
+		4: # il gradino: dal livello 3 il tronco affonda sotto la rana
+			var heat: Node = root.get_node("Heat")
+			if f == 1:
+				heat.running = false
+				heat.value = 61.0
+				frog.heal_full()
+				for lane in Lib.by_script(river, "river_lane.gd"):
+					for child in lane.get_children():
+						if child.get_script().resource_path.get_file() == "river_log.gd" and absf(child.global_position.x) < 12.0 and child.size.z > 7.0 and not m.has("log"):
+							m.log = child
+				Lib.place(frog, m.log.global_position + Vector3.UP * (m.log.size.y / 2.0 + 0.05))
+				m.float_y = m.log.global_position.y
+			if f == 45:
+				t.check(not m.log.is_sinking() and not frog.is_swimming(), "per il primo secondo il tronco regge (avviso: trema)")
+			# Saltella sul posto: non basta a tenerlo a galla.
+			if f > 50 and f < 160 and frog.is_on_floor():
+				frog.velocity.y = 5.0
+			if f == 100:
+				t.check(m.log.is_sinking(), "poi comincia ad affondare, anche saltellando")
+			if f == 200:
+				t.check(frog.is_swimming(), "in circa 3 s la rana finisce in acqua")
+				Lib.place(frog, Vector3(0, 30, 0))
+			if f == 400:
+				t.check(not m.log.is_sinking() and absf(m.log.global_position.y - m.float_y) < 0.05, "senza la rana il tronco torna a galla")
 				t.finish(self)
 	if frame > 4000:
 		t.check(false, "il test non si è bloccato (step %d)" % step)
