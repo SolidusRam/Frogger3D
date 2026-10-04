@@ -4,7 +4,7 @@ Ultimo aggiornamento: 2026-10-04
 
 ## Visione
 
-Una rana con i superpoteri attraversa all'infinito strade, fiumi, ferrovie, aeroporti e porti. Si rafforza nelle tane; il caos che provoca le apre la strada, ma rende il mondo sempre più ostile.
+Una rana con i superpoteri scappa da un incendio che ha preso la sua foresta, e attraversa all'infinito strade, fiumi, ferrovie, aeroporti e porti. Si rafforza nelle tane; il caos che provoca le apre la strada, ma rende il mondo sempre più ostile.
 
 Il Frogger originale parla di una creatura fragile in un mondo indifferente. Qui la rana può reagire, e il mondo reagisce a sua volta: più caos provochi, più il mondo ti dà la caccia.
 
@@ -59,7 +59,7 @@ Il caos serve a passare: auto ribaltate che bloccano una corsia, rottami che fan
 | Percorso | Infinito, a sezioni: strade, fiumi, ferrovie (dalla seconda sezione), aeroporti e porti (dalla terza), separati da strisce sicure, poi una tana. Ogni sezione ha più corsie e veicoli e correnti più veloci; i fiumi hanno sempre terra su entrambi i lati. Muri invisibili ai lati della zona di gioco |
 | Calore | Un'unica barra da 0 a 100 in 5 livelli, per strada e palude insieme; sale di continuo col tempo (0,15 al secondo); i poteri (pugno +1, deltaplano +2, super salto +3) e ogni rottame entro 50 m dalla rana (+0,6: conta il caos che si vede, non quello di un aeroporto lontano) lo fanno salire più in fretta; non cala mai. Effetti al massimo: veicoli e correnti più veloci (+80% e +40%), veicoli un po' più radi (+25% di spazio): meno auto ma più veloci, così il traffico minaccia invece di ingorgarsi, frenata -60%, schianti più facili; dal 60% le auto perdono il controllo da sole. Al massimo 80 rottami insieme |
 | Ritmo | Ondate di pericolo sopra una base che cresce sempre |
-| Genere | Roguelite con run infinite (deciso il 4 ottobre 2026). La run è infinita ma la distanza non ha tetto: una buona run finisce fra i 15 e i 20 minuti. Fra una run e l'altra si sbloccano opzioni con le imprese, e si scelgono rane con attrezzi di partenza diversi |
+| Genere | Roguelite con run infinite (deciso il 4 ottobre 2026). La run è infinita, ma l'incendio che insegue la rana la chiude: una buona run dura fra i 15 e i 20 minuti. Fra una run e l'altra si sbloccano opzioni con le imprese, e si scelgono rane con attrezzi di partenza diversi |
 | Ricompensa | La forza si guadagna nelle tane, scegliendo un potenziamento. Il caos non dà forza (decisione del 4 ottobre 2026, "per ora"): è un attrezzo per passare e costa calore |
 | Pubblicazione | Il gioco si pubblica comunque, senza budget: esce quando è pronto. Il nome definitivo verrà più avanti, prima della pagina Steam ("Frogger" è un marchio di Konami) |
 | Vita | Vita e potenziamenti che crescono durante la run, dalle tane; auto, acqua e coccodrilli tolgono vita: un solo colpo non basta a perdere |
@@ -148,16 +148,24 @@ Il gioco si pubblica comunque, senza budget: quattro fasi, e si passa alla succe
 Decisa il 4 ottobre 2026.
 
 1. **I gradini di calore** (sezione "Difficoltà nei biomi"): fatti tutti e cinque il 4 ottobre 2026, da provare giocando. Resta la seconda fase del porto, dopo averlo provato: la nave che si inclina col carico (fino a circa 10°) e i container che scivolano in acqua e galleggiano; qui il pugno trova un ruolo, spostare il peso.
-2. **La fine della run**: la distanza senza tetto. Corsie, velocità, binari e navi continuano a crescere con le sezioni, tarati perché una buona run finisca fra i 15 e i 20 minuti. Niente plateau in cui un giocatore prudente vada avanti per sempre.
-3. **Power-up con livelli e fusioni**: riprendere un modificatore lo fa salire di livello (fino al 3); due modificatori precisi insieme si fondono in un terzo più forte (per esempio correnti calde e guantoni esplosivi: "Napalm"). Bastano 15-20 power-up ben fatti, dal catalogo in idee-future.md.
-4. **Sblocchi a imprese e rane diverse**: la ragione per rigiocare. Nella run il caos non dà forza, ma certe imprese sbloccano opzioni per le run successive (per esempio una catena di 10 rottami sblocca i guantoni magnetici). Le rane hanno attrezzi di partenza diversi (la pugile, la paracadutista, la saltatrice). Sblocchi di opzioni, mai di forza.
-5. **La cornice**: menu, pausa, opzioni (audio, grafica, tasti), testi in inglese, controller, un tutorial per il primo minuto.
-6. **Suono**: effetti in stile retrò (generati con strumenti come sfxr, o da librerie CC0), poi musica CC0 o con solo il credito.
-7. **Prova esterna** con 5-10 persone.
+2. **L'incendio che insegue**: la spinta ad andare avanti e la fine della run insieme (deciso il 4 ottobre 2026). La rana scappa da un incendio partito nella sua foresta.
+   - Un muro di fuoco avanza dietro la rana su tutta la larghezza; **il caos alimenta l'incendio**: la sua velocità sale col calore, lento a calore basso, più veloce di un giocatore prudente al massimo. È lui a chiudere la run fra i 15 e i 20 minuti.
+   - Se raggiunge la rana brucia, come la fiamma dei motori: in pratica è la fine.
+   - Si comunica in tre modi, perché la telecamera guarda avanti: il bagliore arancione sulla strada davanti alla rana, che cresce quando il fuoco si avvicina; il fumo che arriva da dietro e passa sopra la rana; nell'HUD la distanza dal fuoco, col bordo dello schermo che si arrossa quando è vicino. Più avanti il crepitio.
+   - La tana è un rifugio: quando la si raggiunge, il fuoco viene respinto a una distanza fissa. Dopo ogni sezione si respira (le "ondate" senza un sistema a parte).
+   - Il fuoco che raggiunge le auto le fa diventare rottami in fiamme; sui fiumi l'incendio rallenta.
+3. **I bordi visibili**: la larghezza resta quella di oggi (74 m). Ogni bioma mostra il suo bordo: guardrail sulle strade, recinzioni alla ferrovia, recinzione con le luci all'aeroporto, la fine del molo al porto, argini e rocce al fiume. Da decidere se sono anche attivi come nel Frogger classico (chi viene portato fuori da un tronco o da una nave muore).
+4. **Power-up con livelli e fusioni**: riprendere un modificatore lo fa salire di livello (fino al 3); due modificatori precisi insieme si fondono in un terzo più forte (per esempio correnti calde e guantoni esplosivi: "Napalm"). Bastano 15-20 power-up ben fatti, dal catalogo in idee-future.md. Fra questi **un potere per muoversi in orizzontale**, da sbloccare nella tana: lo scatto, oppure la lingua come rampino (vedi idee-future.md).
+5. **Sblocchi a imprese e rane diverse**: la ragione per rigiocare. Nella run il caos non dà forza, ma certe imprese sbloccano opzioni per le run successive (per esempio una catena di 10 rottami sblocca i guantoni magnetici). Le rane hanno attrezzi di partenza diversi (la pugile, la paracadutista, la saltatrice). Sblocchi di opzioni, mai di forza.
+6. **La cornice**: menu, pausa, opzioni (audio, grafica, tasti), testi in inglese, controller, un tutorial per il primo minuto.
+7. **Suono**: effetti in stile retrò (generati con strumenti come sfxr, o da librerie CC0), poi musica CC0 o con solo il credito.
+8. **Prova esterna** con 5-10 persone.
 
-**Da rifare: l'aeroporto.** L'idea è interessante ma non convince ancora del tutto (prova del giocatore, 4 ottobre 2026): i bagagli scagliati non sono un vero problema, e una volta volati via la pista si attraversa facilmente. Il decollo è il primo tentativo di rimedio; il rework va pensato insieme al resto dei biomi.
+**Da rifare: l'aeroporto.** È molto scenico, e l'aereo che passa e travolge e il getto dietro funzionano; ma il bioma non è in linea col gioco (prova del giocatore, 4 ottobre 2026): i bagagli scagliati non sono un vero problema, la pista si attraversa facilmente, il pugno non serve e il caos non nasce. Il rework è ancora da pensare: una proposta in idee-future.md.
 
-Dopo la fase 1, o quando servono: **reazioni del mondo** (auto che danno la caccia, coccodrilli aggressivi), **ondate**, **altri biomi** (lago ghiacciato, città con semafori, palude) e forse il bivio nella tana. Il **multiplayer** cooperativo solo dopo l'uscita, se lo facciamo.
+**Dopo la fase 1: i mondi.** Ogni tot tane il mondo cambia (città, zona industriale, ...), e più avanti si sceglie fra due mondi finali come in Binding of Isaac: **il calore sceglie la strada** (calore basso: paradiso; alto: inferno). Il caos che hai provocato decide dove finisci.
+
+Dopo la fase 1, o quando servono: **reazioni del mondo** (auto che danno la caccia, coccodrilli aggressivi), **altri biomi** (lago ghiacciato, città con semafori, palude) e forse il bivio nella tana. Il **multiplayer** cooperativo solo dopo l'uscita, se lo facciamo.
 
 ## Domande aperte
 

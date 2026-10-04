@@ -66,8 +66,16 @@ Combinazioni da cercare: correnti calde + guantoni esplosivi (il caos sulla stra
 
 - **Equilibrio attuale**: super salto più deltaplano coprono circa 29 m, il fiume ne è largo 14. Per ora restano forti; il contrappeso è il calore (decisione provvisoria).
 - **Un potere che rompe la regola**: congela il calore per 10 secondi, senza abbassarlo. Desiderabile proprio perché rompe la regola "il calore non scende mai", ma ogni eccezione la indebolisce.
-- **Lingua-rampino**: agganci un camion e ti fai trascinare, oppure tiri un rottame verso di te.
+- **Un potere per muoversi in orizzontale** (nella roadmap, da sbloccare nella tana). Due candidati:
+  - **Scatto**: un balzo laterale rapido, di pochi metri, con una breve ricarica. Semplice e leggibile; serve a schivare e a raggiungere un tronco che si allontana.
+  - **Lingua-rampino**: agganci un veicolo, un tronco o una nave e ti fai trascinare, oppure tiri un rottame verso di te. Più ricco (si usa il traffico come mezzo, e il caos come attrezzo), ma più difficile da mirare e da rendere leggibile.
 - **Gracidio sonico**: le auto vicine sbandano. Un pugno ad area che fa salire molto il calore.
+
+## Il rework dell'aeroporto (proposta, 4 ottobre)
+
+Cosa non è in linea: i pilastri del gioco sono attraversare corsie a tempo, il traffico ibrido che si rompe e fa catene, e i poteri. L'aeroporto ne ha solo un pezzo: un gigante ogni 10 s su un raccordo quasi vuoto; il pugno non serve e il caos non nasce. Da tenere: l'aereo che passa e travolge, il getto dietro, la scena.
+
+Proposta di Claude, "la strada dei giganti": attorno all'aereo, corsie di veicoli aeroportuali con la fisica ibrida delle auto (autobotti di carburante che esplodono quando diventano rottami, navette passeggeri, furgoni del catering). L'aereo diventa il "treno" del bioma: inarrestabile, travolge le corsie che incrocia sotto le ali, il getto scaglia i rottami. Il pugno torna utile e l'aereo in mezzo alle autobotti fa le catene più spettacolari. Ancora da decidere.
 
 ## Biomi
 
