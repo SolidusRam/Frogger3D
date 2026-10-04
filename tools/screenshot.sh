@@ -7,7 +7,7 @@
 #   tools/screenshot.sh shot_rail passaggio 0 /tmp/treno.png
 # Scene: shot_biome = aereo | getto | dietro;  shot_port = panorama | nave | caccia;
 #        shot_rail  = arrivo | passaggio | tetto;
-#        shot_ui    = menu | stagno | maestria | hud | carte | fine | prova.
+#        shot_ui    = menu | stagno | maestria | hud | carte | pausa | fine | prova.
 # WAYLAND_DISPLAY va tolto: se il display virtuale fallisse, Godot aprirebbe
 # la finestra sul vero schermo.
 cd "$(dirname "$0")/.." || exit 1

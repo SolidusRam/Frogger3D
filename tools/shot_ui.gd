@@ -1,6 +1,6 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
-## Screenshot delle schermate: menu | stagno | maestria | hud | carte | fine | prova.
+## Screenshot delle schermate: menu | stagno | maestria | hud | carte | pausa | fine | prova.
 ## HEAT, SHOT.
 var frame := 0
 var main: Node
@@ -47,6 +47,8 @@ func _process(_d: float) -> bool:
 					tabs.current_tab = 1
 			"carte":
 				main.offer_upgrade()
+			"pausa":
+				main.get_node("Hud").pause()
 			"fine":
 				main.get_node("Frog").take_hit(1000, Vector3.ZERO)
 			"prova":

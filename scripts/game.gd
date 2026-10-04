@@ -71,6 +71,7 @@ func _ready() -> void:
 	course.den_reached.connect(_on_den_reached)
 	hud.restart_requested.connect(restart)
 	hud.menu_requested.connect(to_menu)
+	hud.abandon_requested.connect(abandon)
 	upgrades.equipped.connect(_on_equipped)
 	frog.revived.connect(hud.announce.bind("Seconda vita!"))
 	hud.set_record(record_distance)
@@ -98,6 +99,8 @@ func restart() -> void:
 func to_menu() -> void:
 	Engine.time_scale = 1.0
 	Heat.reset()
+	# Nel menu il calore non sale: la run nuova lo fa ripartire.
+	Heat.running = false
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/menu.tscn")
 
@@ -174,9 +177,11 @@ func _on_den_reached(_count: int, distance: float) -> void:
 	offer_upgrade()
 
 
-## Mosche raccolte (una mosca vale 1, una d'oro 5; la statistica "Golosa" ne
-## aggiunge, con l'arrotondamento a caso).
+## Mosche raccolte (la statistica "Golosa" ne aggiunge, con l'arrotondamento
+## a caso). A run finita non si raccoglie più niente: il totale è già salvato.
 func add_flies(amount: int) -> void:
+	if _over:
+		return
 	var value := amount * fly_value
 	var whole := floori(value)
 	if randf() < value - whole:
@@ -187,6 +192,8 @@ func add_flies(amount: int) -> void:
 
 ## Una mosca d'oro: serve ad attivare i miglioramenti delle carte.
 func add_golden(amount: int) -> void:
+	if _over:
+		return
 	run_golden += amount
 	hud.set_flies(run_flies, run_golden)
 
@@ -214,6 +221,22 @@ func _on_equipped(id: String) -> void:
 
 
 func _on_frog_died() -> void:
+	var stats := _finish_run()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	hud.show_game_over(stats)
+
+
+## Dalla pausa: la run finisce come se la rana fosse morta (record, mosche e
+## prove delle carte contano) e si torna al menu.
+func abandon() -> void:
+	if not _over:
+		_finish_run()
+	to_menu()
+
+
+## Chiude la run: salva record, mosche e prove, e restituisce i numeri per la
+## schermata di fine.
+func _finish_run() -> Dictionary:
 	_over = true
 	_slowmo_until = 0
 	Heat.running = false
@@ -226,8 +249,7 @@ func _on_frog_died() -> void:
 	else:
 		Progress.add_flies(run_flies, run_golden)
 		Progress.commit_run()
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	hud.show_game_over({
+	return {
 		"distance": distance,
 		"dens": course.dens_reached,
 		"time": run_time,
@@ -238,7 +260,8 @@ func _on_frog_died() -> void:
 		"golden": run_golden,
 		"total_flies": Progress.flies,
 		"total_golden": Progress.golden,
-	})
+		"test_run": test_run,
+	}
 
 
 ## Le statistiche comprate allo stagno, all'inizio di ogni run.

@@ -1,12 +1,19 @@
 class_name Hud
 extends CanvasLayer
 ## L'HUD: vita e calore in alto a sinistra, distanza e tane in alto a destra,
-## poteri in basso a sinistra, messaggi al centro e schermata di fine run.
+## poteri in basso a sinistra, messaggi al centro, la pausa (Esc) e la
+## schermata di fine run.
 ## Costruito da codice per restare in un solo file finché i modelli e la
 ## grafica definitiva non arrivano.
 
 signal restart_requested
 signal menu_requested
+## Dalla pausa: la run finisce qui (le mosche raccolte restano) e si torna al
+## menu.
+signal abandon_requested
+
+## Carte al massimo in una tana (tre, quattro con la statistica "Più scelta").
+const MAX_CARDS := 4
 
 const HEALTH_COLOR := Color(0.35, 0.8, 0.35)
 const HEALTH_LOW_COLOR := Color(0.9, 0.25, 0.2)
@@ -46,6 +53,8 @@ var _offer_title: Label
 var _offer_buttons: Array[Button] = []
 var _upgrades: Upgrades
 var _equipment_label: Label
+var _pause: Control
+var _resume_button: Button
 var _last_heat_level := 0
 
 
@@ -61,6 +70,7 @@ func _ready() -> void:
 	_build_offer()
 	_build_equipment()
 	_build_game_over()
+	_build_pause()
 	frog.health_changed.connect(_on_health_changed)
 	_on_health_changed(frog.health, frog.max_health)
 	Heat.changed.connect(_on_heat_changed)
@@ -108,6 +118,9 @@ func show_game_over(stats: Dictionary) -> void:
 		"Mosche: +%d (in tutto %d)" % [stats.flies, stats.total_flies],
 		"Mosche d'oro: +%d (in tutto %d)" % [stats.golden, stats.total_golden],
 	]
+	if stats.get("test_run", false):
+		lines.resize(lines.size() - 2)
+		lines.append("Run di prova: le mosche non contano")
 	_game_over_text.text = "\n".join(lines)
 	_game_over.visible = true
 
@@ -152,7 +165,8 @@ func announce(text: String) -> void:
 	_show_message(text)
 
 
-## Le tre carte della tana. Si sceglie con 1, 2, 3 o col mouse.
+## Le carte della tana (tre, o quattro con "Più scelta"). Si sceglie coi
+## tasti numerici o col mouse.
 func show_offer(options: Array[String], upgrades: Upgrades) -> void:
 	_upgrades = upgrades
 	_offer_title.text = "Tana %d: scegli un potenziamento" % course.dens_reached
@@ -195,12 +209,40 @@ func show_equipment(upgrades: Upgrades) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	# Esc mette in pausa solo durante il gioco: non con le carte della tana, la
+	# modalità prova aperta (il gioco è già fermo) o a run finita.
+	if event.is_action_pressed("pause"):
+		if _pause.visible:
+			get_viewport().set_input_as_handled()
+			resume()
+		elif not get_tree().paused and not _game_over.visible and not frog.is_dead:
+			get_viewport().set_input_as_handled()
+			pause()
+		return
 	if not _offer.visible or not event is InputEventKey or not event.pressed:
 		return
-	var index: int = [KEY_1, KEY_2, KEY_3].find(event.physical_keycode)
+	var index: int = [KEY_1, KEY_2, KEY_3, KEY_4].find(event.physical_keycode)
 	if index >= 0 and _offer_buttons[index].visible:
 		get_viewport().set_input_as_handled()
 		_upgrades.choose(index)
+
+
+## La pausa: il gioco si ferma, il mouse si libera.
+func pause() -> void:
+	get_tree().paused = true
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	_pause.visible = true
+	_resume_button.grab_focus()
+
+
+func resume() -> void:
+	_pause.visible = false
+	get_tree().paused = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func is_paused() -> bool:
+	return _pause.visible
 
 
 func _show_message(text: String) -> void:
@@ -340,19 +382,19 @@ func _build_chain_label() -> void:
 
 
 func _build_offer() -> void:
+	# Il pannello si adatta al numero di carte e resta al centro.
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(center)
 	_offer = PanelContainer.new()
-	_offer.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	_offer.offset_left = -470
-	_offer.offset_right = 470
-	_offer.offset_top = -190
-	_offer.offset_bottom = 190
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.05, 0.07, 0.1, 0.92)
 	style.set_corner_radius_all(12)
 	style.set_content_margin_all(20)
 	_offer.add_theme_stylebox_override("panel", style)
 	_offer.visible = false
-	add_child(_offer)
+	center.add_child(_offer)
 
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 16)
@@ -363,9 +405,9 @@ func _build_offer() -> void:
 	var cards := HBoxContainer.new()
 	cards.add_theme_constant_override("separation", 14)
 	box.add_child(cards)
-	for i in 3:
+	for i in MAX_CARDS:
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(290, 260)
+		button.custom_minimum_size = Vector2(270, 260)
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
@@ -433,6 +475,45 @@ func _build_game_over() -> void:
 	_pond = Pond.new()
 	_pond.visible = false
 	add_child(_pond)
+
+
+func _build_pause() -> void:
+	_pause = ColorRect.new()
+	(_pause as ColorRect).color = Color(0, 0, 0, 0.55)
+	_pause.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_pause.visible = false
+	add_child(_pause)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_pause.add_child(center)
+	var panel := PanelContainer.new()
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.05, 0.07, 0.1, 0.92)
+	style.set_corner_radius_all(12)
+	style.set_content_margin_all(24)
+	panel.add_theme_stylebox_override("panel", style)
+	center.add_child(panel)
+	var box := VBoxContainer.new()
+	box.custom_minimum_size.x = 360
+	box.add_theme_constant_override("separation", 12)
+	panel.add_child(box)
+	var title := _label(36, "Pausa")
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(title)
+	_resume_button = Button.new()
+	_resume_button.text = "Riprendi (Esc)"
+	_resume_button.add_theme_font_size_override("font_size", 22)
+	_resume_button.pressed.connect(resume)
+	box.add_child(_resume_button)
+	var abandon := Button.new()
+	abandon.text = "Abbandona la run"
+	abandon.add_theme_font_size_override("font_size", 22)
+	abandon.pressed.connect(abandon_requested.emit)
+	box.add_child(abandon)
+	var note := _label(15, "Abbandonando, le mosche raccolte restano.")
+	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	note.modulate = Color(1, 1, 1, 0.7)
+	box.add_child(note)
 
 
 func _open_pond() -> void:

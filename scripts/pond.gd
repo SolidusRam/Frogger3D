@@ -13,6 +13,9 @@ var _flies_label: Label
 var _stats_box: VBoxContainer
 var _cards_box: VBoxContainer
 var _refund_button: Button
+## Il rimborso chiede conferma: il primo clic lo prepara, il secondo (entro
+## qualche secondo) lo fa.
+var _refund_armed := false
 
 
 func _ready() -> void:
@@ -71,9 +74,16 @@ func refresh() -> void:
 		_cards_box.add_child(title)
 		for index in Progress.CARD_UPGRADES[card].size():
 			_cards_box.add_child(_upgrade_row(card, index))
+	_refund_armed = false
+	_update_refund_button()
+
+
+func _update_refund_button() -> void:
 	var spent := Progress.spent()
 	var spent_golden := Progress.spent_golden()
 	_refund_button.text = "Rimborsa tutto (+%d, +%d d'oro)" % [spent, spent_golden]
+	if _refund_armed:
+		_refund_button.text = "Sicura? Premi di nuovo: si azzera tutto"
 	_refund_button.disabled = spent == 0 and spent_golden == 0
 
 
@@ -116,11 +126,24 @@ func _upgrade_row(card: String, index: int) -> HBoxContainer:
 
 
 func _refund() -> void:
+	if not _refund_armed:
+		_refund_armed = true
+		_update_refund_button()
+		# Senza conferma, dopo 3 s torna com'era (il timer va anche in pausa).
+		get_tree().create_timer(3.0, true).timeout.connect(_disarm_refund)
+		return
 	Progress.refund()
 	refresh()
 
 
+func _disarm_refund() -> void:
+	if _refund_armed:
+		_refund_armed = false
+		_update_refund_button()
+
+
 func _close() -> void:
+	_disarm_refund()
 	visible = false
 	closed.emit()
 

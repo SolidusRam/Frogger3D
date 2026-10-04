@@ -249,9 +249,22 @@ func bind(environment: Environment, sun: DirectionalLight3D, post: ColorRect) ->
 	_post = post
 	_post.material = _post_material
 	_post.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Quando la partita se ne va (il menu, una run nuova) lo stile si stacca:
+	# sole e rettangolo del post-processing non esistono più.
+	_post.tree_exiting.connect(_unbind.bind(post), CONNECT_ONE_SHOT)
 	phase = PHASE_BY_LEVEL[Heat.level()]
 	_last_level = Heat.level()
 	set_style(current)
+
+
+## Solo se la scena che se ne va è ancora quella collegata: una partita nuova
+## può essersi già collegata prima che la vecchia esca.
+func _unbind(post: ColorRect) -> void:
+	if post != _post:
+		return
+	_environment = null
+	_sun = null
+	_post = null
 
 
 func set_style(index: int) -> void:

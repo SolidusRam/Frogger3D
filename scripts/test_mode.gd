@@ -178,9 +178,12 @@ func _read_command_line() -> void:
 
 func _set_open(open: bool) -> void:
 	_panel.visible = open
-	var offer_open: bool = _game.hud._offer.visible
-	get_tree().paused = open or offer_open
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if open or offer_open else Input.MOUSE_MODE_CAPTURED
+	# Le carte della tana e la pausa tengono il gioco fermo anche col pannello
+	# chiuso; a run finita il mouse resta libero per la schermata di fine.
+	var held: bool = _game.hud._offer.visible or _game.hud.is_paused()
+	get_tree().paused = open or held
+	var free_mouse: bool = open or held or _game.frog.is_dead
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE if free_mouse else Input.MOUSE_MODE_CAPTURED
 
 
 func _build() -> void:
