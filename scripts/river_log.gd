@@ -33,7 +33,6 @@ func _build() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	super(delta)
 	var depth := size.y + 0.3
 	var loaded := Heat.level() >= Heat.STEP_LEVEL and _frog_on_top()
 	_weighted = _weighted + delta if loaded else 0.0
@@ -42,7 +41,10 @@ func _physics_process(delta: float) -> void:
 		_sunk = minf(_sunk + depth / sink_time * delta, depth)
 	elif not loaded:
 		_sunk = maxf(_sunk - depth / sink_time * delta, 0.0)
-	global_position.y -= _sunk - before
+	# Corrente e affondamento in una sola scrittura: con sync_to_physics una
+	# seconda scrittura partirebbe dalla posizione vecchia e annullerebbe la
+	# prima.
+	global_position = global_position + drift_velocity * delta + Vector3.DOWN * (_sunk - before)
 	# L'avviso: trema appena la rana sale, fa bolle mentre affonda.
 	var trembling := loaded or _sunk > 0.0
 	_bark.position = Vector3(randf_range(-0.04, 0.04), randf_range(-0.03, 0.03), 0.0) if trembling else Vector3.ZERO

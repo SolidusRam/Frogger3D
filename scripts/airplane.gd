@@ -63,6 +63,7 @@ var _streaks: Array[CPUParticles3D] = []
 var _long_blasts: Array[Area3D] = []
 var _long_flames: Array[Area3D] = []
 var _timer := 0.0
+var _pitch := 0.0
 var _last_hit := {}
 
 
@@ -123,11 +124,16 @@ func _physics_process(delta: float) -> void:
 				speed = 0.0
 		Phase.ROLL:
 			speed = minf(speed + ROLL_ACCELERATION * delta, ROLL_SPEED)
-			position.x += direction * speed * delta
+			var moved := transform
+			moved.origin.x += direction * speed * delta
 			# Fuori dalla zona di gioco si alza: muso in su e via.
-			if position.x * direction > play_half_width + LENGTH / 2.0:
-				position.y += speed * 0.25 * delta
-				rotation.x = move_toward(rotation.x, 0.15, 0.2 * delta)
+			if moved.origin.x * direction > play_half_width + LENGTH / 2.0:
+				moved.origin.y += speed * 0.25 * delta
+				_pitch = move_toward(_pitch, 0.15, 0.2 * delta)
+				moved.basis = Basis.from_euler(Vector3(_pitch, rotation.y, 0.0))
+			# Una sola scrittura: con sync_to_physics una seconda partirebbe dal
+			# trasform vecchio e annullerebbe la prima.
+			transform = moved
 	_smash()
 	_push()
 	_burn(delta)

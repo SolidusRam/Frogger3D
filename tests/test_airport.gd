@@ -238,6 +238,8 @@ func _physics_process(_delta: float) -> bool:
 					Lib.place(frog, LANE + Vector3(0, 30, 30))
 				if g == 300:
 					t.check(plane.is_rolling() and plane.speed > 18.0, "poi corre lungo il raccordo (%.0f m/s)" % plane.speed)
+				if g == 500:
+					t.check(plane.global_position.x > 60.0 and plane.global_position.y > 1.0, "fuori dalla zona di gioco si alza in volo e va via (x %.0f, quota %.1f)" % [plane.global_position.x, plane.global_position.y])
 					t.finish(self)
 			if f > 900:
 				t.check(false, "l'aereo si ferma per decollare entro 15 s")
