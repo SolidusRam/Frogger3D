@@ -1,6 +1,8 @@
 extends SceneTree
 ## Ferrovia: avviso leale prima del treno, il treno travolge rana e auto,
-## sul tetto si viaggia sicuri, dopo il passaggio tutto torna in attesa.
+## sul tetto si viaggia sicuri, dopo il passaggio tutto torna in attesa. Il
+## gradino: dal livello 3 di calore il rapido, più veloce ma con lo stesso
+## avviso, la cui scia risucchia verso i binari.
 
 const Lib := preload("res://tests/lib.gd")
 const TRACK_Z := 5.0
@@ -90,6 +92,43 @@ func _physics_process(_delta: float) -> bool:
 				var frog_moved: float = frog.global_position.x - m.x
 				t.check(absf(wagon_moved - frog_moved) < 1.5, "sul tetto la rana viaggia col treno (%.1f m contro %.1f)" % [frog_moved, wagon_moved])
 				t.check(frog.health == frog.max_health, "sul tetto non si fa male")
+				_next(3)
+		3: # il rapido
+			var heat: Node = root.get_node("Heat")
+			if f == 1:
+				# A calore basso, nessun rapido.
+				heat.running = false
+				heat.value = 0.0
+				track.express_chance = 1.0
+				var express := 0
+				for i in 20:
+					track._send_train()
+					if track.train.express:
+						express += 1
+					track.train.free()
+				track.train = null
+				track.phase = 0
+				t.check(express == 0, "a calore basso niente rapidi")
+				heat.value = 61.0
+				frog.heal_full()
+				# Accanto ai binari, a 1,5 m dalla fiancata.
+				Lib.place(frog, Vector3(0, 0.1, TRACK_Z + 3.0))
+				track._timer = 0.3
+			if track.phase == 1 and not m.has("warning_at"):
+				m.warning_at = f
+				t.check(track.train.express, "dal livello 3 arriva il rapido")
+				t.check(track.train.speed > 40.0, "il rapido è molto più veloce (%.0f m/s)" % track.train.speed)
+			if m.has("warning_at") and not m.has("entered_at") and track.train and absf(track.train.nose_x()) <= 37.0:
+				m.entered_at = f
+				m.z = frog.global_position.z
+				var lead: float = (m.entered_at - m.warning_at) / 60.0
+				t.check(lead > 2.3 and lead < 2.7, "il rapido ha lo stesso avviso di 2,5 s (%.2f)" % lead)
+			if m.has("entered_at") and f == m.entered_at + 90:
+				var pulled: float = m.z - frog.global_position.z
+				t.check(pulled > 0.5 or frog.health < frog.max_health, "la scia risucchia la rana verso i binari (%.1f m, vita %d)" % [pulled, frog.health])
+				t.finish(self)
+			if f > 900:
+				t.check(false, "il rapido passa entro 15 s")
 				t.finish(self)
 			if f > 1500:
 				t.check(false, "il secondo treno passa entro 25 s")

@@ -97,7 +97,7 @@ Per ora **un gradino per bioma, tutti al livello 3** (60 di calore): "la soglia 
 | --- | --- | --- | --- |
 | Strada | più corsie, più veloci | le auto perdono il controllo da sole | fatto |
 | Fiume | più correnti, più coccodrilli | i tronchi affondano: con la rana sopra (anche in aria appena sopra: saltellare non basta) tremano, dopo 1 s cominciano ad affondare facendo bolle e vanno sotto in 2 s; quando la rana scende tornano a galla. I coccodrilli no | fatto |
-| Ferrovia | più binari | il rapido: treno bianco più corto e molto più veloce, la cui scia risucchia verso i binari chi sta entro 2-3 m; stesso avviso di 2,5 s | da fare |
+| Ferrovia | più binari | il rapido: metà dei treni, bianco, locomotiva e due carrozze, 55 m/s (il doppio). Stesso avviso di 2,5 s. La sua scia, dal muso a 12 m dopo la coda, tira verso i binari chi sta entro 3 m dalla fiancata, fino a 9 m/s (di più vicino); camminando ci si allontana | fatto |
 | Aeroporto | aerei più frequenti (da 9-15 s fino a 6-10 s) | il decollo: l'aereo si ferma, la fiamma cresce per 2 s, poi accelera fino a circa 35 m/s con un getto lungo il doppio | da fare |
 | Porto | una corsia, poi due; navi più cariche | la gru caccia la rana sul ponte | fatto |
 

@@ -3,7 +3,9 @@ extends Node3D
 ## Un binario: massicciata, rotaie, traversine, pali con le luci e i treni.
 ## Prima di ogni treno le luci lampeggiano per warning_time secondi, e il muso
 ## entra nella zona di gioco proprio allo scadere: l'avviso non cala mai col
-## calore, deve restare leale. Corre lungo l'asse X locale.
+## calore, deve restare leale. Dal livello Heat.STEP_LEVEL di calore (il
+## gradino della ferrovia) metà dei treni sono rapidi: molto più veloci, con lo
+## stesso avviso. Corre lungo l'asse X locale.
 
 const SIGNAL := preload("res://assets/models/signal.glb")
 
@@ -19,6 +21,9 @@ var max_wait := 10.0
 ## Velocità base; il calore la alza fino al +30%: più veloce non si vedrebbe.
 var base_speed := 26.0
 var max_heat_bonus := 0.3
+## Il rapido: quanti treni lo sono dal livello dei gradini, e la velocità.
+var express_chance := 0.5
+var express_speed := 55.0
 
 var phase := Phase.WAITING
 var train: Train
@@ -62,8 +67,9 @@ func is_warning() -> bool:
 func _send_train() -> void:
 	train = Train.new()
 	train.direction = direction
-	train.speed = base_speed * (1.0 + max_heat_bonus * Heat.ratio())
-	train.build(randi_range(3, 5))
+	train.express = Heat.level() >= Heat.STEP_LEVEL and randf() < express_chance
+	train.speed = express_speed if train.express else base_speed * (1.0 + max_heat_bonus * Heat.ratio())
+	train.build(2 if train.express else randi_range(3, 5))
 	add_child(train)
 	train.place_nose(-direction * (play_half_width + train.speed * warning_time))
 	phase = Phase.WARNING

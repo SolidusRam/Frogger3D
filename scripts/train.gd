@@ -3,6 +3,8 @@ extends Node3D
 ## Un treno: locomotiva e vagoni (carri chiusi e pianali). È l'unico veicolo
 ## che non diventa mai rottame: travolge auto e rottami, fa molto male alla
 ## rana, e chi sta sul tetto viaggia con lui come su un tronco velocissimo.
+## Il rapido (il gradino della ferrovia) è bianco, corto e molto più veloce,
+## e la sua scia risucchia verso i binari chi sta lì accanto.
 ## Corre lungo l'asse X locale del binario; direction indica il verso.
 
 const GAP := 0.6
@@ -15,6 +17,13 @@ const KINDS := {
 }
 ## Altezza del telaio: sotto c'è solo lo spazio delle ruote.
 const FRAME := 0.7
+## La scia del rapido: fin dove arriva di lato (dalla fiancata), quanto tira
+## e quanto dura dietro la coda.
+const WAKE_RANGE := 3.0
+const WAKE_PULL := 9.0
+const WAKE_TAIL := 12.0
+const HALF_WIDTH := 1.5
+const EXPRESS_COLORS := {"loco": "express", "loco_stripe": "express_stripe", "wagon": "express"}
 
 var direction := 1.0
 var speed := 26.0
@@ -22,6 +31,8 @@ var damage := 60
 ## Velocità data ai veicoli travolti.
 var smash_speed := 22.0
 var length := 0.0
+## Il rapido: bianco, due carrozze, scia che risucchia.
+var express := false
 
 var _wagons: Array[AnimatableBody3D] = []
 var _areas: Array[Area3D] = []
@@ -33,7 +44,7 @@ var _last_hit := {}
 func build(wagon_count: int) -> void:
 	var kinds: Array[String] = ["locomotive"]
 	for i in wagon_count:
-		kinds.append("boxcar" if randf() < 0.55 else "flatcar")
+		kinds.append("boxcar" if express or randf() < 0.55 else "flatcar")
 	var offset := 0.0
 	for kind in kinds:
 		var info: Dictionary = KINDS[kind]
@@ -64,6 +75,24 @@ func _physics_process(delta: float) -> void:
 	for wagon in _wagons:
 		wagon.position.x += direction * speed * delta
 	_smash()
+	if express:
+		_suck()
+
+
+## La scia del rapido: chi sta accanto ai binari, dal muso a poco dopo la
+## coda, viene tirato verso il treno, più forte quanto è più vicino.
+func _suck() -> void:
+	var frog := get_tree().get_first_node_in_group("frog") as Frog
+	if frog == null:
+		return
+	var local := to_local(frog.global_position)
+	var behind_nose := (nose_x() - local.x) * direction
+	var ahead_of_wake := (local.x - tail_x()) * direction + WAKE_TAIL
+	var gap := absf(local.z) - HALF_WIDTH
+	if behind_nose < 0.0 or ahead_of_wake < 0.0 or gap <= 0.0 or gap > WAKE_RANGE:
+		return
+	var toward := global_basis.z.normalized() * -signf(local.z)
+	frog.apply_wind(toward * WAKE_PULL * (1.0 - gap / WAKE_RANGE), 0.0)
 
 
 ## Travolge ciò che tocca ai lati e sul muso (non sul tetto): i veicoli
@@ -106,7 +135,7 @@ func _make_wagon(info: Dictionary) -> AnimatableBody3D:
 
 	var model: Node3D = info.model.instantiate()
 	wagon.add_child(model)
-	Style.apply_palette(model)
+	Style.apply_palette(model, EXPRESS_COLORS if express else {})
 
 	# Zona d'impatto: un po' più larga e lunga, ma più bassa del tetto, così
 	# chi viaggia sopra non si fa male.
