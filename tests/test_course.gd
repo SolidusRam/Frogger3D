@@ -47,7 +47,9 @@ func _physics_process(_delta: float) -> bool:
 				bad += 1
 		t.check(max_chunks <= 25, "i blocchi non si accumulano (al massimo %d insieme)" % max_chunks)
 		t.check(bad == 0, "ogni fiume ha terra su entrambi i lati")
-		t.check(order.count("RAIL") >= 1 and not order.slice(0, 8).has("RAIL"), "le ferrovie compaiono, ma non nella prima sezione (%d)" % order.count("RAIL"))
+		# La prima sezione finisce con la prima tana.
+		var first_section := order.slice(0, order.find("DEN"))
+		t.check(order.count("RAIL") >= 1 and not first_section.has("RAIL"), "le ferrovie compaiono, ma non nella prima sezione (%d)" % order.count("RAIL"))
 		t.check(dens >= 10, "in 2 km si raggiungono almeno 10 tane (%d)" % dens)
 		t.check(absf(frog.global_position.z - z) < 200.0 and frog.global_position.y > -1.0, "dopo la caduta ricompare nell'ultima tana (z=%.0f)" % frog.global_position.z)
 		t.check(course.distance() > 1990.0, "la distanza percorsa è registrata (%.0f m)" % course.distance())

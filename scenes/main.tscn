@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="game_script"]
 [ext_resource type="PackedScene" path="res://scenes/frog.tscn" id="frog_scene"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/hud.gd" id="hud_script"]
 [ext_resource type="Script" path="res://scripts/backdrop.gd" id="backdrop_script"]
 [ext_resource type="Script" path="res://scripts/upgrades.gd" id="upgrades_script"]
+[ext_resource type="Script" path="res://scripts/wildfire.gd" id="wildfire_script"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 
@@ -64,3 +65,9 @@ mouse_filter = 2
 script = ExtResource("hud_script")
 frog = NodePath("../Frog")
 course = NodePath("../Course")
+
+[node name="Wildfire" type="Node3D" parent="." node_paths=PackedStringArray("frog", "course", "hud")]
+script = ExtResource("wildfire_script")
+frog = NodePath("../Frog")
+course = NodePath("../Course")
+hud = NodePath("../Hud")

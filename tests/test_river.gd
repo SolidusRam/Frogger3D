@@ -67,8 +67,10 @@ func _physics_process(_delta: float) -> bool:
 						var file: String = child.get_script().resource_path.get_file()
 						if file == "river_log.gd" and absf(child.global_position.x) < 20.0 and not m.has("log"):
 							m.log = child
-						if file == "crocodile.gd" and absf(child.global_position.x) < 20.0 and not m.has("croc"):
-							m.croc = child
+						# Il coccodrillo più vicino al centro, che vada verso il centro.
+						if file == "crocodile.gd" and child.global_position.x * child.drift_velocity.x < 0.0:
+							if not m.has("croc") or absf(child.global_position.x) < absf(m.croc.global_position.x):
+								m.croc = child
 				Lib.place(frog, m.log.global_position + Vector3.UP * (m.log.size.y / 2.0 + 0.05))
 				m.frog_x = frog.global_position.x
 				m.log_x = m.log.global_position.x
@@ -79,6 +81,7 @@ func _physics_process(_delta: float) -> bool:
 				t.check(absf(log_moved - frog_moved) < 0.6, "il tronco trasporta la rana")
 				t.check(frog.health == frog.max_health, "sul tronco non si fa male")
 				t.check(not m.log.is_sinking(), "a calore basso il tronco non affonda")
+				t.check(m.has("croc"), "c'è un coccodrillo da provare")
 				if m.has("croc"):
 					var croc: Node3D = m.croc
 					Lib.place(frog, croc.global_position - croc.global_basis.z * (croc.size.z / 2.0 - 0.5) + Vector3.UP * 0.2)

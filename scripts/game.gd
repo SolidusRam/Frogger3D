@@ -115,7 +115,9 @@ func _impact_burst(at: Vector3) -> void:
 
 
 func _on_wreck_created(car: Node3D) -> void:
-	if _over or car.global_position.distance_to(frog.global_position) > chain_radius:
+	# I rottami dell'incendio non fanno catena: il fuoco che passa su una strada
+	# non deve far scattare il rallentatore.
+	if _over or car.has_meta("burnt") or car.global_position.distance_to(frog.global_position) > chain_radius:
 		return
 	var now := Time.get_ticks_msec()
 	_recent_wrecks.append(now)

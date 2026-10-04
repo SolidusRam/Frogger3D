@@ -2,11 +2,11 @@ class_name TestMode
 extends CanvasLayer
 ## La modalità prova, per provare il gioco senza doverci arrivare giocando.
 ## F1 apre il pannello (il gioco si ferma): livello di calore, calore
-## bloccato, salto a un bioma, rana invincibile, poteri sempre carichi, una
-## tana per scegliere un power-up. Le stesse cose si chiedono anche
+## bloccato, salto a un bioma, rana invincibile, poteri sempre carichi,
+## incendio fermo, una tana per scegliere un power-up. Le stesse cose si chiedono anche
 ## all'avvio, dalla riga di comando (vedi tools/prova.sh):
 ##   --bioma=strada|fiume|ferrovia|aeroporto|porto|tana  --calore=0..5
-##   --blocca-calore  --invincibile  --poteri
+##   --blocca-calore  --invincibile  --poteri  --senza-fuoco
 ## Le opzioni restano attive anche dopo "Ricomincia". Una run in cui si usa
 ## la modalità prova non salva il record, e in alto compare PROVA.
 
@@ -19,6 +19,7 @@ const BIOMES := {
 static var invincible := false
 static var charged := false
 static var heat_locked := false
+static var fire_off := false
 static var locked_level := 0
 static var _command_line_read := false
 
@@ -52,6 +53,7 @@ func _physics_process(_delta: float) -> void:
 		frog.super_jump_power.cooldown_left = 0.0
 		frog.punch_power.cooldown_left = 0.0
 		frog.glider_power.charge = frog.glider_power.duration
+	_game.get_node("Wildfire").stopped = fire_off
 	if heat_locked and Heat.level() != locked_level:
 		Heat.set_value(_heat_for(locked_level))
 	_tag.visible = _game.test_run
@@ -86,6 +88,11 @@ func set_charged(on: bool) -> void:
 	_apply_options()
 
 
+func set_fire_off(on: bool) -> void:
+	fire_off = on
+	_apply_options()
+
+
 func set_heat_locked(on: bool) -> void:
 	heat_locked = on
 	locked_level = Heat.level()
@@ -95,10 +102,10 @@ func set_heat_locked(on: bool) -> void:
 func _apply_options() -> void:
 	Heat.running = not heat_locked
 	_game.frog.invincible = invincible
-	var states := {"invincible": invincible, "charged": charged, "heat_locked": heat_locked}
+	var states := {"invincible": invincible, "charged": charged, "heat_locked": heat_locked, "fire_off": fire_off}
 	for key in _toggles:
 		_toggles[key].set_pressed_no_signal(states[key])
-	if invincible or charged or heat_locked:
+	if invincible or charged or heat_locked or fire_off:
 		_mark_test_run()
 
 
@@ -121,6 +128,8 @@ func _read_command_line() -> void:
 				set_charged(true)
 			"calore":
 				set_heat_level(clampi(int(parts[1]), 0, Heat.LEVELS))
+			"senza-fuoco":
+				set_fire_off(true)
 			"blocca-calore":
 				set_heat_locked(true)
 			"bioma":
@@ -158,8 +167,8 @@ func _build() -> void:
 	_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	_panel.offset_left = -270
 	_panel.offset_right = 270
-	_panel.offset_top = -220
-	_panel.offset_bottom = 220
+	_panel.offset_top = -240
+	_panel.offset_bottom = 240
 	_panel.visible = false
 	add_child(_panel)
 	var box := VBoxContainer.new()
@@ -182,6 +191,7 @@ func _build() -> void:
 	box.add_child(_toggle("Invincibile", "invincible", set_invincible))
 	box.add_child(_toggle("Poteri sempre carichi", "charged", set_charged))
 	box.add_child(_toggle("Blocca il calore al livello attuale", "heat_locked", set_heat_locked))
+	box.add_child(_toggle("Ferma l'incendio", "fire_off", set_fire_off))
 	box.add_child(_button("Apri una tana: scegli un power-up", offer_upgrade))
 	var note := _title("Una run di prova non salva il record.", 14)
 	note.modulate = Color(1, 1, 1, 0.7)

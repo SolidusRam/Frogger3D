@@ -33,7 +33,7 @@ var styles: Array[Dictionary] = [
 			"container_0": Color(0.75, 0.2, 0.15), "container_1": Color(0.15, 0.4, 0.7),
 			"container_2": Color(0.2, 0.55, 0.3), "container_3": Color(0.85, 0.6, 0.15),
 			"drop_warning": Color(1.0, 0.25, 0.05), "jet_flame": Color(1.0, 0.35, 0.05, 0.7), "jet_air": Color(0.95, 0.95, 0.9, 0.45),
-			"express": Color(0.95, 0.95, 0.95), "express_stripe": Color(0.75, 0.1, 0.1), "ship_hull": Color(0.6, 0.14, 0.12), "ship_deck": Color(0.32, 0.34, 0.32), "ship_bridge": Color(0.93, 0.93, 0.9), "ship_stripe": Color(0.1, 0.12, 0.22),
+			"fire_smoke": Color(0.3, 0.27, 0.25, 0.5), "fire": Color(1.0, 0.35, 0.05, 0.85), "fire_core": Color(1.0, 0.8, 0.2, 0.9), "burnt": Color(0.12, 0.1, 0.09), "express": Color(0.95, 0.95, 0.95), "express_stripe": Color(0.75, 0.1, 0.1), "ship_hull": Color(0.6, 0.14, 0.12), "ship_deck": Color(0.32, 0.34, 0.32), "ship_bridge": Color(0.93, 0.93, 0.9), "ship_stripe": Color(0.1, 0.12, 0.22),
 			"tug": Color(0.95, 0.75, 0.1), "beacon": Color(1.0, 0.55, 0.05), "dolly": Color(0.35, 0.37, 0.4),
 			"cardboard": Color(0.72, 0.53, 0.32), "tape": Color(0.88, 0.78, 0.58),
 			"luggage_0": Color(0.8, 0.15, 0.2), "luggage_1": Color(0.15, 0.5, 0.75),
@@ -95,7 +95,7 @@ var styles: Array[Dictionary] = [
 			"container_0": Color(0.6, 0.18, 0.14), "container_1": Color(0.14, 0.32, 0.55),
 			"container_2": Color(0.18, 0.42, 0.24), "container_3": Color(0.72, 0.5, 0.15),
 			"drop_warning": Color(1.0, 0.3, 0.05), "jet_flame": Color(0.95, 0.3, 0.05, 0.7), "jet_air": Color(0.85, 0.85, 0.8, 0.45),
-			"express": Color(0.85, 0.85, 0.83), "express_stripe": Color(0.62, 0.1, 0.1), "ship_hull": Color(0.5, 0.13, 0.11), "ship_deck": Color(0.28, 0.29, 0.27), "ship_bridge": Color(0.82, 0.82, 0.78), "ship_stripe": Color(0.1, 0.11, 0.18),
+			"fire_smoke": Color(0.26, 0.23, 0.21, 0.5), "fire": Color(0.95, 0.32, 0.05, 0.85), "fire_core": Color(0.95, 0.72, 0.2, 0.9), "burnt": Color(0.1, 0.08, 0.07), "express": Color(0.85, 0.85, 0.83), "express_stripe": Color(0.62, 0.1, 0.1), "ship_hull": Color(0.5, 0.13, 0.11), "ship_deck": Color(0.28, 0.29, 0.27), "ship_bridge": Color(0.82, 0.82, 0.78), "ship_stripe": Color(0.1, 0.11, 0.18),
 			"tug": Color(0.8, 0.62, 0.12), "beacon": Color(0.95, 0.5, 0.05), "dolly": Color(0.3, 0.31, 0.33),
 			"cardboard": Color(0.6, 0.44, 0.27), "tape": Color(0.75, 0.66, 0.48),
 			"luggage_0": Color(0.62, 0.14, 0.16), "luggage_1": Color(0.14, 0.38, 0.55),
@@ -159,7 +159,7 @@ var styles: Array[Dictionary] = [
 			"container_0": Color(1.0, 0.2, 0.4), "container_1": Color(0.2, 0.8, 1.0),
 			"container_2": Color(0.4, 1.0, 0.3), "container_3": Color(1.0, 0.9, 0.2),
 			"drop_warning": Color(1.0, 0.0, 0.0), "jet_flame": Color(1.0, 0.4, 0.0, 0.8), "jet_air": Color(0.6, 0.9, 1.0, 0.5),
-			"express": Color(1.0, 1.0, 1.0), "express_stripe": Color(1.0, 0.1, 0.5), "ship_hull": Color(1.0, 0.15, 0.3), "ship_deck": Color(0.15, 0.1, 0.3), "ship_bridge": Color(0.9, 0.95, 1.0), "ship_stripe": Color(0.1, 1.0, 0.9),
+			"fire_smoke": Color(0.3, 0.1, 0.35, 0.5), "fire": Color(1.0, 0.2, 0.0, 0.9), "fire_core": Color(1.0, 0.9, 0.0, 0.9), "burnt": Color(0.05, 0.0, 0.08), "express": Color(1.0, 1.0, 1.0), "express_stripe": Color(1.0, 0.1, 0.5), "ship_hull": Color(1.0, 0.15, 0.3), "ship_deck": Color(0.15, 0.1, 0.3), "ship_bridge": Color(0.9, 0.95, 1.0), "ship_stripe": Color(0.1, 1.0, 0.9),
 			"tug": Color(1.0, 0.85, 0.0), "beacon": Color(1.0, 0.5, 0.0), "dolly": Color(0.4, 0.4, 0.6),
 			"cardboard": Color(1.0, 0.6, 0.25), "tape": Color(1.0, 0.95, 0.6),
 			"luggage_0": Color(1.0, 0.2, 0.5), "luggage_1": Color(0.2, 0.9, 1.0),
@@ -310,7 +310,7 @@ func _color_material(key: String, mat: StandardMaterial3D) -> void:
 	mat.emission = Color(color, 1.0)
 	# Le luci dei passaggi a livello, le ombre delle gru e le fiamme dei motori
 	# sono avvisi: brillano sempre, anche di giorno.
-	if key == "signal_on" or key == "drop_warning" or key == "jet_flame":
+	if key in ["signal_on", "drop_warning", "jet_flame", "fire", "fire_core"]:
 		mat.emission_enabled = true
 		# La fiamma è grande: troppa luce la sbiadirebbe nel giallo.
 		mat.emission_energy_multiplier = 1.5 if key == "jet_flame" else 4.0

@@ -28,6 +28,8 @@ var _record_label: Label
 var _super_jump_bar: ProgressBar
 var _glide_bar: ProgressBar
 var _message: Label
+var _fire_label: Label
+var _vignette: ColorRect
 var _game_over: PanelContainer
 var _game_over_text: Label
 var _chain_label: Label
@@ -46,6 +48,7 @@ func _ready() -> void:
 	_build_top_right()
 	_build_powers()
 	_build_message()
+	_build_fire()
 	_build_chain_label()
 	_build_offer()
 	_build_equipment()
@@ -64,6 +67,14 @@ func _process(_delta: float) -> void:
 	_dens_label.text = "Tane: %d" % course.dens_reached
 	_super_jump_bar.value = frog.super_jump_power.ready_ratio()
 	_glide_bar.value = frog.glide_charge_ratio()
+
+
+## L'incendio dietro la rana: la distanza, e il bordo dello schermo che si
+## arrossa (danger da 0 a 1) quando è vicino.
+func set_fire_distance(distance: float, danger: float) -> void:
+	_fire_label.text = "Fuoco: %d m" % maxi(roundi(distance), 0)
+	_fire_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.6).lerp(Color(1.0, 0.25, 0.1), danger))
+	(_vignette.material as ShaderMaterial).set_shader_parameter("strength", danger)
 
 
 func set_record(distance: float) -> void:
@@ -228,6 +239,34 @@ func _build_powers() -> void:
 	_glide_bar.max_value = 1.0
 	box.add_child(_glide_bar)
 	box.add_child(_label(14, "F2: cambia stile grafico"))
+
+
+func _build_fire() -> void:
+	_vignette = ColorRect.new()
+	_vignette.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var shader := Shader.new()
+	shader.code = """
+shader_type canvas_item;
+uniform float strength = 0.0;
+void fragment() {
+	float edge = smoothstep(0.35, 0.75, length(UV - vec2(0.5)) * 1.2);
+	COLOR = vec4(0.9, 0.15, 0.0, edge * strength * 0.75);
+}
+"""
+	var material := ShaderMaterial.new()
+	material.shader = shader
+	_vignette.material = material
+	add_child(_vignette)
+	move_child(_vignette, 0)
+	_fire_label = _label(20, "Fuoco")
+	_fire_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	_fire_label.offset_left = -120
+	_fire_label.offset_right = 120
+	_fire_label.offset_top = -44
+	_fire_label.offset_bottom = -14
+	_fire_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	add_child(_fire_label)
 
 
 func _build_message() -> void:

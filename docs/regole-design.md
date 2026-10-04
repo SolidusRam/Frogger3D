@@ -52,6 +52,7 @@ Il caos serve a passare: auto ribaltate che bloccano una corsia, rottami che fan
 | Poteri | Super salto, pugno alle macchine, deltaplano: poteri base, disponibili da subito; in futuro poteri nuovi o potenziamenti di quelli base |
 | Struttura della run | Infinita: si gioca finché non si muore |
 | Giocatori | Singleplayer per ora; multiplayer cooperativo possibile in futuro |
+| Incendio | Un muro di fuoco insegue la rana su tutta la larghezza: parte 50 m dietro, avanza da 0,8 m/s (calore zero) a 3,2 m/s (calore massimo), sull'acqua (fiumi, porto) al 40%. Non resta mai più di 50 m indietro; raggiunta una tana viene respinto a 50 m. Chi ci finisce dentro perde 80 di vita al secondo. Le auto raggiunte diventano rottami, che non scaldano e non fanno catena. Si sente dal bagliore arancione sulla strada davanti, dal fumo che passa sopra la rana e dall'HUD ("Fuoco: N m", col bordo dello schermo che si arrossa sotto i 25 m). Velocità da tarare giocando |
 | Tana | Checkpoint lungo il percorso, non la fine: salva il record su disco e diventa il punto di ripartenza se si cade fuori dal mondo, ma la morte chiude la run |
 | Power-up | Si scelgono nelle tane, uno tra tre, a gioco fermo. Gli slot sono gli attrezzi della rana (guantoni, molle, ala, corpo): un modificatore per slot, e uno nuovo sostituisce il precedente. I potenziamenti numerici non hanno slot e si sommano fino a 3 volte. I tre freni contro un gioco troppo facile: slot, scelta tra tre, calore |
 | Power-up attuali | Guantoni esplosivi (l'auto colpita esplode al primo urto con un veicolo, o dopo 1,2 s: le auto nel raggio di 6 m diventano rottami e volano; la rana entro 4,5 m perde 30). Correnti calde (col deltaplano, il fumo dei rottami solleva come un ascensore e la carica non si consuma; il fumo dura 6 s). Numerici: pugno più forte, molle rapide, ala più grande, pelle dura |
@@ -123,13 +124,14 @@ Il gioco base è finito e giocabile: una run infinita in cui si muore e si ricom
 
 ### Da provare giocando
 
-Per arrivarci subito c'è la **modalità prova**: in gioco F1 apre un pannello (livello di calore, calore bloccato, salto a un bioma, invincibile, poteri sempre carichi, una tana a richiesta); oppure si avvia già pronti, per esempio `tools/prova.sh --bioma=aeroporto --calore=3 --blocca-calore --invincibile`. Una run di prova non salva il record.
+Per arrivarci subito c'è la **modalità prova**: in gioco F1 apre un pannello (livello di calore, calore bloccato, salto a un bioma, invincibile, poteri sempre carichi, incendio fermo, una tana a richiesta); oppure si avvia già pronti, per esempio `tools/prova.sh --bioma=aeroporto --calore=3 --blocca-calore --invincibile`. Una run di prova non salva il record.
 
 
 - Il porto nuovo: salire sulla nave, attraversare il labirinto di container, leggere l'ombra sulla casella; dal livello 3 di calore la gru che dà la caccia.
 - L'aeroporto: il super salto con il deltaplano nel getto, il momento giusto per attraversare dietro l'aereo.
 - I bagagli scagliati dal getto. Prova del giocatore (4 ottobre): non sono un vero problema, e una volta volati via la pista si attraversa facilmente. Da rivedere insieme al gradino del decollo.
 - Il calore che ora conta solo i rottami entro 50 m dalla rana.
+- L'incendio: la velocità (0,8-3,2 m/s), la distanza massima (50 m), se si capisce da dietro. Per provarlo da fermi: `tools/prova.sh --calore=5 --blocca-calore`.
 - I gradini al livello 3 di calore: i tronchi che affondano, il rapido e la sua scia, il decollo (l'aereo fermo col getto lungo il doppio), le gru che cacciano.
 
 ### Il percorso verso l'uscita
@@ -148,7 +150,7 @@ Il gioco si pubblica comunque, senza budget: quattro fasi, e si passa alla succe
 Decisa il 4 ottobre 2026.
 
 1. **I gradini di calore** (sezione "Difficoltà nei biomi"): fatti tutti e cinque il 4 ottobre 2026, da provare giocando. Resta la seconda fase del porto, dopo averlo provato: la nave che si inclina col carico (fino a circa 10°) e i container che scivolano in acqua e galleggiano; qui il pugno trova un ruolo, spostare il peso.
-2. **L'incendio che insegue**: la spinta ad andare avanti e la fine della run insieme (deciso il 4 ottobre 2026). La rana scappa da un incendio partito nella sua foresta.
+2. **L'incendio che insegue** (fatto il 4 ottobre 2026, da tarare giocando; regole nella riga "Incendio"): la spinta ad andare avanti e la fine della run insieme. La rana scappa da un incendio partito nella sua foresta.
    - Un muro di fuoco avanza dietro la rana su tutta la larghezza; **il caos alimenta l'incendio**: la sua velocità sale col calore, lento a calore basso, più veloce di un giocatore prudente al massimo. È lui a chiudere la run fra i 15 e i 20 minuti.
    - Se raggiunge la rana brucia, come la fiamma dei motori: in pratica è la fine.
    - Si comunica in tre modi, perché la telecamera guarda avanti: il bagliore arancione sulla strada davanti alla rana, che cresce quando il fuoco si avvicina; il fumo che arriva da dietro e passa sopra la rana; nell'HUD la distanza dal fuoco, col bordo dello schermo che si arrossa quando è vicino. Più avanti il crepitio.

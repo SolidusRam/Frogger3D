@@ -20,7 +20,8 @@ const LAMP := preload("res://assets/models/lamp.glb")
 @export var play_half_width := 37.0
 ## Quanti metri di percorso tenere pronti davanti e dietro la rana.
 @export var look_ahead := 160.0
-@export var keep_behind := 40.0
+## Dietro deve restare terreno almeno fin dove arriva l'incendio.
+@export var keep_behind := 75.0
 
 @export_group("Blocchi")
 @export var start_depth := 30.0
@@ -76,6 +77,16 @@ func jump_to(kind: Kind) -> void:
 	frog.velocity = Vector3.ZERO
 	frog.reset_physics_interpolation()
 	frog.set_respawn_point(landing)
+
+
+## Il tipo del blocco che contiene la quota z (START se non ce n'è).
+func kind_at(z: float) -> Kind:
+	for chunk in get_children():
+		if chunk.has_meta("near_z"):
+			var near_z: float = chunk.get_meta("near_z")
+			if z <= near_z and z > near_z - chunk.get_meta("depth"):
+				return chunk.get_meta("kind")
+	return Kind.START
 
 
 ## Distanza percorsa dall'inizio, in metri.
@@ -185,6 +196,7 @@ func _add_chunk(kind: Kind) -> void:
 	_add_props(chunk, kind, depth)
 	chunk.position.z = _front_z - depth / 2.0
 	chunk.set_meta("near_z", _front_z)
+	chunk.set_meta("kind", kind)
 	chunk.set_meta("depth", depth)
 	chunk.name = "%s_%d" % [Kind.keys()[kind], _chunks_created]
 	_chunks_created += 1

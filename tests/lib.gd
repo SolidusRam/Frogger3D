@@ -32,6 +32,12 @@ static func load_main(tree: SceneTree) -> Node:
 	main.record_path = "user://record_test.cfg"
 	tree.root.add_child(main)
 	tree.current_scene = main
+	# L'incendio insegue la rana: nei test che la spostano in giro va fermato
+	# (test_fire lo riaccende).
+	var fire: Node = main.get_node("Wildfire")
+	fire.stopped = true
+	fire.burn = 0.0
+	fire.set_physics_process(false)
 	return main
 
 

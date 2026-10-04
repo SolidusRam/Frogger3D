@@ -21,6 +21,7 @@ const STEP_LEVEL := 3
 @export var per_glide := 2.0
 ## Ogni veicolo trasformato in rottame, anche nelle catene, ma solo vicino
 ## alla rana: conta il caos che si vede, non quello di un aeroporto lontano.
+## I rottami fatti dall'incendio non contano.
 @export var per_wreck := 0.6
 @export var wreck_radius := 50.0
 
@@ -77,7 +78,10 @@ func level() -> int:
 
 func on_wreck(car: Node3D) -> void:
 	var frog := get_tree().get_first_node_in_group("frog") as Node3D
-	if frog == null or frog.global_position.distance_to(car.global_position) <= wreck_radius:
+	# I rottami dell'incendio non scaldano: altrimenti il fuoco vicino alla
+	# rana accelererebbe se stesso.
+	var near := frog == null or frog.global_position.distance_to(car.global_position) <= wreck_radius
+	if near and not car.has_meta("burnt"):
 		add(per_wreck)
 	wreck_created.emit(car)
 
