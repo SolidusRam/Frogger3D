@@ -98,7 +98,7 @@ Il gioco base è finito e giocabile: una run infinita in cui si muore e si ricom
 
 ### Da fare, in ordine proposto
 
-Prima di tutto: **rifare il porto**. Le gru sui nastri sono statiche, non ci si interagisce e la difficoltà non si sente (il container cade sempre sulla stessa riga del molo, che la rana attraversa in mezzo secondo). Proposta: acqua e navi portacontainer da riempire mentre ci sei sopra; è in idee-future.md, con le domande ancora aperte.
+Prima di tutto: **rifare il porto**. Le gru sui nastri sono statiche, non ci si interagisce e la difficoltà non si sente (il container cade sempre sulla stessa riga del molo, che la rana attraversa in mezzo secondo). Proposta da approvare in idee-future.md: acqua e navi portacontainer, insieme ai criteri per la difficoltà in tutti i biomi (la distanza cambia la quantità, il calore aggiunge un comportamento: un gradino per bioma al livello 3).
 
 1. **Esperienza dal caos**: è la metà mancante del ciclo. Gli incidenti danno esperienza, e le catene valgono più delle auto singole; il passaggio di livello fa scegliere una statistica. Prima va sciolto il nodo con l'ingorgo (vedi idee-future.md): l'esperienza a terra fa dell'ingorgo il posto più comodo per raccoglierla.
 2. **Reazioni del mondo**: auto che danno la caccia, coccodrilli aggressivi. Ogni reazione ha un avviso visibile, come l'ombra delle gru.

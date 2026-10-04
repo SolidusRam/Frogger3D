@@ -67,27 +67,65 @@ Un bioma deve aggiungere una sola regola nuova sopra strada e fiume, comprensibi
 
 Domande aperte: alternanza per sezione, a stagioni o con un bivio scelto nella tana (mappa alla Slay the Spire); come combinare tavolozza del bioma, stile e ora del giorno senza perdere leggibilità.
 
-## Porto con le navi (proposta, 4 ottobre)
+## Proposta da approvare: la difficoltà nei biomi e il porto con le navi (4 ottobre)
 
-Il porto di oggi non funziona: le gru sono statiche e non ci si interagisce, e la difficoltà non si sente. Il container cade sempre sulla riga centrale della gru, che si muove solo lungo X: chi attraversa il molo in avanti passa quella riga in mezzo secondo, quindi l'inseguimento colpisce solo chi si ferma lì. Il pugno colpisce solo le auto, e al porto non c'è niente da colpire.
+Oggi solo la strada cambia davvero col calore: è l'unico bioma in cui il calore aggiunge un comportamento nuovo (le auto che perdono il controllo). Negli altri il calore alza solo dei numeri, per esempio gli aerei da 7 a 9 m/s, e non se ne accorge nessuno. L'aeroporto non cambia nemmeno con la distanza.
 
-Idea del giocatore: mettere l'acqua e far salire la rana su delle navi, che le gru riempiono di container da schivare.
+### I criteri
 
-- **Blocco**: banchina con le gru, una corsia d'acqua con le portacontainer (due nelle sezioni avanzate), banchina sicura.
-- **Navi**: scorrono lungo X piano (3-5 m/s), come tronchi enormi (circa 40 x 10 m). Il ponte è appena più alto della banchina: si sale col salto normale. Arrivano vuote da un lato e ripartono piene dall'altro.
-- **Gru**: sulla banchina, col braccio sopra l'acqua; il carrello scorre lungo il braccio, quindi il container può cadere ovunque sul ponte. L'ombra resta l'avviso. Se la rana è sulla nave, la gru mira a lei; più calore, più spesso.
-- **Container caricati**: restano sul ponte e viaggiano con la nave. Sono muri da aggirare e piattaforme; si impilano.
-- **Acqua**: le regole del fiume (20 di vita al secondo, si esce col salto tenuto).
+**Due assi, con due compiti diversi.**
 
-Fisica della nave, tre strade:
+| Asse | Cosa cambia | Quando si legge |
+| --- | --- | --- |
+| Distanza (la sezione) | La **quantità**: più corsie, binari, navi, aerei più frequenti. È la struttura del blocco | Quando il blocco nasce |
+| Calore | Il **comportamento**: qualcosa che prima non succedeva | Dal vivo, anche nei blocchi già creati |
 
-| | Come | Pro | Contro |
+**Un gradino di calore** è un comportamento nuovo che si sblocca a una soglia. Per essere un gradino deve rispettare cinque regole:
+
+1. **È un comportamento, non un numero.** "Il treno va più veloce" non è un gradino; "il treno passando risucchia la rana" sì.
+2. **Ha un avviso leale**, con il linguaggio visivo che il gioco usa già: luci che lampeggiano, ombra rossa a terra, fiamma.
+3. **Scatta subito**, anche nei blocchi già in campo, così il giocatore lo collega al livello appena raggiunto.
+4. **L'HUD lo annuncia una volta**, insieme al messaggio del nuovo livello (per esempio "Calore 3: gli aerei decollano").
+5. **Non cancella la regola del bioma**: la aggiunge. Il bioma resta riconoscibile in 3 secondi.
+
+**Quanti e quando.** Per ora **un gradino per bioma**, tutti al **livello 3 di calore (60)**. È la soglia a cui le auto già cominciano a perdere il controllo: diventa "la soglia del caos", un momento unico in cui tutto il mondo cambia. Un secondo gradino si valuta solo dopo aver provato il primo. Gli aumenti numerici di oggi (+30% e simili) restano, ma non contano come difficoltà.
+
+### Il gradino di ogni bioma
+
+| Bioma | Distanza (quantità) | Gradino al livello 3 | Avviso |
 | --- | --- | --- | --- |
-| Cinematica | Nave piatta a velocità costante, i container si attaccano al ponte | Stabile, prevedibile, costa poco | Niente caos: un tronco grande |
-| Ibrida (inclinazione di Claude) | Traslazione cinematica, ma la nave si inclina col carico (fino a circa 10°); oltre una soglia i container scivolano come corpi fisici e cadono in acqua, dove galleggiano come i rottami | Caos emergente: il carico sbilanciato fa scivolare gli altri container, un pugno sposta il peso. È lo stesso modello delle auto | Va tarata perché resti leggibile |
-| Fisica piena | La nave è un corpo rigido che galleggia | Realistica | Instabile, costosa, la rana su un corpo rigido mobile dà problemi, difficile da rendere leale |
+| Strada | più corsie, più veloci (c'è già) | le auto perdono il controllo da sole (c'è già) | la sbandata |
+| Fiume | più correnti, più coccodrilli (c'è già) | **i tronchi affondano**: con la rana sopra, un tronco comincia ad affondare dopo circa 1 s e va sott'acqua in 2 s. Non si può più aspettare sui tronchi | il tronco trema e fa bolle |
+| Ferrovia | più binari (c'è già) | **il rapido**: un treno bianco più corto e molto più veloce, la cui scia risucchia verso i binari chi sta entro 2-3 m. Avviso identico, 2,5 s: arriva esattamente quando le luci promettono, ma vicino ai binari non si può più aspettare | le luci dei pali, che restano leali |
+| Aeroporto | **nuovo**: aerei sempre più frequenti (da 9-15 s fino a 6-10 s tra un aereo e l'altro) | **il decollo**: un aereo si ferma in mezzo al raccordo, la fiamma cresce per 2 s, poi accelera fino a circa 35 m/s, con un getto lungo il doppio che svuota i trenini bagagli | l'aereo fermo con la fiamma che si allunga |
+| Porto | una nave, poi due corsie d'acqua con navi in versi opposti; navi che arrivano più cariche | **la gru caccia la rana**: sotto il livello 3 le gru caricano le navi seguendo uno schema, e il labirinto si legge dalla banchina; dal livello 3 mirano alla rana quando è sul ponte, prevedendo dove la porterà la nave | l'ombra lampeggiante, poi fissa quando la gru si blocca |
 
-Domande aperte: quale fisica; i nastri trasportatori spariscono o restano sulla banchina; la prua spinge via soltanto o fa anche male.
+Il gradino del porto risponde anche alla domanda "la gru costruisce il labirinto prima che tu salga, o mentre sei sopra?": **prima**, finché il calore è basso; **mentre**, dal livello 3.
+
+### Il porto nuovo
+
+L'immagine guida: **un labirinto che viene costruito sotto i tuoi piedi**.
+
+- **Il blocco**: una banchina con le gru, una corsia d'acqua con la nave portacontainer (due corsie nelle sezioni avanzate), una banchina sicura dall'altra parte. I nastri trasportatori escono dal porto, e si tengono per un futuro bioma "magazzino": un blocco, una regola nuova.
+- **La nave**: un tronco enorme, circa 40 x 10 m, che scorre lungo X a 3-5 m/s. Il ponte è appena più alto della banchina: si sale col salto normale. La nave arriva in parte carica, e i container già a bordo formano il labirinto iniziale.
+- **La prua spinge e non fa male**: la punizione è finire in acqua, come coi tronchi.
+- **Le gru**: stanno sulla banchina col braccio sopra l'acqua. Il carrello scorre lungo il braccio, così il container può cadere in qualunque punto del ponte, non più sempre sulla stessa riga. Restano l'ombra lampeggiante, l'ombra fissa negli ultimi istanti e la caduta rapida (0,7 s).
+- **I container caricati**: restano sul ponte e viaggiano con la nave. Sono muri alti 2,6 m, che col salto normale non si superano e col super salto sì. Sopra ci si può stare.
+- **L'acqua**: le regole del fiume (20 di vita al secondo, si esce col salto tenuto).
+
+**La fisica, in due tempi.**
+
+1. **Prima la nave cinematica**: niente inclinazione, i container si fissano al ponte. Serve a verificare che il labirinto che si chiude sia divertente da solo.
+2. **Poi l'inclinazione**, solo dopo averlo provato: la nave si inclina col carico (fino a circa 10°), e oltre una soglia i container scivolano come corpi fisici e cadono in acqua, dove galleggiano come i rottami. Qui il pugno trova finalmente un ruolo: un pugno a un container sposta il peso e fa scivolare gli altri.
+
+### Ordine di lavoro
+
+1. Il porto nuovo, prima fase (cinematica), con il suo gradino.
+2. L'annuncio dei gradini nell'HUD.
+3. I gradini di aeroporto, ferrovia e fiume, e l'asse della distanza per l'aeroporto.
+4. La seconda fase del porto (inclinazione), dopo averlo provato.
+
+Ogni passo con test e screenshot, come sempre.
 
 ## Pubblicazione e aspetto economico (discussione, 4 ottobre)
 
