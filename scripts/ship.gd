@@ -207,14 +207,19 @@ func add_container(cell: Vector2i, color: int) -> void:
 	Style.apply_palette(model, {"paint": "container_%d" % color})
 
 
-## Un container caduto dalla gru tocca la nave: si ferma nella casella più
-## vicina. Se la rana è rimasta sotto, viene spinta fuori di lato. Falso se la
+## Un container caduto dalla gru tocca la nave: quando appoggia sopra la
+## casella più vicina si ferma lì. Se la rana è rimasta sotto, viene spinta
+## fuori di lato. Falso se non appoggia ancora (sfiora soltanto) o se la
 ## casella è già piena fino in cima.
 func attach(container: ShippingContainer) -> bool:
-	var cell := cell_at(to_local(container.global_position))
-	release(cell)
+	var local := to_local(container.global_position)
+	var cell := cell_at(local)
 	if _levels[cell.x][cell.y] >= MAX_STACK:
 		return false
+	# Solo appoggiato sopra la sua casella, non sfiorando una colonna vicina.
+	if local.y > cell_position(cell, _levels[cell.x][cell.y]).y + 0.5:
+		return false
+	release(cell)
 	add_container(cell, container.color_index)
 	_push_out_frog(cell)
 	return true

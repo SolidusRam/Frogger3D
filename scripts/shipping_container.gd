@@ -20,6 +20,8 @@ var _age := 0.0
 var _hitbox: Area3D
 var _hit := false
 var _gone := false
+## La nave che il container sta toccando (sotto o di lato).
+var _ship: Ship
 
 
 func _ready() -> void:
@@ -30,10 +32,13 @@ func _ready() -> void:
 	contact_monitor = true
 	max_contacts_reported = 4
 	body_entered.connect(_on_body_entered)
+	body_exited.connect(_on_body_exited)
 	if color_index < 0:
 		color_index = randi() % COLORS
 	var shape := BoxShape3D.new()
-	shape.size = SIZE
+	# Un filo più stretto del modello: cadendo fra due colonne di container
+	# (a 6 cm l'una dall'altra) non le sfrega.
+	shape.size = SIZE - Vector3(0.2, 0.0, 0.2)
 	var collision := CollisionShape3D.new()
 	collision.shape = shape
 	add_child(collision)
@@ -59,6 +64,12 @@ func _physics_process(delta: float) -> void:
 	if _gone:
 		return
 	_check_frog_hit()
+	# Appoggiato sulla nave: diventa parte della nave (Ship.attach dice di no
+	# finché non è davvero sopra la sua casella).
+	if is_instance_valid(_ship) and _ship.attach(self):
+		_gone = true
+		queue_free()
+		return
 	if global_position.y < sink_y or _age > lifetime:
 		_sink()
 
@@ -76,18 +87,13 @@ func _check_frog_hit() -> void:
 
 
 func _on_body_entered(body: Node) -> void:
-	if body is Ship and not _gone:
-		_check_frog_hit()
-		_gone = true
-		# Le forme della nave non si cambiano mentre la fisica avvisa dei contatti.
-		_attach_to.call_deferred(body)
+	if body is Ship:
+		_ship = body
 
 
-func _attach_to(ship: Ship) -> void:
-	if is_instance_valid(ship) and ship.attach(self):
-		queue_free()
-	else:
-		_gone = false
+func _on_body_exited(body: Node) -> void:
+	if body == _ship:
+		_ship = null
 
 
 func _sink() -> void:
