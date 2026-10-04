@@ -51,6 +51,8 @@ var _chain_label: Label
 var _offer: PanelContainer
 var _offer_title: Label
 var _offer_buttons: Array[Button] = []
+## Le parti di ogni carta: icona, nome dello slot, nome, durata, effetto.
+var _card_parts: Array[Dictionary] = []
 var _upgrades: Upgrades
 var _equipment_label: Label
 var _pause: Control
@@ -173,10 +175,11 @@ func announce(text: String) -> void:
 
 
 ## Le carte della tana (tre, o quattro con "Più scelta"). Si sceglie coi
-## tasti numerici o col mouse.
+## tasti numerici o col mouse. Ogni carta ha il colore e l'icona del suo
+## attrezzo; le carte entrano una dopo l'altra.
 func show_offer(options: Array[String], upgrades: Upgrades) -> void:
 	_upgrades = upgrades
-	_offer_title.text = "Tana %d: scegli un potenziamento" % course.dens_reached
+	_offer_title.text = "Tana %d" % course.dens_reached
 	for i in _offer_buttons.size():
 		var button := _offer_buttons[i]
 		button.visible = i < options.size()
@@ -184,14 +187,48 @@ func show_offer(options: Array[String], upgrades: Upgrades) -> void:
 			continue
 		var id := options[i]
 		var item: Dictionary = Upgrades.CATALOG[id]
-		var slot := "Potenziamento (si somma)"
-		if item.slot == "fusion":
-			slot = "Fusione: %s" % " + ".join(Upgrades.slots_of(id).map(func(sl): return Upgrades.SLOT_NAMES[sl]))
-		elif item.slot != "":
-			slot = "Slot: %s (resta fino a fine run)" % Upgrades.SLOT_NAMES[item.slot]
-		button.text = "%d.  %s\n%s\n\n%s" % [i + 1, item.name, slot, item.text]
+		var slot: String = item.slot
+		var parts: Dictionary = _card_parts[i]
+		var color: Color = UiTheme.SLOT_COLORS[slot]
+		(parts.icon as SlotIcon).kind = slot
+		var slot_label: Label = parts.slot
+		slot_label.add_theme_color_override("font_color", color)
+		(parts.name as Label).text = item.name
+		(parts.text as Label).text = item.text
+		var tag: Label = parts.tag
+		if slot == "fusion":
+			slot_label.text = "FUSIONE"
+			tag.text = "Unisce %s" % " e ".join(item.parts.map(func(part): return Upgrades.CATALOG[part].name))
+		elif slot != "":
+			slot_label.text = Upgrades.SLOT_NAMES[slot].to_upper()
+			tag.text = "Occupa lo slot fino a fine run"
+		else:
+			slot_label.text = "POTENZIAMENTO"
+			tag.text = "Si somma: %d di %d" % [upgrades.stacks.get(id, 0) + 1, item.max]
+		_style_card(button, color)
+		# L'entrata: dal basso, una dopo l'altra.
+		button.pivot_offset = button.custom_minimum_size / 2.0
+		button.modulate.a = 0.0
+		button.scale = Vector2(0.85, 0.85)
+		var tween := create_tween().set_ignore_time_scale(true).set_parallel()
+		tween.tween_property(button, "modulate:a", 1.0, 0.18).set_delay(i * 0.07)
+		tween.tween_property(button, "scale", Vector2.ONE, 0.28).set_delay(i * 0.07).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_offer.visible = true
 	_offer_buttons[0].grab_focus()
+
+
+## Il fondo della carta col bordo nel colore dell'attrezzo, più spesso in
+## alto; passandoci sopra si schiarisce.
+func _style_card(button: Button, color: Color) -> void:
+	for state in ["normal", "hover", "pressed", "hover_pressed"]:
+		var box := StyleBoxFlat.new()
+		box.bg_color = UiTheme.INK_LIGHT if state.begins_with("hover") else UiTheme.INK_SOFT
+		box.border_color = color if state != "normal" else color.darkened(0.25)
+		box.set_border_width_all(2)
+		box.border_width_top = 6
+		box.set_corner_radius_all(12)
+		box.anti_aliasing = true
+		button.add_theme_stylebox_override(state, box)
 
 
 func hide_offer() -> void:
@@ -400,25 +437,66 @@ func _build_offer() -> void:
 	center.add_child(_offer)
 
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 16)
+	box.add_theme_constant_override("separation", 10)
 	_offer.add_child(box)
 	_offer_title = _text("Title")
 	box.add_child(_offer_title)
+	var hint := _text("Note", "Scegli un potenziamento: tasti 1-%d o clic" % MAX_CARDS)
+	box.add_child(hint)
 	var cards := HBoxContainer.new()
-	cards.add_theme_constant_override("separation", 14)
+	cards.add_theme_constant_override("separation", 16)
 	box.add_child(cards)
 	for i in MAX_CARDS:
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(270, 260)
-		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
-		# Testi lunghi: il carattere normale, non quello dei titoli.
-		button.add_theme_font_override("font", UiTheme.bold_font())
-		button.add_theme_font_size_override("font_size", 18)
+		button.custom_minimum_size = Vector2(264, 330)
 		button.pressed.connect(_on_card_pressed.bind(i))
 		cards.add_child(button)
 		_offer_buttons.append(button)
+		_card_parts.append(_build_card(button, i))
+
+
+## Il contenuto di una carta, sopra il pulsante (che riceve i clic).
+func _build_card(button: Button, index: int) -> Dictionary:
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	margin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for side in ["left", "right", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 18)
+	margin.add_theme_constant_override("margin_top", 20)
+	button.add_child(margin)
+	var box := VBoxContainer.new()
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	box.add_theme_constant_override("separation", 8)
+	margin.add_child(box)
+	var band := HBoxContainer.new()
+	band.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	band.add_theme_constant_override("separation", 10)
+	box.add_child(band)
+	var icon := SlotIcon.make("", 44.0)
+	band.add_child(icon)
+	var slot := _text("Strong")
+	slot.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	slot.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	band.add_child(slot)
+	var name_label := _text("Header")
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(name_label)
+	var tag := _text("Note")
+	tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	tag.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(tag)
+	var text := _text("")
+	text.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	text.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	text.add_theme_font_size_override("font_size", 17)
+	box.add_child(text)
+	var key := _text("Strong", str(index + 1))
+	key.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	key.add_theme_color_override("font_color", UiTheme.TEXT_MUTED)
+	box.add_child(key)
+	return {"icon": icon, "slot": slot, "name": name_label, "tag": tag, "text": text}
 
 
 func _on_card_pressed(index: int) -> void:

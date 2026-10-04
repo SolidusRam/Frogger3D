@@ -6,12 +6,27 @@ extends PanelContainer
 ## speciali, ognuno con la sua prova; superata la prova si attiva con le
 ## mosche d'oro. Si può chiedere il rimborso di tutto. Lo usano il menu
 ## iniziale e la fine della run.
+## Le statistiche sono tessere raggruppate per attrezzo, col suo colore e la
+## sua icona; ogni carta della maestria è una scheda col colore del suo slot e
+## la barra di avanzamento delle prove. Esc chiude.
 
 signal closed
 
+## L'attrezzo di ogni statistica: colore e icona della tessera ("" per quelle
+## che non riguardano un attrezzo). Le tessere seguono quest'ordine.
+const STAT_GROUPS := {
+	"health": "body", "armor": "body", "regen": "body", "invuln": "body", "swim": "body",
+	"speed": "springs", "jump": "springs", "super_jump": "springs",
+	"punch": "gloves", "glide": "wing",
+	"magnet": "tongue", "greed": "tongue", "luck": "tongue",
+	"cooldown": "", "calm": "", "fire": "", "choice": "", "revival": "",
+}
+const COLUMNS := 3
+
 var _flies_label: Label
-var _stats_box: VBoxContainer
-var _cards_box: VBoxContainer
+var _golden_label: Label
+var _stats_box: GridContainer
+var _cards_box: GridContainer
 var _refund_button: Button
 ## Il rimborso chiede conferma: il primo clic lo prepara, il secondo (entro
 ## qualche secondo) lo fa.
@@ -26,12 +41,20 @@ func _ready() -> void:
 	box.add_theme_constant_override("separation", 12)
 	add_child(box)
 	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 10)
 	box.add_child(header)
 	var title := _label("Lo stagno", "Title")
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
+	header.add_child(SlotIcon.make("fly", 36.0))
 	_flies_label = _label("", "Money")
 	header.add_child(_flies_label)
+	var gap := Control.new()
+	gap.custom_minimum_size.x = 18
+	header.add_child(gap)
+	header.add_child(SlotIcon.make("golden", 36.0))
+	_golden_label = _label("", "Money")
+	header.add_child(_golden_label)
 	box.add_child(_label("Le mosche comprano statistiche; le mosche d'oro attivano i miglioramenti delle carte, una volta superata la loro prova.", "Note"))
 
 	var tabs := TabContainer.new()
@@ -43,38 +66,165 @@ func _ready() -> void:
 	var footer := HBoxContainer.new()
 	footer.add_theme_constant_override("separation", 16)
 	box.add_child(footer)
-	_refund_button = _button("", _refund)
-	_refund_button.theme_type_variation = "DangerButton"
+	_refund_button = _button("", _refund, "DangerButton")
 	footer.add_child(_refund_button)
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	footer.add_child(spacer)
+	var esc := _label("Esc", "Note")
+	esc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	footer.add_child(esc)
 	footer.add_child(_button("Chiudi", _close))
 	refresh()
 
 
+func _unhandled_input(event: InputEvent) -> void:
+	if visible and event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		_close()
+
+
 func refresh() -> void:
-	_flies_label.text = "Mosche: %d   d'oro: %d" % [Progress.flies, Progress.golden]
-	# Le righe vecchie escono subito, ma si cancellano a fine fotogramma: il
+	_flies_label.text = str(Progress.flies)
+	_golden_label.text = str(Progress.golden)
+	# Le tessere vecchie escono subito, ma si cancellano a fine fotogramma: il
 	# pulsante appena premuto sta ancora mandando il suo segnale.
-	for box in [_stats_box, _cards_box]:
-		for child in box.get_children():
-			box.remove_child(child)
+	for grid in [_stats_box, _cards_box]:
+		for child in grid.get_children():
+			grid.remove_child(child)
 			child.queue_free()
-	for stat: String in Progress.STATS:
-		var info: Dictionary = Progress.STATS[stat]
-		var level := Progress.level(stat)
-		var cost := Progress.stat_cost(stat)
-		_stats_box.add_child(_row(info.name, info.text, "%d/%d" % [level, info.max], cost, _buy_stat.bind(stat)))
+	for stat: String in STAT_GROUPS:
+		_stats_box.add_child(_stat_tile(stat))
 	for card: String in Progress.CARD_UPGRADES:
-		# Il nome della carta nel colore del suo attrezzo.
-		var title := _label(Upgrades.CATALOG[card].name, "Header")
-		title.add_theme_color_override("font_color", UiTheme.SLOT_COLORS[Upgrades.CATALOG[card].slot])
-		_cards_box.add_child(title)
-		for index in Progress.CARD_UPGRADES[card].size():
-			_cards_box.add_child(_upgrade_row(card, index))
+		_cards_box.add_child(_card_tile(card))
 	_refund_armed = false
 	_update_refund_button()
+
+
+## Una statistica: icona e nome nel colore dell'attrezzo, effetto, livelli a
+## pallini, e il pulsante col prezzo.
+func _stat_tile(stat: String) -> PanelContainer:
+	var info: Dictionary = Progress.STATS[stat]
+	var group: String = STAT_GROUPS[stat]
+	var color: Color = UiTheme.SLOT_COLORS[group]
+	var tile := _tile(color, false)
+	tile.name = stat
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 6)
+	tile.add_child(box)
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 10)
+	box.add_child(top)
+	top.add_child(SlotIcon.make(group, 30.0))
+	var name_label := _label(info.name, "Strong")
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	top.add_child(name_label)
+	top.add_child(UiPips.make(Progress.level(stat), info.max, color))
+	var effect := _label(info.text)
+	effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	effect.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	effect.add_theme_font_size_override("font_size", 16)
+	effect.add_theme_color_override("font_color", UiTheme.TEXT_MUTED)
+	box.add_child(effect)
+	var cost := Progress.stat_cost(stat)
+	var buy := _button("Al massimo" if cost < 0 else "%d mosche" % cost, _buy_stat.bind(stat))
+	buy.disabled = cost < 0 or cost > Progress.flies
+	buy.add_theme_font_size_override("font_size", 20)
+	box.add_child(buy)
+	return tile
+
+
+## Una carta della maestria: i suoi due miglioramenti, ognuno con la prova,
+## la barra di avanzamento e lo stato (da superare, da attivare, attivo).
+func _card_tile(card: String) -> PanelContainer:
+	var slot: String = Upgrades.CATALOG[card].slot
+	var color: Color = UiTheme.SLOT_COLORS[slot]
+	var tile := _tile(color, true)
+	tile.name = card
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 8)
+	tile.add_child(box)
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 10)
+	box.add_child(top)
+	top.add_child(SlotIcon.make(slot, 34.0))
+	var title := _label(Upgrades.CATALOG[card].name, "Header")
+	title.add_theme_font_size_override("font_size", 24)
+	title.add_theme_color_override("font_color", color)
+	top.add_child(title)
+	for index in Progress.CARD_UPGRADES[card].size():
+		box.add_child(HSeparator.new())
+		box.add_child(_upgrade(card, index, color))
+	return tile
+
+
+func _upgrade(card: String, index: int, color: Color) -> VBoxContainer:
+	var info: Dictionary = Progress.CARD_UPGRADES[card][index]
+	var done := Progress.trial_done(card, index)
+	var active := Progress.upgrade_active(card, index)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 4)
+	var head := HBoxContainer.new()
+	box.add_child(head)
+	var name_label := _label(info.name, "Strong")
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(name_label)
+	if active:
+		var on := _label("Attivo", "Strong")
+		on.add_theme_color_override("font_color", UiTheme.DONE)
+		head.add_child(on)
+	elif done:
+		var activate := _button("Attiva: %d d'oro" % info.cost, _activate.bind(card, index), "PrimaryButton")
+		activate.add_theme_font_size_override("font_size", 18)
+		activate.disabled = info.cost > Progress.golden
+		head.add_child(activate)
+	var effect := _label(info.text)
+	effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	effect.add_theme_font_size_override("font_size", 16)
+	box.add_child(effect)
+	var value: float = minf(Progress.trial_value(card, index), info.goal)
+	var trial := _label("Prova: %s" % info.trial, "Note")
+	trial.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(trial)
+	var progress := HBoxContainer.new()
+	progress.add_theme_constant_override("separation", 10)
+	box.add_child(progress)
+	var bar := ProgressBar.new()
+	bar.show_percentage = false
+	bar.custom_minimum_size.y = 10
+	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	bar.max_value = info.goal
+	bar.value = value
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = UiTheme.DONE if done else color
+	fill.set_corner_radius_all(6)
+	bar.add_theme_stylebox_override("fill", fill)
+	progress.add_child(bar)
+	var count := _label("%d/%d" % [floori(value), info.goal], "Note")
+	if done:
+		count.add_theme_color_override("font_color", UiTheme.DONE)
+	progress.add_child(count)
+	return box
+
+
+## Il fondo di una tessera: colore dell'attrezzo a sinistra (statistiche) o
+## in alto (carte).
+func _tile(color: Color, top: bool) -> PanelContainer:
+	var tile := PanelContainer.new()
+	tile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var box := StyleBoxFlat.new()
+	box.bg_color = UiTheme.INK_LIGHT
+	box.border_color = color
+	if top:
+		box.border_width_top = 5
+	else:
+		box.border_width_left = 5
+	box.set_corner_radius_all(10)
+	box.set_content_margin_all(14)
+	box.anti_aliasing = true
+	tile.add_theme_stylebox_override("panel", box)
+	return tile
 
 
 func _update_refund_button() -> void:
@@ -94,37 +244,6 @@ func _buy_stat(stat: String) -> void:
 func _activate(card: String, index: int) -> void:
 	Progress.activate(card, index)
 	refresh()
-
-
-## Un miglioramento: nome ed effetto, la prova col suo avanzamento, e il
-## pulsante per attivarlo.
-func _upgrade_row(card: String, index: int) -> HBoxContainer:
-	var info: Dictionary = Progress.CARD_UPGRADES[card][index]
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	var text := VBoxContainer.new()
-	text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var effect := _label("%s: %s" % [info.name, info.text])
-	effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	text.add_child(effect)
-	var value: float = minf(Progress.trial_value(card, index), info.goal)
-	var trial := _label("Prova: %s (%d/%d)" % [info.trial, floori(value), info.goal], "Note")
-	if Progress.trial_done(card, index):
-		trial.add_theme_color_override("font_color", UiTheme.DONE)
-	text.add_child(trial)
-	row.add_child(text)
-	var label := "Prova da superare"
-	if Progress.upgrade_active(card, index):
-		label = "Attivo"
-	elif Progress.trial_done(card, index):
-		label = "Attiva (%d d'oro)" % info.cost
-	var button := _button(label, _activate.bind(card, index))
-	button.custom_minimum_size.x = 220
-	button.disabled = label != "Attiva (%d d'oro)" % info.cost or info.cost > Progress.golden
-	if not button.disabled:
-		button.theme_type_variation = "PrimaryButton"
-	row.add_child(button)
-	return row
 
 
 func _refund() -> void:
@@ -150,38 +269,23 @@ func _close() -> void:
 	closed.emit()
 
 
-func _page(tabs: TabContainer, title: String) -> VBoxContainer:
+func _page(tabs: TabContainer, title: String) -> GridContainer:
 	var scroll := ScrollContainer.new()
 	scroll.name = title
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	tabs.add_child(scroll)
-	var list := VBoxContainer.new()
-	list.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	list.add_theme_constant_override("separation", 6)
-	scroll.add_child(list)
-	return list
-
-
-## Una riga: nome, effetto, livello, e il pulsante col prezzo (cost < 0: già
-## al massimo).
-func _row(name_text: String, effect: String, level: String, cost: int, buy: Callable) -> HBoxContainer:
-	var row := HBoxContainer.new()
-	row.add_theme_constant_override("separation", 12)
-	var name_label := _label(name_text, "Strong")
-	name_label.custom_minimum_size.x = 210
-	row.add_child(name_label)
-	var effect_label := _label(effect)
-	effect_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	effect_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	row.add_child(effect_label)
-	var level_label := _label(level, "Strong")
-	level_label.custom_minimum_size.x = 50
-	row.add_child(level_label)
-	var button := _button("Fatto" if cost < 0 else "%d mosche" % cost, buy)
-	button.custom_minimum_size.x = 170
-	button.disabled = cost < 0 or cost > Progress.flies
-	row.add_child(button)
-	return row
+	var margin := MarginContainer.new()
+	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	# Spazio per la barra di scorrimento.
+	margin.add_theme_constant_override("margin_right", 14)
+	scroll.add_child(margin)
+	var grid := GridContainer.new()
+	grid.columns = COLUMNS
+	grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation", 12)
+	grid.add_theme_constant_override("v_separation", 12)
+	margin.add_child(grid)
+	return grid
 
 
 func _label(text: String, variation := "") -> Label:
@@ -191,9 +295,10 @@ func _label(text: String, variation := "") -> Label:
 	return label
 
 
-func _button(text: String, action: Callable) -> Button:
+func _button(text: String, action: Callable, variation := "") -> Button:
 	var button := Button.new()
 	button.text = text
+	button.theme_type_variation = variation
 	button.add_theme_font_size_override("font_size", 20)
 	button.pressed.connect(action)
 	return button
