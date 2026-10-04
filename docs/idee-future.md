@@ -43,30 +43,26 @@ Oggi la distanza conta fino al punto della morte e la tana salva il record. Alte
 
 ## Power-up ancora da fare
 
-Ogni power-up si vede addosso alla rana (è un supereroe con gli attrezzi). Già fatti: guantoni esplosivi, correnti calde e quattro numerici.
+Ogni power-up si vede addosso alla rana (è un supereroe con gli attrezzi). Già fatti: guantoni esplosivi, montante, guantone a molla, molle-trampolino, schianto sismico, correnti calde, ala a reazione, pelle impermeabile, lingua-rampino, quattro numerici; fusioni Napalm e Terremoto.
 
 | Slot | Power-up | Cosa cambia |
 | --- | --- | --- |
-| Guantoni | Montante | spinta verso l'alto triplicata: le auto volano e ricadono su altre auto |
 | Guantoni | Guantoni magnetici | l'auto colpita curva verso il veicolo più vicino: catene garantite |
-| Guantoni | Guantone a molla | portata da 1,3 a 4 m |
 | Molle | Molle a razzo | un secondo super salto in aria |
-| Molle | Atterraggio sismico | atterrando da un super salto si ribaltano le auto intorno |
-| Molle | Molle-trampolino | sui tetti delle auto si rimbalza da soli: il traffico diventa una strada |
-| Ala | Ala a reazione | più veloce, ma scalda finché si vola |
 | Ala | Ala corazzata | in volo assorbe un colpo |
-| Corpo | Pelle impermeabile | l'acqua non toglie vita |
 | Corpo | Assicurazione | si sopravvive a un colpo mortale, ma il calore sale di un livello |
+| Lingua | Lingua appiccicosa | ciò che la lingua tira resta attaccato e trascina la rana più a lungo |
+| Lingua | Lingua elastica | portata da 12 a 20 m |
 | Calore | Più caldo, più forte | i poteri crescono col livello del calore |
 | Calore | Benzina sul fuoco | calore ×1,5, ma nelle tane si sceglie tra quattro carte invece che tra tre |
 
-Combinazioni da cercare: correnti calde + guantoni esplosivi (il caos sulla strada fa volare sopra il fiume), molle-trampolino + traffico veloce, montante + atterraggio sismico. Domanda aperta: un secondo slot per attrezzo come premio raro?
+Fusioni da cercare: molle-trampolino + ala a reazione, lingua-rampino + guantone a molla (la lingua tira l'auto e la colpisce), guantoni magnetici + montante. Domanda aperta: un secondo slot per attrezzo come premio raro?
 
 ## Poteri
 
 - **Equilibrio attuale**: super salto più deltaplano coprono circa 29 m, il fiume ne è largo 14. Per ora restano forti; il contrappeso è il calore (decisione provvisoria).
 - **Un potere che rompe la regola**: congela il calore per 10 secondi, senza abbassarlo. Desiderabile proprio perché rompe la regola "il calore non scende mai", ma ogni eccezione la indebolisce.
-- **Un potere per muoversi in orizzontale** (nella roadmap, da sbloccare nella tana). Due candidati:
+- **Un potere per muoversi in orizzontale**: scelta la lingua-rampino (fatta il 4 ottobre 2026). I due candidati erano:
   - **Scatto**: un balzo laterale rapido, di pochi metri, con una breve ricarica. Semplice e leggibile; serve a schivare e a raggiungere un tronco che si allontana.
   - **Lingua-rampino**: agganci un veicolo, un tronco o una nave e ti fai trascinare, oppure tiri un rottame verso di te. Più ricco (si usa il traffico come mezzo, e il caos come attrezzo), ma più difficile da mirare e da rendere leggibile.
 - **Gracidio sonico**: le auto vicine sbandano. Un pugno ad area che fa salire molto il calore.

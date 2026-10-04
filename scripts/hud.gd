@@ -27,6 +27,11 @@ var _dens_label: Label
 var _record_label: Label
 var _super_jump_bar: ProgressBar
 var _glide_bar: ProgressBar
+## Lingua e schianto: si vedono solo quando sono equipaggiati.
+var _tongue_row: VBoxContainer
+var _tongue_bar: ProgressBar
+var _slam_row: VBoxContainer
+var _slam_bar: ProgressBar
 var _message: Label
 var _fire_label: Label
 var _vignette: ColorRect
@@ -67,6 +72,10 @@ func _process(_delta: float) -> void:
 	_dens_label.text = "Tane: %d" % course.dens_reached
 	_super_jump_bar.value = frog.super_jump_power.ready_ratio()
 	_glide_bar.value = frog.glide_charge_ratio()
+	_tongue_row.visible = frog.tongue_power.enabled
+	_tongue_bar.value = frog.tongue_power.ready_ratio()
+	_slam_row.visible = frog.slam_power.enabled
+	_slam_bar.value = frog.slam_power.ready_ratio()
 
 
 ## L'incendio dietro la rana: la distanza, e il bordo dello schermo che si
@@ -145,7 +154,11 @@ func show_offer(options: Array[String], upgrades: Upgrades) -> void:
 			continue
 		var id := options[i]
 		var item: Dictionary = Upgrades.CATALOG[id]
-		var slot := "Slot: %s" % Upgrades.SLOT_NAMES[item.slot] if item.slot != "" else "Potenziamento (si somma)"
+		var slot := "Potenziamento (si somma)"
+		if item.slot == "fusion":
+			slot = "Fusione: %s" % " + ".join(Upgrades.slots_of(id).map(func(sl): return Upgrades.SLOT_NAMES[sl]))
+		elif item.slot != "":
+			slot = "Slot: %s" % Upgrades.SLOT_NAMES[item.slot]
 		var replaced := upgrades.replaced_by(id)
 		var warning := "\n\nSostituisce: %s" % Upgrades.CATALOG[replaced].name if replaced != "" else ""
 		button.text = "%d.  %s\n%s\n\n%s%s" % [i + 1, item.name, slot, item.text, warning]
@@ -161,9 +174,14 @@ func hide_offer() -> void:
 ## potenziamenti numerici presi.
 func show_equipment(upgrades: Upgrades) -> void:
 	var lines: Array[String] = []
+	var listed := {}
 	for slot: String in Upgrades.SLOT_NAMES:
-		if upgrades.slots[slot] != "":
-			lines.append("%s: %s" % [Upgrades.SLOT_NAMES[slot], Upgrades.CATALOG[upgrades.slots[slot]].name])
+		var id: String = upgrades.slots[slot]
+		if id == "" or listed.has(id):
+			continue
+		listed[id] = true
+		var names := " + ".join(Upgrades.slots_of(id).map(func(sl): return Upgrades.SLOT_NAMES[sl]))
+		lines.append("%s: %s" % [names, Upgrades.CATALOG[id].name])
 	for id: String in upgrades.stacks:
 		lines.append("%s ×%d" % [Upgrades.CATALOG[id].name, upgrades.stacks[id]])
 	_equipment_label.text = "\n".join(lines)
@@ -226,7 +244,9 @@ func _build_powers() -> void:
 	var box := VBoxContainer.new()
 	box.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	box.offset_left = 16
-	box.offset_top = -110
+	# Cresce verso l'alto quando si aggiungono lingua e schianto.
+	box.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	box.offset_top = -16
 	box.offset_bottom = -16
 	box.add_theme_constant_override("separation", 2)
 	add_child(box)
@@ -238,6 +258,20 @@ func _build_powers() -> void:
 	_glide_bar = _bar(Vector2(220, 10), POWER_COLOR)
 	_glide_bar.max_value = 1.0
 	box.add_child(_glide_bar)
+	_tongue_row = VBoxContainer.new()
+	_tongue_row.add_theme_constant_override("separation", 2)
+	_tongue_row.add_child(_label(16, "Lingua (E)"))
+	_tongue_bar = _bar(Vector2(220, 10), POWER_COLOR)
+	_tongue_bar.max_value = 1.0
+	_tongue_row.add_child(_tongue_bar)
+	box.add_child(_tongue_row)
+	_slam_row = VBoxContainer.new()
+	_slam_row.add_theme_constant_override("separation", 2)
+	_slam_row.add_child(_label(16, "Schianto (Ctrl in aria)"))
+	_slam_bar = _bar(Vector2(220, 10), POWER_COLOR)
+	_slam_bar.max_value = 1.0
+	_slam_row.add_child(_slam_bar)
+	box.add_child(_slam_row)
 	box.add_child(_label(14, "F2: cambia stile grafico"))
 
 

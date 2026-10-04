@@ -17,6 +17,12 @@ extends Node
 var cooldown_left := 0.0
 ## Guantoni esplosivi: l'auto colpita esplode al primo urto con un veicolo.
 var explosive := false
+## Montante: il pugno solleva le auto molto di più (volano e ricadono).
+var uppercut := false
+## Guantone a molla: il pugno arriva lontano.
+var long_reach := false
+@export var uppercut_lift := 1.2
+@export var long_reach_distance := 4.0
 
 var _frog: Frog
 var _gloves: Array[Node3D] = []
@@ -56,16 +62,18 @@ func use() -> void:
 	_frog.squash(Vector3(0.9, 0.9, 1.2), 0.15)
 	_throw_glove()
 
-	(_query.shape as SphereShape3D).radius = radius
-	_query.transform = Transform3D(Basis(), _frog.global_position + Vector3.UP * 0.6 + forward * reach)
+	var hit_reach := long_reach_distance if long_reach else reach
+	var hit_lift := uppercut_lift if uppercut else lift
+	(_query.shape as SphereShape3D).radius = radius * (1.25 if long_reach else 1.0)
+	_query.transform = Transform3D(Basis(), _frog.global_position + Vector3.UP * 0.6 + forward * hit_reach)
 	var hits: Array[Car] = []
 	for result in _frog.get_world_3d().direct_space_state.intersect_shape(_query, 8):
 		var car := result.collider as Car
 		if car and not hits.has(car):
 			hits.append(car)
-			car.receive_punch((forward + Vector3.UP * lift) * impulse, explosive)
+			car.receive_punch((forward + Vector3.UP * hit_lift) * impulse, explosive)
 		elif result.collider is Baggage:
-			result.collider.receive_punch((forward + Vector3.UP * lift) * impulse)
+			result.collider.receive_punch((forward + Vector3.UP * hit_lift) * impulse)
 	_frog.power_used.emit(&"punch")
 	if not hits.is_empty():
 		_frog.punched.emit(hits)
@@ -74,8 +82,32 @@ func use() -> void:
 ## Equipaggia o toglie i guantoni esplosivi; si vede: diventano arancioni.
 func set_explosive(on: bool) -> void:
 	explosive = on
+	_refresh_gloves()
+
+
+## Montante: si vede, i guantoni diventano gialli.
+func set_uppercut(on: bool) -> void:
+	uppercut = on
+	_refresh_gloves()
+
+
+## Guantone a molla: si vede, i guantoni diventano blu e più grossi.
+func set_long_reach(on: bool) -> void:
+	long_reach = on
+	_refresh_gloves()
+
+
+func _refresh_gloves() -> void:
+	var key := ""
+	if explosive:
+		key = "glove_hot"
+	elif uppercut:
+		key = "glove_up"
+	elif long_reach:
+		key = "glove_long"
 	for glove: MeshInstance3D in _gloves:
-		glove.material_override = Style.material("glove_hot") if on else null
+		glove.material_override = Style.material(key) if key != "" else null
+		glove.scale = Vector3.ONE * (1.35 if long_reach else 1.0)
 
 
 ## Un guantone scatta in avanti e torna; destro e sinistro si alternano. Va in

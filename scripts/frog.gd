@@ -76,6 +76,8 @@ var is_dead := false
 @onready var punch_power: PunchPower = $Powers/Punch
 @onready var super_jump_power: SuperJumpPower = $Powers/SuperJump
 @onready var glider_power: GliderPower = $Powers/Glider
+@onready var tongue_power: TonguePower = $Powers/Tongue
+@onready var slam_power: SlamPower = $Powers/Slam
 
 var _time_since_floor := 0.0
 var _time_since_jump_pressed := INF
@@ -94,6 +96,11 @@ var _wind_lift := 0.0
 var _burn_owed := 0.0
 ## Modalità prova: niente toglie vita.
 var invincible := false
+## Molle-trampolino (power-up): sui tetti delle auto si rimbalza da soli.
+var trampoline := false
+var trampoline_height := 2.6
+## Pelle impermeabile (power-up): l'acqua non toglie vita.
+var waterproof := false
 
 
 func _ready() -> void:
@@ -115,6 +122,8 @@ func _physics_process(delta: float) -> void:
 	_invulnerable_time = maxf(_invulnerable_time - delta, 0.0)
 	punch_power.tick(delta)
 	super_jump_power.tick(delta)
+	tongue_power.tick(delta)
+	slam_power.tick(delta)
 
 	var input := Vector2.ZERO
 	if can_act():
@@ -124,9 +133,22 @@ func _physics_process(delta: float) -> void:
 	if can_act() and Input.is_action_just_pressed("super_jump") and super_jump_power.is_ready():
 		glider_power.close()
 		super_jump_power.use(direction)
+	if can_act() and Input.is_action_just_pressed("tongue") and tongue_power.is_ready():
+		glider_power.close()
+		slam_power.stop()
+		tongue_power.use()
+	if can_act() and Input.is_action_just_pressed("slam") and slam_power.is_ready() and slam_power.can_start():
+		glider_power.close()
+		tongue_power.stop()
+		slam_power.use()
 	glider_power.update(delta)
 
-	if is_swimming():
+	# La lingua tira anche fuori dall'acqua; lo schianto vince sul deltaplano.
+	if tongue_power.pulling:
+		tongue_power.apply(delta)
+	elif slam_power.diving:
+		slam_power.apply(delta)
+	elif is_swimming():
 		_swim(direction, delta)
 	elif glider_power.gliding:
 		glider_power.apply(direction, delta)
@@ -137,6 +159,13 @@ func _physics_process(delta: float) -> void:
 	var fall_speed := -velocity.y
 	move_and_slide()
 	_check_pinch()
+	if slam_power.diving and is_on_floor():
+		slam_power.apply(delta)
+	if trampoline and is_on_floor() and floor_body() is Car and velocity.y <= 0.0:
+		# Molle-trampolino: sui tetti delle auto si rimbalza da soli.
+		# Senza Spazio premuto si sale con la gravità di discesa.
+		launch(Vector3(velocity.x, sqrt(2.0 * gravity_down * trampoline_height), velocity.z))
+		squash(Vector3(1.3, 0.7, 1.3), 0.2)
 	if is_on_floor() and not was_on_floor and fall_speed > 4.0:
 		# Si spiaccica all'atterraggio, tanto più quanto cadeva veloce.
 		var amount := clampf(fall_speed / 25.0, 0.1, 0.4)
@@ -202,6 +231,13 @@ func launch(new_velocity: Vector3) -> void:
 	velocity = new_velocity
 	_time_since_floor = INF
 	_time_since_jump_pressed = INF
+
+
+## Pelle impermeabile (power-up): l'acqua non toglie vita; la rana diventa
+## verde acqua.
+func set_waterproof(on: bool) -> void:
+	waterproof = on
+	$Visual/Body.material_override = Style.material("frog_wet" if on else "frog")
 
 
 func time_since_floor() -> float:
@@ -293,6 +329,8 @@ func take_hit(damage: int, knockback: Vector3) -> void:
 	_invulnerable_time = invulnerability_duration
 	super_jump_power.active = false
 	glider_power.close()
+	tongue_power.stop()
+	slam_power.stop()
 	_lose_health(damage)
 
 
@@ -391,7 +429,8 @@ func _swim(direction: Vector3, delta: float) -> void:
 		velocity.y = jump_velocity * water_jump_factor
 		squash(Vector3(0.8, 1.3, 0.8), 0.25)
 
-	_water_damage_owed += water_damage_per_second * delta
+	if not waterproof:
+		_water_damage_owed += water_damage_per_second * delta
 	if _water_damage_owed >= 1.0:
 		var damage := floori(_water_damage_owed)
 		_water_damage_owed -= damage

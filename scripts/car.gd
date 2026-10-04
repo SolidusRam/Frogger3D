@@ -16,8 +16,9 @@ const MAX_WRECKS := 80
 ## Distanza dal muso sotto cui due veicoli sono a contatto.
 const CONTACT_DISTANCE := 0.3
 ## Secondi di fumo di un rottame: per tutto quel tempo fa anche da corrente
-## calda per il deltaplano.
+## calda per il deltaplano. Il Napalm (fusione) lo allunga.
 const SMOKE_SECONDS := 6.0
+static var smoke_seconds := SMOKE_SECONDS
 
 ## Raggio, spinta (velocità data ai veicoli vicini) e danno alla rana
 ## dell'esplosione dei guantoni esplosivi.
@@ -66,7 +67,7 @@ static var _wrecks: Array[Car] = []
 static func smoking_wrecks() -> Array[Car]:
 	var smoking: Array[Car] = []
 	for car in _wrecks:
-		if car._wreck_age < SMOKE_SECONDS:
+		if car._wreck_age < smoke_seconds:
 			smoking.append(car)
 	return smoking
 
@@ -456,7 +457,7 @@ func _emit_smoke() -> void:
 	smoke.emitting = true
 	# Collegato al metodo del fumo, non a una lambda che lo cattura: se il
 	# rottame sparisce prima, Godot scollega da solo il segnale.
-	get_tree().create_timer(SMOKE_SECONDS).timeout.connect(smoke.set_emitting.bind(false))
+	get_tree().create_timer(smoke_seconds).timeout.connect(smoke.set_emitting.bind(false))
 
 
 ## Area che rileva la rana ai lati e davanti, ma non sul tetto: stare sopra un

@@ -46,6 +46,13 @@ var charge := 0.0
 var gliding := false
 ## Power-up "Correnti calde" equipaggiato.
 var thermals := false
+## Power-up "Ala a reazione": più veloce, ma scalda finché si vola.
+var jet := false
+@export var jet_speed := 16.0
+@export var jet_acceleration := 35.0
+@export var jet_heat_per_second := 1.5
+## Napalm (fusione): le colonne di fumo sono più larghe.
+var wide_thermals := false
 ## Vero mentre il deltaplano sale in una colonna di fumo.
 var in_thermal := false
 
@@ -80,6 +87,8 @@ func update(delta: float) -> void:
 		charge = minf(charge + recharge_per_second * delta, duration)
 		return
 	if gliding:
+		if jet:
+			Heat.add(jet_heat_per_second * delta)
 		# Nelle correnti calde e nel getto dei motori la carica non si consuma.
 		_thermal_source = _smoke_below() if thermals else null
 		in_thermal = _thermal_source != null
@@ -103,7 +112,7 @@ func apply(direction: Vector3, delta: float) -> void:
 	var heading := direction
 	if heading.length_squared() < 0.01:
 		heading = horizontal if horizontal.length_squared() > 0.01 else -_frog.camera_rig.flat_basis().z
-	var target := heading.normalized() * speed
+	var target := heading.normalized() * (jet_speed if jet else speed)
 	var vertical := maxf(velocity.y - _frog.gravity_down * delta, -fall_speed)
 	# Il getto dei motori: spinge e, col deltaplano aperto, solleva.
 	var lift := _frog.wind_lift()
@@ -119,6 +128,8 @@ func apply(direction: Vector3, delta: float) -> void:
 	# Nel getto dei motori la spinta arriva subito: il getto catapulta.
 	var push := _frog.wind_push() * wind_push_factor
 	var rate := acceleration if push == Vector3.ZERO else wind_acceleration
+	if jet and push == Vector3.ZERO:
+		rate = jet_acceleration
 	horizontal = horizontal.move_toward(target + push, rate * delta)
 	_frog.velocity = Vector3(horizontal.x, vertical, horizontal.z)
 
@@ -127,7 +138,18 @@ func apply(direction: Vector3, delta: float) -> void:
 ## diventano rosse.
 func set_thermals(on: bool) -> void:
 	thermals = on
-	Style.apply_palette(_model, {"wing_stripe": "wing_hot"} if on else {})
+	_refresh_wing()
+
+
+## Ala a reazione; si vede: le strisce dell'ala diventano azzurre.
+func set_jet(on: bool) -> void:
+	jet = on
+	_refresh_wing()
+
+
+func _refresh_wing() -> void:
+	var stripe := "wing_hot" if thermals else ("wing_jet" if jet else "")
+	Style.apply_palette(_model, {"wing_stripe": stripe} if stripe != "" else {})
 
 
 ## Il rottame nella cui colonna di fumo si trova la rana (null se nessuno).
@@ -135,7 +157,7 @@ func _smoke_below() -> Car:
 	var position := _frog.global_position
 	for car in Car.smoking_wrecks():
 		var offset := position - car.global_position
-		if Vector2(offset.x, offset.z).length() < thermal_radius and offset.y > -1.0 and offset.y < thermal_height:
+		if Vector2(offset.x, offset.z).length() < thermal_radius * (1.6 if wide_thermals else 1.0) and offset.y > -1.0 and offset.y < thermal_height:
 			return car
 	return null
 

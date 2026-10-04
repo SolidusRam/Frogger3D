@@ -19,6 +19,8 @@ const STEP_LEVEL := 3
 @export var per_punch := 1.0
 @export var per_super_jump := 3.0
 @export var per_glide := 2.0
+@export var per_tongue := 1.0
+@export var per_slam := 2.0
 ## Ogni veicolo trasformato in rottame, anche nelle catene, ma solo vicino
 ## alla rana: conta il caos che si vede, non quello di un aeroporto lontano.
 ## I rottami fatti dall'incendio non contano.
@@ -94,6 +96,10 @@ func on_power_used(power: StringName) -> void:
 			add(per_super_jump)
 		&"glide":
 			add(per_glide)
+		&"tongue":
+			add(per_tongue)
+		&"slam":
+			add(per_slam)
 
 
 func traffic_speed_factor() -> float:

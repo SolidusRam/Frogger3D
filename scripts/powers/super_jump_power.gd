@@ -35,6 +35,12 @@ func setup(frog: Frog) -> void:
 		_springs.append(spring)
 
 
+## Il colore delle molle dice cosa portano: "" per quelle normali.
+func set_spring_color(palette_key: String) -> void:
+	for spring: MeshInstance3D in _springs:
+		spring.material_override = Style.material(palette_key) if palette_key != "" else null
+
+
 func tick(delta: float) -> void:
 	cooldown_left = maxf(cooldown_left - delta, 0.0)
 	if _frog.is_on_floor() and _frog.velocity.y <= 0.0:
