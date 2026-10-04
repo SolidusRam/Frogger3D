@@ -46,6 +46,7 @@ var _chunks_created := 0
 
 
 func _ready() -> void:
+	frog.play_half_width = play_half_width
 	_start_z = frog.global_position.z
 	_front_z = _start_z + 10.0
 	_add_chunk(Kind.START)

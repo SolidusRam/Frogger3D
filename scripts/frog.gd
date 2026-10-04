@@ -54,6 +54,15 @@ signal power_used(power: StringName)
 ## Sotto questa quota la rana torna al punto di partenza.
 @export var fall_limit := -20.0
 
+@export_group("Bordi")
+## Mezza larghezza della zona di gioco (la imposta il percorso): lì ci sono i
+## muri invisibili.
+@export var play_half_width := 37.0
+## Schiacciata contro il bordo da qualcosa che si muove: vita persa e velocità
+## dello sbalzo di lato.
+@export var pinch_damage := 25
+@export var pinch_push := 10.0
+
 ## Salto parabolico definito da altezza e tempi: velocità e gravità derivano.
 var jump_velocity: float
 var gravity_up: float
@@ -127,6 +136,7 @@ func _physics_process(delta: float) -> void:
 	var was_on_floor := is_on_floor()
 	var fall_speed := -velocity.y
 	move_and_slide()
+	_check_pinch()
 	if is_on_floor() and not was_on_floor and fall_speed > 4.0:
 		# Si spiaccica all'atterraggio, tanto più quanto cadeva veloce.
 		var amount := clampf(fall_speed / 25.0, 0.1, 0.4)
@@ -303,6 +313,52 @@ func _die() -> void:
 	var tween := create_tween()
 	tween.tween_property(visual, "rotation:z", PI, 0.4)
 	died.emit()
+
+
+## Schiacciata contro il bordo: qualcosa che si muove (il ponte di comando di
+## una nave, una prua, un tronco di lato) la spinge contro il muro invisibile.
+## Senza questo la rana finirebbe dentro il corpo che spinge o oltre il muro;
+## invece perde un po' di vita e viene sbalzata di lato, via dal corpo.
+func _check_pinch() -> void:
+	var side := signf(global_position.x)
+	var outside := absf(global_position.x) > play_half_width + 0.2
+	var pusher: Node3D = null
+	if absf(global_position.x) > play_half_width - 0.8:
+		for i in get_slide_collision_count():
+			var collision := get_slide_collision(i)
+			var body := collision.get_collider() as Node3D
+			if body == null or body is StaticBody3D:
+				continue
+			# Di lato (non il pavimento) e in moto verso il bordo.
+			if collision.get_normal().dot(Vector3.UP) < 0.7 and collision.get_collider_velocity().x * side > 0.5:
+				pusher = body
+	if pusher == null and not outside:
+		return
+	var away := 1.0
+	if pusher and absf(global_position.z - pusher.global_position.z) > 0.1:
+		away = signf(global_position.z - pusher.global_position.z)
+	# Subito fuori dal corpo che spinge: il primo punto libero di lato.
+	global_position = _free_spot(Vector3(side * (play_half_width - 1.0), global_position.y, global_position.z), away)
+	var push := Vector3(0.0, 4.0, away * pinch_push)
+	take_hit(pinch_damage, push)
+	velocity = push
+
+
+## Il primo punto in cui la rana non tocca niente, cercando di lato (prima
+## nel verso away, poi nell'altro), fino a 8 m.
+func _free_spot(from: Vector3, away: float) -> Vector3:
+	var query := PhysicsShapeQueryParameters3D.new()
+	query.shape = ($CollisionShape3D as CollisionShape3D).shape
+	query.collision_mask = 1 | 4 | 8
+	query.exclude = [get_rid()]
+	var space := get_world_3d().direct_space_state
+	for step in range(0, 17):
+		for sign in [away, -away]:
+			var spot := from + Vector3(0.0, 0.0, sign * step * 0.5)
+			query.transform = Transform3D(Basis(), spot + ($CollisionShape3D as CollisionShape3D).position)
+			if space.intersect_shape(query, 1).is_empty():
+				return spot
+	return from
 
 
 ## Da morta la rana cade o galleggia, senza controlli né poteri.
