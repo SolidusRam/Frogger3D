@@ -87,8 +87,9 @@ Un **gradino di calore** è un comportamento nuovo che si sblocca a una soglia. 
 1. È un comportamento, non un numero: "il treno va più veloce" non è un gradino, "il treno passando risucchia la rana" sì.
 2. Ha un avviso leale, col linguaggio visivo del gioco: luci che lampeggiano, ombra rossa, fiamma.
 3. Scatta subito, anche nei blocchi già in campo.
-4. L'HUD lo annuncia una volta, col messaggio del nuovo livello: un pannello "La soglia del caos" con una riga per gradino, per circa 5 s. L'elenco sta in Heat.STEPS; un gradino nuovo ci aggiunge la sua riga.
-5. Aggiunge alla regola del bioma senza cancellarla.
+4. Aggiunge alla regola del bioma senza cancellarla.
+
+Nessun annuncio nell'HUD (deciso il 4 ottobre 2026: il pannello "La soglia del caos" era invasivo e non serviva); resta solo il messaggio del nuovo livello di calore.
 
 Per ora **un gradino per bioma, tutti al livello 3** (60 di calore): "la soglia del caos". Un secondo gradino solo dopo aver provato il primo. Gli aumenti numerici esistenti restano, ma non contano come difficoltà.
 
@@ -117,7 +118,7 @@ Il gioco base è finito e giocabile: una run infinita in cui si muore e si ricom
 | Grafica | Modelli low-poly in Blender, stile PS1 (più Base e Arcade con F2), il giorno che scende verso la notte col calore, fermo-immagine e rallentatore sulle catene di rottami |
 | Power-up nelle tane | Scelta uno tra tre a gioco fermo; slot-attrezzo (guantoni, molle, ala, corpo). Fatti: guantoni esplosivi, correnti calde, quattro numerici |
 | Biomi | Ferrovia (treni inarrestabili, avviso leale); aeroporto (fiamma e getto dei motori, trenini bagagli il cui carico vola via nel getto, il getto come ascensore per il deltaplano); porto (acqua e navi portacontainer: le gru caricano le navi mentre ci sei sopra, un labirinto che si chiude; dal livello 3 cacciano la rana) |
-| Difficoltà nei biomi | Criteri decisi (sezione sopra); gradini fatti: strada e porto; l'HUD annuncia la soglia del caos |
+| Difficoltà nei biomi | Criteri decisi (sezione sopra); gradini fatti: strada e porto |
 | Strumenti | 14 test automatici (tests/run.sh) e screenshot senza finestre (tools/screenshot.sh) |
 
 ### Da provare giocando
@@ -141,12 +142,11 @@ Il gioco si pubblica comunque, senza budget: quattro fasi, e si passa alla succe
 ### Fase 1: da fare, in ordine proposto
 
 1. **Finire i gradini di calore** (sezione "Difficoltà nei biomi"): aeroporto, ferrovia e fiume, e la frequenza degli aerei con la distanza. Poi la seconda fase del porto, dopo averlo provato: la nave che si inclina col carico (fino a circa 10°) e i container che scivolano in acqua e galleggiano; qui il pugno trova un ruolo, spostare il peso.
-2. **Annunci meno invasivi**: il pannello "La soglia del caos" al centro dà fastidio. Proposta: una riga piccola sotto la barra del calore, la prima volta che si entra in un bioma dopo la soglia, col solo gradino di quel bioma.
-3. **Più power-up**: ora che la forza viene solo dalle tane, sono il cuore delle build. Obiettivo 25-30, con combinazioni da scoprire (catalogo in idee-future.md).
-4. **La ragione per rigiocare**: gli sblocchi fra una run e l'altra, e la durata attesa di una run. Da decidere.
-5. **Suono** ed effetti sonori del caos; poi la musica.
-6. **La cornice**: menu, pausa, opzioni (audio, grafica, tasti), testi in inglese, controller, un tutorial per il primo minuto.
-7. **Prova esterna** con 5-10 persone.
+2. **Più power-up**: ora che la forza viene solo dalle tane, sono il cuore delle build. Obiettivo 25-30, con combinazioni da scoprire (catalogo in idee-future.md).
+3. **La ragione per rigiocare**: gli sblocchi fra una run e l'altra, e la durata attesa di una run. Da decidere.
+4. **Suono** ed effetti sonori del caos; poi la musica.
+5. **La cornice**: menu, pausa, opzioni (audio, grafica, tasti), testi in inglese, controller, un tutorial per il primo minuto.
+6. **Prova esterna** con 5-10 persone.
 
 Dopo la fase 1, o quando servono: **reazioni del mondo** (auto che danno la caccia, coccodrilli aggressivi), **ondate**, **altri biomi** (lago ghiacciato, città con semafori, palude) e forse il bivio nella tana. Il **multiplayer** cooperativo solo dopo l'uscita, se lo facciamo.
 
