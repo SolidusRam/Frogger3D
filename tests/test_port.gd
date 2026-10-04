@@ -127,27 +127,30 @@ func _physics_process(_delta: float) -> bool:
 			if f == 1:
 				frog.heal_full()
 			# La rana resta sulle navi al centro (in gioco ci sono i muri ai lati).
-			if f == 1 or (absf(frog.global_position.x) > 20.0 and not m.has("warned")):
+			if f == 1 or (absf(frog.global_position.x) > 12.0 and not m.has("warned")):
 				m.ship = _central_ship()
 				_board(m.ship)
+			if not m.has("lock_x"):
+				m.lock_x = {}
 			for c in lane.cranes:
 				if c.aimed and c.is_warning():
 					m.warned = true
 					if c._shadow.visible and not c.is_locked():
 						m.blinked = true
-					if c.is_locked():
-						if not m.has("locked_x"):
-							m.locked_x = c.position.x
-							m.locked_crane = c
-						if m.locked_crane == c and c._shadow.visible:
-							m.solid = m.get("solid", 0) + 1
-			if m.has("locked_crane") and is_instance_valid(m.locked_crane) and m.locked_crane.is_locked():
-				if absf(m.locked_crane.position.x - m.locked_x) > 0.01:
-					m.moved_while_locked = true
+				# Ogni blocco: da quando comincia, la gru non si muove e l'ombra è fissa.
+				if c.is_locked():
+					if not m.lock_x.has(c):
+						m.lock_x[c] = c.position.x
+					elif absf(c.position.x - m.lock_x[c]) > 0.01:
+						m.moved_while_locked = true
+					if c.aimed and c._shadow.visible:
+						m.solid = m.get("solid", 0) + 1
+				else:
+					m.lock_x.erase(c)
 			if frog.health <= frog.max_health - 50:
 				t.check(m.has("warned"), "la gru avvisa prima di colpire")
 				t.check(m.has("blinked"), "mentre insegue, l'ombra lampeggia")
-				t.check(m.get("solid", 0) > 10 and not m.has("moved_while_locked"), "negli ultimi istanti la gru è ferma e l'ombra fissa")
+				t.check(m.get("solid", 0) > 10 and not m.has("moved_while_locked"), "negli ultimi istanti la gru è ferma e l'ombra fissa (%d passi, mossa: %s)" % [m.get("solid", 0), m.has("moved_while_locked")])
 				t.check(true, "dal livello 3 la gru colpisce la rana ferma sulla nave (dopo %.1f s)" % (f / 60.0))
 				_next(4)
 			elif f > 1200:
@@ -158,17 +161,20 @@ func _physics_process(_delta: float) -> bool:
 			if f == 1:
 				frog.heal_full()
 				Lib.place(frog, SITE + Vector3(0, 0.1, 9))
+			# Aspetta un tratto d'acqua libera tra due navi.
+			if not m.has("drop"):
 				var at := _open_water(6.0)
-				if at == Vector3.INF:
-					t.check(false, "c'è un tratto d'acqua libera per la prova")
+				if at != Vector3.INF:
+					var drop: RigidBody3D = load("res://scripts/shipping_container.gd").new()
+					port.add_child(drop)
+					drop.global_position = at
+					drop.rotation.y = PI / 2.0
+					m.drop = drop
+					m.dropped_at = f
+				elif f > 1200:
+					t.check(false, "si apre un tratto d'acqua libera per la prova")
 					_next(5)
-					return false
-				var drop: RigidBody3D = load("res://scripts/shipping_container.gd").new()
-				port.add_child(drop)
-				drop.global_position = at
-				drop.rotation.y = PI / 2.0
-				m.drop = drop
-			if f == 240:
+			elif f == m.dropped_at + 240:
 				t.check(not is_instance_valid(m.drop), "il container caduto in acqua affonda e sparisce")
 				_next(5)
 		5: # l'acqua del porto toglie vita; la prua spinge e non fa male
