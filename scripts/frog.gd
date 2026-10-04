@@ -132,19 +132,26 @@ func _physics_process(delta: float) -> void:
 
 	if can_act() and Input.is_action_just_pressed("super_jump") and super_jump_power.is_ready():
 		glider_power.close()
+		tongue_power.release()
 		super_jump_power.use(direction)
 	if can_act() and Input.is_action_just_pressed("tongue") and tongue_power.is_ready():
 		glider_power.close()
 		slam_power.stop()
 		tongue_power.use()
+	# La lingua resta agganciata finché si tiene premuto E.
+	if tongue_power.attached and not Input.is_action_pressed("tongue"):
+		tongue_power.release()
 	if can_act() and Input.is_action_just_pressed("slam") and slam_power.is_ready() and slam_power.can_start():
 		glider_power.close()
 		tongue_power.stop()
 		slam_power.use()
 	glider_power.update(delta)
 
-	# La lingua tira anche fuori dall'acqua; lo schianto vince sul deltaplano.
-	if tongue_power.pulling:
+	# Un rottame agganciato viene tirato; la rana intanto si muove normalmente.
+	if tongue_power.attached and not tongue_power.is_towing():
+		tongue_power.pull_wreck(delta)
+	# La lingua trascina anche fuori dall'acqua; lo schianto vince sul deltaplano.
+	if tongue_power.is_towing():
 		tongue_power.apply(delta)
 	elif slam_power.diving:
 		slam_power.apply(delta)

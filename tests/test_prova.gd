@@ -45,6 +45,12 @@ func _physics_process(_delta: float) -> bool:
 				prova.set_heat_locked(true)
 				prova.set_heat_level(1)
 				t.check(heat.level() == 1, "in prova il calore può anche scendere")
+				prova._set_open(true)
+				prova.equip("earthquake")
+				var ups: Node = main.get_node("Upgrades")
+				t.check(ups.slots.gloves == "earthquake" and ups.slots.springs == "earthquake" and frog.slam_power.enabled, "si equipaggia subito qualsiasi power-up, anche una fusione con le sue parti")
+				t.check(paused, "equipaggiando col pannello aperto il gioco resta fermo")
+				prova._set_open(false)
 				_next(1)
 		1: # calore bloccato
 			if f == 1:

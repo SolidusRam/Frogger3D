@@ -3,10 +3,12 @@ extends CanvasLayer
 ## La modalità prova, per provare il gioco senza doverci arrivare giocando.
 ## F1 apre il pannello (il gioco si ferma): livello di calore, calore
 ## bloccato, salto a un bioma, rana invincibile, poteri sempre carichi,
-## incendio fermo, una tana per scegliere un power-up. Le stesse cose si chiedono anche
+## incendio fermo, una tana per scegliere un power-up, e qualsiasi power-up
+## equipaggiato subito (anche le fusioni, con le loro parti). Le stesse cose si chiedono anche
 ## all'avvio, dalla riga di comando (vedi tools/prova.sh):
 ##   --bioma=strada|fiume|ferrovia|aeroporto|porto|tana  --calore=0..5
 ##   --blocca-calore  --invincibile  --poteri  --senza-fuoco
+##   --power=tongue,slam,napalm   (gli id sono quelli di Upgrades.CATALOG)
 ## Le opzioni restano attive anche dopo "Ricomincia". Una run in cui si usa
 ## la modalità prova non salva il record, e in alto compare PROVA.
 
@@ -72,6 +74,23 @@ func jump_to(biome: String) -> void:
 	_mark_test_run()
 
 
+## Equipaggia subito un power-up; una fusione si porta dietro le sue parti.
+func equip(id: String) -> void:
+	if not Upgrades.CATALOG.has(id):
+		push_warning("Power-up sconosciuto: %s" % id)
+		return
+	var upgrades: Upgrades = _game.upgrades
+	for part: String in Upgrades.CATALOG[id].get("parts", []):
+		if upgrades.slots[Upgrades.CATALOG[part].slot] != part:
+			upgrades.apply(part)
+	upgrades.apply(id)
+	_game.hud.show_equipment(upgrades)
+	_mark_test_run()
+	# Equipaggiare fa ripartire il gioco (come una carta scelta in tana): col
+	# pannello aperto, il gioco resta fermo e il mouse libero.
+	_set_open(_panel.visible)
+
+
 func offer_upgrade() -> void:
 	_set_open(false)
 	_mark_test_run()
@@ -132,6 +151,9 @@ func _read_command_line() -> void:
 				set_fire_off(true)
 			"blocca-calore":
 				set_heat_locked(true)
+			"power":
+				for id in parts[1].split(","):
+					equip(id)
 			"bioma":
 				if BIOMES.has(parts[1]):
 					jump_to(parts[1])
@@ -165,15 +187,19 @@ func _build() -> void:
 
 	_panel = PanelContainer.new()
 	_panel.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	_panel.offset_left = -270
-	_panel.offset_right = 270
-	_panel.offset_top = -240
-	_panel.offset_bottom = 240
+	_panel.offset_left = -330
+	_panel.offset_right = 330
+	_panel.offset_top = -330
+	_panel.offset_bottom = 330
 	_panel.visible = false
 	add_child(_panel)
+	var scroll := ScrollContainer.new()
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	_panel.add_child(scroll)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 10)
-	_panel.add_child(box)
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(box)
 	box.add_child(_title("Modalità prova  (F1 per chiudere)"))
 
 	box.add_child(_title("Livello di calore", 16))
@@ -193,6 +219,14 @@ func _build() -> void:
 	box.add_child(_toggle("Blocca il calore al livello attuale", "heat_locked", set_heat_locked))
 	box.add_child(_toggle("Ferma l'incendio", "fire_off", set_fire_off))
 	box.add_child(_button("Apri una tana: scegli un power-up", offer_upgrade))
+	box.add_child(_title("Equipaggia subito", 16))
+	var cards := GridContainer.new()
+	cards.columns = 3
+	for id: String in Upgrades.CATALOG:
+		var card := _button(Upgrades.CATALOG[id].name, equip.bind(id))
+		card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		cards.add_child(card)
+	box.add_child(cards)
 	var note := _title("Una run di prova non salva il record.", 14)
 	note.modulate = Color(1, 1, 1, 0.7)
 	box.add_child(note)

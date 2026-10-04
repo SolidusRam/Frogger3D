@@ -68,22 +68,33 @@ func _physics_process(_delta: float) -> bool:
 					car.set_physics_process(false)
 					car.global_position = Vector3(0, -50, 0)
 				_next(1)
-		1: # la lingua tira la rana sul tetto di un'auto
+		1: # la lingua: mirino, fune che si accorcia, traino, slancio
 			if f == 1:
 				upgrades.apply("tongue")
 				Lib.place(frog, BASE + Vector3(0, 0.1, 0))
 				m.car = _park(cars[0], BASE + _forward() * 8.0)
 			if f == 3:
 				t.check(frog.tongue_power.enabled, "la carta Lingua-rampino sblocca la lingua")
+				t.check(frog.tongue_power.aimed == m.car and frog.tongue_power._sight.visible, "il mirino segna l'auto davanti")
 				m.heat = heat.value
-				_tap("tongue")
-			if f == 60:
-				var flat: Vector3 = frog.global_position - m.car.global_position
-				flat.y = 0.0
-				t.check(flat.length() < 1.6 and frog.global_position.y > m.car.global_position.y, "la lingua tira la rana sul tetto dell'auto (a %.1f m)" % flat.length())
+				Input.action_press("tongue")
+			if f == 50:
+				var anchor: Vector3 = frog.tongue_power._target.to_global(frog.tongue_power._anchor_local)
+				var gap: float = frog.global_position.distance_to(anchor)
+				t.check(frog.tongue_power.attached and gap < 3.2, "tenendo premuto la lingua si accorcia e porta la rana all'auto (%.1f m)" % gap)
 				t.check(heat.value > m.heat, "la lingua scalda")
+				m.x = frog.global_position.x
+			# L'auto si muove di lato a 8 m/s: la rana si fa trascinare.
+			if f > 50 and f <= 110:
+				m.car.global_position.x += 8.0 / 60.0
+			if f == 110:
+				var towed: float = frog.global_position.x - m.x
+				t.check(towed > 5.0, "attaccata alla lingua, l'auto trascina la rana (%.1f m in 1 s)" % towed)
+				Input.action_release("tongue")
+			if f == 113:
+				t.check(not frog.tongue_power.attached and frog.velocity.x > 4.0, "lasciando, la rana vola via con lo slancio (%.1f m/s)" % frog.velocity.x)
 				_next(2)
-		2: # un rottame viene tirato verso la rana
+		2: # un rottame viene tirato verso la rana finché si tiene premuto
 			if f == 1:
 				Lib.place(frog, BASE + Vector3(0, 0.1, 0))
 				m.wreck = _park(cars[1], BASE + _forward() * 9.0 + Vector3(4, 0, 0))
@@ -92,15 +103,17 @@ func _physics_process(_delta: float) -> bool:
 			if f == 80:
 				m.before = m.wreck.global_position.distance_to(frog.global_position)
 				frog.tongue_power.cooldown_left = 0.0
-				_tap("tongue")
-			if f == 120:
+			if f == 82:
+				Input.action_press("tongue")
+			if f == 130:
+				Input.action_release("tongue")
 				var after: float = m.wreck.global_position.distance_to(frog.global_position)
-				t.check(after < m.before - 3.0, "la lingua tira un rottame verso la rana (da %.1f a %.1f m)" % [m.before, after])
+				t.check(after < m.before - 3.0, "tenendo premuto la lingua tira un rottame verso la rana (da %.1f a %.1f m)" % [m.before, after])
 				# A vuoto: niente da agganciare.
 				Lib.place(frog, BASE + Vector3(-45, 0.1, 40))
 				frog.tongue_power.cooldown_left = 0.0
-			if f == 125:
-				t.check(not frog.tongue_power.use() and not frog.tongue_power.pulling, "senza niente davanti la lingua scatta a vuoto")
+			if f == 135:
+				t.check(not frog.tongue_power.use() and not frog.tongue_power.attached, "senza niente davanti la lingua scatta a vuoto")
 				_next(3)
 		3: # schianto sismico
 			if f == 1:

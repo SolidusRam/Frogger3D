@@ -1,34 +1,43 @@
 class_name TonguePower
 extends Node
-## La lingua-rampino (si sblocca nella tana): con E la lingua scatta verso la
-## cosa più vicina nella direzione della telecamera, entro reach metri, e la
-## aggancia da sola, senza mirare. Ciò che si muove (un'auto, un tronco, una
-## nave, un treno, un aereo) tira a sé la rana, che ci atterra sopra: è il
-## modo di spostarsi di lato usando il traffico. Un rottame, invece, è la
-## lingua a tirarlo verso la rana. Funziona anche dall'acqua.
+## La lingua-rampino (si sblocca nella tana, slot lingua). Quando è pronta,
+## un mirino segna la cosa che aggancerebbe: la più vicina nella direzione
+## della telecamera, entro reach metri, senza dover mirare. Premendo E la
+## lingua la aggancia; tenendo premuto la lingua si accorcia fino a
+## tether_length e resta tesa come una fune: ci si fa trascinare da un'auto,
+## un tronco, una nave, un treno, un aereo. Lasciando, la rana vola via con lo
+## slancio che ha. Un rottame invece lo si tira verso di sé finché si tiene
+## premuto; lasciato, prosegue con la sua spinta. Funziona anche dall'acqua.
 
 @export var reach := 12.0
 ## Quanto può essere lontano dalla direzione della telecamera, in gradi.
 @export var max_angle := 40.0
+## La fune: lunghezza a cui si accorcia, velocità con cui si accorcia e
+## massima velocità con cui tira.
+@export var tether_length := 2.5
+@export var reel_speed := 16.0
 @export var pull_speed := 22.0
-@export var max_pull_time := 0.8
-@export var cooldown := 1.2
-## Velocità data al rottame tirato verso la rana.
-@export var wreck_pull := 14.0
+## Tirando, in più rispetto al bersaglio; allo sgancio, un piccolo balzo.
+@export var release_hop := 3.0
+@export var cooldown := 1.0
+## Velocità a cui la lingua porta un rottame verso la rana.
+@export var wreck_pull := 12.0
 
 ## Equipaggiata nella tana.
 var enabled := false
 var cooldown_left := 0.0
-## Vero mentre la lingua tira la rana verso il bersaglio.
-var pulling := false
+## Vero mentre la lingua è agganciata a qualcosa.
+var attached := false
+## Il bersaglio che il mirino segna ora (null se nessuno).
+var aimed: Node3D
 
 var _frog: Frog
 var _target: Node3D
 var _anchor_local := Vector3.ZERO
 var _last_anchor := Vector3.ZERO
-var _pull_time := 0.0
+var _length := 0.0
 var _tongue: MeshInstance3D
-## La lingua resta visibile per un istante anche quando tira un rottame.
+var _sight: MeshInstance3D
 var _flick_to := Vector3.ZERO
 var _flick_left := 0.0
 
@@ -43,83 +52,147 @@ func setup(frog: Frog) -> void:
 	_tongue.top_level = true
 	_tongue.visible = false
 	frog.add_child(_tongue)
+	# Il mirino: una punta rivolta in giù, sopra il bersaglio.
+	_sight = MeshInstance3D.new()
+	var cone := CylinderMesh.new()
+	cone.top_radius = 0.45
+	cone.bottom_radius = 0.0
+	cone.height = 0.7
+	cone.radial_segments = 4
+	cone.rings = 1
+	cone.material = Style.material("tongue")
+	_sight.mesh = cone
+	_sight.top_level = true
+	_sight.visible = false
+	frog.add_child(_sight)
 
 
 func tick(delta: float) -> void:
 	cooldown_left = maxf(cooldown_left - delta, 0.0)
 	_flick_left = maxf(_flick_left - delta, 0.0)
-	var mouth := _frog.global_position + Vector3.UP * 0.55
-	var to := Vector3.ZERO
-	if pulling and is_instance_valid(_target):
-		to = _target.to_global(_anchor_local)
-	elif _flick_left > 0.0:
-		to = _flick_to
-	_tongue.visible = to != Vector3.ZERO and mouth.distance_to(to) > 0.3
-	if _tongue.visible:
-		_tongue.global_position = (mouth + to) / 2.0
-		_tongue.look_at(to, Vector3.UP if absf((to - mouth).normalized().y) < 0.99 else Vector3.FORWARD)
-		_tongue.scale = Vector3(1.0, 1.0, mouth.distance_to(to))
+	aimed = _find_target() if is_ready() else null
+	_sight.visible = aimed != null
+	if aimed:
+		_sight.global_position = _top_of(aimed) + Vector3.UP * (1.2 + 0.15 * sin(Time.get_ticks_msec() / 150.0))
+		_sight.rotation.y += delta * 4.0
+	_draw_tongue()
 
 
 func is_ready() -> bool:
-	return enabled and cooldown_left == 0.0
+	return enabled and cooldown_left == 0.0 and not attached
 
 
 ## Da 0 (appena usata) a 1 (pronta).
 func ready_ratio() -> float:
-	return 1.0 - cooldown_left / cooldown
+	return 1.0 if attached else 1.0 - cooldown_left / cooldown
 
 
-## Lancia la lingua. Falso se non c'è niente da agganciare (la lingua scatta
-## a vuoto e si ricarica in fretta).
+## Aggancia ciò che il mirino segna. Falso se non c'è niente: la lingua
+## scatta a vuoto e si ricarica in fretta.
 func use() -> bool:
-	var target := _find_target()
+	var target := aimed if aimed else _find_target()
 	if target == null:
 		cooldown_left = 0.3
-		_flick_to = _frog.global_position + Vector3.UP * 0.55 - _frog.camera_rig.flat_basis().z * 3.0
+		_flick_to = _mouth() - _frog.camera_rig.flat_basis().z * 3.0
 		_flick_left = 0.12
 		return false
-	cooldown_left = cooldown
 	_frog.power_used.emit(&"tongue")
-	var body := target as RigidBody3D
-	if body and not body.freeze:
-		# Un rottame (o un bagaglio, un container): lo tira verso la rana.
-		var toward := (_frog.global_position - body.global_position)
-		toward.y = 0.0
-		body.linear_velocity = toward.normalized() * wreck_pull + Vector3.UP * 4.0
-		_flick_to = body.global_position
-		_flick_left = 0.15
-		return true
-	pulling = true
+	attached = true
 	_target = target
-	_pull_time = 0.0
 	_anchor_local = target.to_local(_top_of(target))
 	_last_anchor = target.to_global(_anchor_local)
+	_length = _mouth().distance_to(_last_anchor)
 	_frog.squash(Vector3(0.85, 0.85, 1.25), 0.2)
 	return true
 
 
-## Tira la rana verso il punto agganciato, che si muove col bersaglio.
+## Un rottame si tira (vedi pull_wreck), tutto il resto trascina la rana.
+func is_towing() -> bool:
+	return attached and not _is_loose(_target)
+
+
+## La fune: la rana segue il punto agganciato, che si muove col bersaglio, e
+## la lingua si accorcia fino a tether_length. Dentro la lunghezza della fune
+## la rana è libera (cade, scivola); oltre, la fune la tira.
 func apply(delta: float) -> void:
-	_pull_time += delta
-	if not is_instance_valid(_target) or _pull_time > max_pull_time:
-		stop()
+	if not _still_hooked():
+		release()
 		return
 	var anchor := _target.to_global(_anchor_local)
 	var carried := (anchor - _last_anchor) / maxf(delta, 0.0001)
 	_last_anchor = anchor
+	_length = move_toward(_length, tether_length, reel_speed * delta)
 	var to := anchor - _frog.global_position
-	if to.length() < 0.8:
-		# Arrivata: viaggia col bersaglio e ci si posa sopra.
-		_frog.velocity = carried + Vector3.UP * 1.5
-		stop()
+	var distance := to.length()
+	var relative := _frog.velocity - carried
+	relative.y -= _frog.gravity_down * delta
+	if distance > _length and distance > 0.01:
+		var direction := to / distance
+		var outward := -relative.dot(direction)
+		if outward > 0.0:
+			relative += direction * outward
+		relative += direction * minf((distance - _length) * 12.0, pull_speed)
+	_frog.velocity = carried + relative
+
+
+## Il rottame agganciato viene tirato verso la rana, fino a tether_length.
+func pull_wreck(_delta: float) -> void:
+	if not _still_hooked():
+		release()
 		return
-	_frog.velocity = to.normalized() * pull_speed + carried
+	var body := _target as RigidBody3D
+	var toward := _frog.global_position - body.global_position
+	toward.y = 0.0
+	if toward.length() > tether_length + 1.0:
+		body.linear_velocity = toward.normalized() * wreck_pull + Vector3.UP * 2.0
 
 
-func stop() -> void:
-	pulling = false
+## Lasciato E (o perso l'aggancio): la rana vola via con lo slancio che ha.
+func release() -> void:
+	if not attached:
+		return
+	attached = false
+	if not _is_loose(_target):
+		_frog.velocity.y = maxf(_frog.velocity.y, release_hop)
 	_target = null
+	cooldown_left = cooldown
+
+
+## Senza sgancio né slancio: un colpo interrompe tutto.
+func stop() -> void:
+	attached = false
+	_target = null
+
+
+func _still_hooked() -> bool:
+	if not is_instance_valid(_target) or _target.is_queued_for_deletion():
+		return false
+	# Il bersaglio esce dalla zona di gioco: la lingua si stacca prima del bordo.
+	return absf(_target.to_global(_anchor_local).x) < _frog.play_half_width - 1.0
+
+
+static func _is_loose(body: Node3D) -> bool:
+	var rigid := body as RigidBody3D
+	return rigid != null and not rigid.freeze
+
+
+func _mouth() -> Vector3:
+	return _frog.global_position + Vector3.UP * 0.55
+
+
+func _draw_tongue() -> void:
+	var to := Vector3.ZERO
+	if attached and is_instance_valid(_target):
+		to = _target.to_global(_anchor_local)
+	elif _flick_left > 0.0:
+		to = _flick_to
+	var mouth := _mouth()
+	_tongue.visible = to != Vector3.ZERO and mouth.distance_to(to) > 0.3
+	if _tongue.visible:
+		_tongue.global_position = (mouth + to) / 2.0
+		var up := Vector3.UP if absf((to - mouth).normalized().y) < 0.99 else Vector3.FORWARD
+		_tongue.look_at(to, up)
+		_tongue.scale = Vector3(1.0, 1.0, mouth.distance_to(to))
 
 
 ## La cosa da agganciare: entro reach, nel cono della telecamera, visibile, la
@@ -158,17 +231,15 @@ func _find_target() -> Node3D:
 	return best
 
 
-## Il punto più alto del bersaglio sopra il suo centro: la rana ci atterra.
+## Il punto più alto del bersaglio sopra il suo centro.
 func _top_of(target: Node3D) -> Vector3:
 	var space := _frog.get_world_3d().direct_space_state
-	var from := target.global_position + Vector3.UP * 12.0
-	var ray := PhysicsRayQueryParameters3D.create(from, target.global_position + Vector3.DOWN * 3.0, 4 | 8)
-	ray.collide_with_areas = false
+	var ray := PhysicsRayQueryParameters3D.create(target.global_position + Vector3.UP * 12.0, target.global_position + Vector3.DOWN * 3.0, 4 | 8)
 	for i in 4:
 		var hit := space.intersect_ray(ray)
 		if hit.is_empty():
 			break
 		if hit.collider == target:
-			return hit.position + Vector3.UP * 0.6
+			return hit.position + Vector3.UP * 0.3
 		ray.exclude = ray.exclude + [hit.rid]
 	return target.global_position + Vector3.UP * 1.5
