@@ -2,7 +2,7 @@
 
 Ultimo aggiornamento: 2026-10-04
 
-Deciso il 4 ottobre 2026: **il mazzo delle tane parte ridotto** e si allarga con le imprese. Ogni impresa sblocca una cosa sola (una carta che entra nel mazzo delle tane, o una rana), e si vede cosa sblocca. Gli sblocchi danno opzioni, mai forza. Il sistema non è ancora nel gioco: per ora tutte le carte sono nel mazzo, e la modalità prova (F1) equipaggia qualsiasi power-up.
+Deciso il 4 ottobre 2026: **il mazzo delle tane parte ridotto** e si allarga con le imprese. Ogni impresa sblocca una cosa sola (una carta che entra nel mazzo delle tane, o una rana), e si vede cosa sblocca. Gli sblocchi delle imprese danno opzioni, non forza; la forza permanente si compra con le mosche (sotto). Il sistema non è ancora nel gioco: per ora tutte le carte sono nel mazzo, e la modalità prova (F1) equipaggia qualsiasi power-up.
 
 Questo file lo compila il giocatore. Gli id delle carte sono quelli di `scripts/upgrades.gd` (CATALOG).
 
@@ -33,23 +33,19 @@ Con tutti gli slot pieni e i numerici al massimo, la tana non resta vuota: dà q
 
 ## Brainstorming del 4 ottobre (proposte, da scegliere)
 
-### La valuta: le mosche
+### La valuta: le mosche (decisa il 4 ottobre 2026)
 
-Nel Frogger originale la mosca nella tana dava punti in più: qui le mosche sono la valuta di gioco, come l'oro di Vampire Survivors. Si raccolgono durante la run e si spendono fra una run e l'altra.
+Nel Frogger originale la mosca nella tana dava punti in più: qui le mosche sono la valuta di gioco, come l'oro di Vampire Survivors. Si raccolgono durante la run e si spendono **alla fine della partita**.
 
-**Come si guadagnano:**
-- **Volano sopra le corsie**, a mezz'aria: per prenderle bisogna stare dove è pericoloso. La lingua le mangia a distanza, un secondo uso naturale della lingua.
-- **Ronzano attorno ai rottami che fumano**: il caos le attira. È la risposta alla domanda "perché provocare il caos se non dà forza?": il caos non rende più forte la rana in questa run, ma porta mosche, e le mosche aprono opzioni per le prossime.
-- **Nelle tane**: una manciata a ogni tana, di più quando la tana non ha carte da offrire.
-- **A fine run**: un premio per la distanza.
+**Dove stanno** (deciso): in posizioni predefinite e casuali, **sopra le cose che si muovono**: il tetto di un'auto, il dorso di un coccodrillo, un tronco, il tetto di un treno, l'ala di un aereo, il ponte di una nave. Per prenderle bisogna salirci, o arrivarci con la lingua. **Non** attorno ai rottami: il caos non c'entra.
 
-**Come si spendono** (allo stagno, fra una run e l'altra). Nella linea "sblocchi di opzioni, mai forza":
-- **Carte**: comprare una carta per farla entrare nel mazzo delle tane (in alternativa all'impresa, o solo per alcune).
-- **Rane**: comprare una rana già vista.
-- **Gettoni della tana**, come in Vampire Survivors: *Rilancia* (tre carte nuove), *Salta* (niente carta, ma vita piena), *Esilia* (una carta esce dal mazzo per tutta la run). Si comprano prima della run, se ne portano pochi.
-- **Cose da vedere**: cappelli e colori della rana, stili grafici nuovi.
+**Cosa comprano** (deciso): come in Vampire Survivors, **forza permanente**: potenziamenti delle statistiche e miglioramenti delle carte, che valgono per le run successive. Qui la regola "sblocchi di opzioni, mai forza" non vale: vale per le imprese, non per le mosche.
 
-**La tensione da decidere**: in Vampire Survivors l'oro compra anche forza permanente (più vita, più danno a ogni run). Da noi violerebbe la regola "mai forza". La proposta di Claude è no: le mosche comprano opzioni, gettoni e cose da vedere.
+Proposte di Claude, da scegliere:
+- **Quante e quanto valgono**: una mosca su circa un'auto su 12, un tronco o un coccodrillo su 6, un treno su 3, un aereo o una nave su 2. Vale 1; la **mosca d'oro**, rara e solo su treni e aerei, vale 5. Una manciata in ogni tana (di più quando la tana non ha carte).
+- **Statistiche** (ognuna a livelli, il prezzo sale a ogni livello): vita, velocità, altezza del salto, ricarica dei poteri, durata del deltaplano, vantaggio sull'incendio (parte più lontano), meno calore dai poteri, raggio di raccolta delle mosche, un gettone Rilancia in più a ogni run.
+- **Carte migliorate**: ogni carta con slot ha due miglioramenti da comprare (per esempio guantoni esplosivi: raggio da 6 a 8 m, poi esplosione immediata). Sono i "livelli" delle carte, ma comprati fra una run e l'altra.
+- **Gettoni della tana** (Rilancia, Salta, Esilia) e **cose da vedere** (cappelli, colori, stili).
 
 ### Imprese
 
