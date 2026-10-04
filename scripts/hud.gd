@@ -15,13 +15,13 @@ signal abandon_requested
 ## Carte al massimo in una tana (tre, quattro con la statistica "Più scelta").
 const MAX_CARDS := 4
 
-const HEALTH_COLOR := Color(0.35, 0.8, 0.35)
+const HEALTH_COLOR := Color(0.4, 0.8, 0.3)
 const HEALTH_LOW_COLOR := Color(0.9, 0.25, 0.2)
 const HEAT_COLORS: Array[Color] = [
 	Color(0.95, 0.85, 0.3), Color(0.98, 0.7, 0.2), Color(0.98, 0.5, 0.15),
 	Color(0.95, 0.3, 0.1), Color(0.85, 0.1, 0.1), Color(0.6, 0.0, 0.15),
 ]
-const POWER_COLOR := Color(0.4, 0.7, 1.0)
+const POWER_COLOR := Color(0.56, 0.66, 0.82)
 
 @export var frog: Frog
 @export var course: Course
@@ -54,6 +54,8 @@ var _offer_buttons: Array[Button] = []
 var _upgrades: Upgrades
 var _equipment_label: Label
 var _pause: Control
+## Radice di tutti i controlli: porta il tema.
+var _root: Control
 var _resume_button: Button
 var _last_heat_level := 0
 
@@ -61,6 +63,11 @@ var _last_heat_level := 0
 func _ready() -> void:
 	# La scelta dei power-up avviene a gioco fermo: l'HUD deve restare attivo.
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_root = Control.new()
+	_root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.theme = UiTheme.get_theme()
+	add_child(_root)
 	_build_top_left()
 	_build_top_right()
 	_build_powers()
@@ -257,12 +264,12 @@ func _build_top_left() -> void:
 	var box := VBoxContainer.new()
 	box.position = Vector2(16, 12)
 	box.add_theme_constant_override("separation", 4)
-	add_child(box)
-	_health_label = _label(20)
+	_root.add_child(box)
+	_health_label = _label(18)
 	box.add_child(_health_label)
 	_health_bar = _bar(Vector2(300, 18), HEALTH_COLOR)
 	box.add_child(_health_bar)
-	_heat_label = _label(20)
+	_heat_label = _label(18)
 	box.add_child(_heat_label)
 	_heat_bar = _bar(Vector2(300, 18), HEAT_COLORS[0])
 	_heat_bar.max_value = Heat.MAX
@@ -276,20 +283,20 @@ func _build_top_right() -> void:
 	box.offset_right = -16
 	box.offset_top = 12
 	box.alignment = BoxContainer.ALIGNMENT_BEGIN
-	add_child(box)
-	_distance_label = _label(40)
+	_root.add_child(box)
+	_distance_label = _label(42)
 	_distance_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	box.add_child(_distance_label)
-	_dens_label = _label(20)
+	_dens_label = _label(18)
 	_dens_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	box.add_child(_dens_label)
-	_record_label = _label(16)
+	_record_label = _label(15)
 	_record_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_record_label.modulate = Color(1, 1, 1, 0.7)
 	box.add_child(_record_label)
-	_flies_label = _label(20, "Mosche: 0")
+	_flies_label = _label(18, "Mosche: 0")
 	_flies_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_flies_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	_flies_label.add_theme_color_override("font_color", UiTheme.GOLD)
 	box.add_child(_flies_label)
 
 
@@ -302,25 +309,25 @@ func _build_powers() -> void:
 	box.offset_top = -16
 	box.offset_bottom = -16
 	box.add_theme_constant_override("separation", 2)
-	add_child(box)
-	box.add_child(_label(16, "Super salto (tasto destro)"))
+	_root.add_child(box)
+	box.add_child(_label(15, "Super salto (tasto destro)"))
 	_super_jump_bar = _bar(Vector2(220, 10), POWER_COLOR)
 	_super_jump_bar.max_value = 1.0
 	box.add_child(_super_jump_bar)
-	box.add_child(_label(16, "Deltaplano (Spazio in aria)"))
+	box.add_child(_label(15, "Deltaplano (Spazio in aria)"))
 	_glide_bar = _bar(Vector2(220, 10), POWER_COLOR)
 	_glide_bar.max_value = 1.0
 	box.add_child(_glide_bar)
 	_tongue_row = VBoxContainer.new()
 	_tongue_row.add_theme_constant_override("separation", 2)
-	_tongue_row.add_child(_label(16, "Lingua (E)"))
+	_tongue_row.add_child(_label(15, "Lingua (E)"))
 	_tongue_bar = _bar(Vector2(220, 10), POWER_COLOR)
 	_tongue_bar.max_value = 1.0
 	_tongue_row.add_child(_tongue_bar)
 	box.add_child(_tongue_row)
 	_slam_row = VBoxContainer.new()
 	_slam_row.add_theme_constant_override("separation", 2)
-	_slam_row.add_child(_label(16, "Schianto (Ctrl in aria)"))
+	_slam_row.add_child(_label(15, "Schianto (Ctrl in aria)"))
 	_slam_bar = _bar(Vector2(220, 10), POWER_COLOR)
 	_slam_bar.max_value = 1.0
 	_slam_row.add_child(_slam_bar)
@@ -344,31 +351,31 @@ void fragment() {
 	var material := ShaderMaterial.new()
 	material.shader = shader
 	_vignette.material = material
-	add_child(_vignette)
-	move_child(_vignette, 0)
-	_fire_label = _label(20, "Fuoco")
+	_root.add_child(_vignette)
+	_root.move_child(_vignette, 0)
+	_fire_label = _label(18, "Fuoco")
 	_fire_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
 	_fire_label.offset_left = -120
 	_fire_label.offset_right = 120
 	_fire_label.offset_top = -44
 	_fire_label.offset_bottom = -14
 	_fire_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	add_child(_fire_label)
+	_root.add_child(_fire_label)
 
 
 func _build_message() -> void:
-	_message = _label(40)
+	_message = _label(42)
 	_message.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
 	_message.offset_left = -400
 	_message.offset_right = 400
 	_message.offset_top = 90
 	_message.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_message.modulate.a = 0.0
-	add_child(_message)
+	_root.add_child(_message)
 
 
 func _build_chain_label() -> void:
-	_chain_label = _label(48)
+	_chain_label = _label(52)
 	_chain_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
 	_chain_label.offset_left = -300
 	_chain_label.offset_right = 300
@@ -376,9 +383,9 @@ func _build_chain_label() -> void:
 	_chain_label.offset_bottom = 120
 	_chain_label.pivot_offset = Vector2(300, 30)
 	_chain_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_chain_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.2))
+	_chain_label.add_theme_color_override("font_color", UiTheme.GOLD)
 	_chain_label.modulate.a = 0.0
-	add_child(_chain_label)
+	_root.add_child(_chain_label)
 
 
 func _build_offer() -> void:
@@ -386,21 +393,15 @@ func _build_offer() -> void:
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(center)
+	_root.add_child(center)
 	_offer = PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.05, 0.07, 0.1, 0.92)
-	style.set_corner_radius_all(12)
-	style.set_content_margin_all(20)
-	_offer.add_theme_stylebox_override("panel", style)
 	_offer.visible = false
 	center.add_child(_offer)
 
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 16)
 	_offer.add_child(box)
-	_offer_title = _label(28)
-	_offer_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_offer_title = _text("Title")
 	box.add_child(_offer_title)
 	var cards := HBoxContainer.new()
 	cards.add_theme_constant_override("separation", 14)
@@ -411,7 +412,9 @@ func _build_offer() -> void:
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		button.vertical_icon_alignment = VERTICAL_ALIGNMENT_TOP
-		button.add_theme_font_size_override("font_size", 17)
+		# Testi lunghi: il carattere normale, non quello dei titoli.
+		button.add_theme_font_override("font", UiTheme.bold_font())
+		button.add_theme_font_size_override("font_size", 18)
 		button.pressed.connect(_on_card_pressed.bind(i))
 		cards.add_child(button)
 		_offer_buttons.append(button)
@@ -422,7 +425,7 @@ func _on_card_pressed(index: int) -> void:
 
 
 func _build_equipment() -> void:
-	_equipment_label = _label(16)
+	_equipment_label = _label(15)
 	_equipment_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	_equipment_label.offset_left = -360
 	_equipment_label.offset_right = -16
@@ -430,51 +433,31 @@ func _build_equipment() -> void:
 	_equipment_label.offset_bottom = -16
 	_equipment_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	_equipment_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-	add_child(_equipment_label)
+	_root.add_child(_equipment_label)
 
 
 func _build_game_over() -> void:
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(center)
 	_game_over = PanelContainer.new()
-	_game_over.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	_game_over.offset_left = -220
-	_game_over.offset_right = 220
-	_game_over.offset_top = -230
-	_game_over.offset_bottom = 230
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.05, 0.07, 0.1, 0.9)
-	style.set_corner_radius_all(12)
-	style.set_content_margin_all(24)
-	_game_over.add_theme_stylebox_override("panel", style)
 	_game_over.visible = false
-	add_child(_game_over)
+	center.add_child(_game_over)
 
 	var box := VBoxContainer.new()
+	box.custom_minimum_size.x = 400
 	box.add_theme_constant_override("separation", 12)
 	_game_over.add_child(box)
-	var title := _label(36, "Fine della corsa")
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(title)
-	_game_over_text = _label(20)
-	_game_over_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(_text("Title", "Fine della corsa"))
+	_game_over_text = _text("")
 	box.add_child(_game_over_text)
-	var button := Button.new()
-	button.text = "Ricomincia (Invio)"
-	button.add_theme_font_size_override("font_size", 22)
-	button.pressed.connect(restart_requested.emit)
-	box.add_child(button)
-	var pond_button := Button.new()
-	pond_button.text = "Lo stagno"
-	pond_button.add_theme_font_size_override("font_size", 22)
-	pond_button.pressed.connect(_open_pond)
-	box.add_child(pond_button)
-	var menu_button := Button.new()
-	menu_button.text = "Menu"
-	menu_button.add_theme_font_size_override("font_size", 22)
-	menu_button.pressed.connect(menu_requested.emit)
-	box.add_child(menu_button)
+	box.add_child(_button("Ricomincia (Invio)", restart_requested.emit, "PrimaryButton"))
+	box.add_child(_button("Lo stagno", _open_pond))
+	box.add_child(_button("Menu", menu_requested.emit, "FlatButton"))
 	_pond = Pond.new()
 	_pond.visible = false
-	add_child(_pond)
+	_root.add_child(_pond)
 
 
 func _build_pause() -> void:
@@ -482,38 +465,21 @@ func _build_pause() -> void:
 	(_pause as ColorRect).color = Color(0, 0, 0, 0.55)
 	_pause.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_pause.visible = false
-	add_child(_pause)
+	_root.add_child(_pause)
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_pause.add_child(center)
 	var panel := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.05, 0.07, 0.1, 0.92)
-	style.set_corner_radius_all(12)
-	style.set_content_margin_all(24)
-	panel.add_theme_stylebox_override("panel", style)
 	center.add_child(panel)
 	var box := VBoxContainer.new()
 	box.custom_minimum_size.x = 360
 	box.add_theme_constant_override("separation", 12)
 	panel.add_child(box)
-	var title := _label(36, "Pausa")
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(title)
-	_resume_button = Button.new()
-	_resume_button.text = "Riprendi (Esc)"
-	_resume_button.add_theme_font_size_override("font_size", 22)
-	_resume_button.pressed.connect(resume)
+	box.add_child(_text("Title", "Pausa"))
+	_resume_button = _button("Riprendi (Esc)", resume, "PrimaryButton")
 	box.add_child(_resume_button)
-	var abandon := Button.new()
-	abandon.text = "Abbandona la run"
-	abandon.add_theme_font_size_override("font_size", 22)
-	abandon.pressed.connect(abandon_requested.emit)
-	box.add_child(abandon)
-	var note := _label(15, "Abbandonando, le mosche raccolte restano.")
-	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	note.modulate = Color(1, 1, 1, 0.7)
-	box.add_child(note)
+	box.add_child(_button("Abbandona la run", abandon_requested.emit))
+	box.add_child(_text("Note", "Abbandonando, le mosche raccolte restano."))
 
 
 func _open_pond() -> void:
@@ -521,23 +487,36 @@ func _open_pond() -> void:
 	_pond.visible = true
 
 
+## Una scritta sopra il mondo, col bordo scuro (grande da 36 in su).
 func _label(font_size: int, text := "") -> Label:
 	var label := Label.new()
 	label.text = text
+	label.theme_type_variation = "HudBig" if font_size >= 36 else "HudLabel"
 	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.8))
-	label.add_theme_constant_override("outline_size", 4)
 	return label
+
+
+## Una scritta dentro un pannello, con una variante del tema ("Title"...).
+func _text(variation: String, text := "") -> Label:
+	var label := Label.new()
+	label.text = text
+	label.theme_type_variation = variation
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	return label
+
+
+func _button(text: String, action: Callable, variation := "") -> Button:
+	var button := Button.new()
+	button.text = text
+	button.theme_type_variation = variation
+	button.pressed.connect(action)
+	return button
 
 
 func _bar(size: Vector2, color: Color) -> ProgressBar:
 	var bar := ProgressBar.new()
 	bar.custom_minimum_size = size
 	bar.show_percentage = false
-	var background := StyleBoxFlat.new()
-	background.bg_color = Color(0, 0, 0, 0.5)
-	background.set_corner_radius_all(4)
-	bar.add_theme_stylebox_override("background", background)
 	_set_fill(bar, color)
 	return bar
 
@@ -545,5 +524,5 @@ func _bar(size: Vector2, color: Color) -> ProgressBar:
 func _set_fill(bar: ProgressBar, color: Color) -> void:
 	var fill := StyleBoxFlat.new()
 	fill.bg_color = color
-	fill.set_corner_radius_all(4)
+	fill.set_corner_radius_all(6)
 	bar.add_theme_stylebox_override("fill", fill)

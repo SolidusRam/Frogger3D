@@ -9,7 +9,7 @@ const PROGRESS := "user://progressi_shot.cfg"
 
 
 func _initialize() -> void:
-	get_root().size = Vector2i(1280, 720)
+	get_root().size = DisplayServer.window_get_size()
 	seed(11)
 	var progress: GDScript = load("res://scripts/progress.gd")
 	progress.load_from(PROGRESS)
