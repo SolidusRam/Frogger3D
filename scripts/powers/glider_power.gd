@@ -34,6 +34,13 @@ const MODEL := preload("res://assets/models/glider.glb")
 @export_group("Getto dei motori")
 ## Quanto in fretta il getto degli aerei porta il deltaplano alla sua velocità.
 @export var wind_acceleration := 45.0
+## Nel getto si sale fino a questa velocità e la carica non si consuma: il
+## getto è un ascensore che porta abbastanza in alto da superare l'aeroporto.
+## Come nelle correnti calde, dentro si rallenta (wind_speed_factor) e il
+## vento spinge meno (wind_push_factor): altrimenti se ne uscirebbe subito.
+@export var wind_rise_speed := 10.0
+@export var wind_speed_factor := 0.4
+@export var wind_push_factor := 0.5
 
 var charge := 0.0
 var gliding := false
@@ -73,10 +80,10 @@ func update(delta: float) -> void:
 		charge = minf(charge + recharge_per_second * delta, duration)
 		return
 	if gliding:
-		# Nelle correnti calde la carica non si consuma.
+		# Nelle correnti calde e nel getto dei motori la carica non si consuma.
 		_thermal_source = _smoke_below() if thermals else null
 		in_thermal = _thermal_source != null
-		if not in_thermal:
+		if not in_thermal and _frog.wind_lift() == 0.0:
 			charge = maxf(charge - delta, 0.0)
 		if not Input.is_action_pressed("jump") or charge == 0.0:
 			close()
@@ -101,7 +108,8 @@ func apply(direction: Vector3, delta: float) -> void:
 	# Il getto dei motori: spinge e, col deltaplano aperto, solleva.
 	var lift := _frog.wind_lift()
 	if lift > 0.0:
-		vertical = minf(velocity.y + lift * delta, thermal_rise_speed)
+		vertical = minf(velocity.y + lift * delta, wind_rise_speed)
+		target = target.limit_length(speed * wind_speed_factor)
 	if in_thermal:
 		vertical = minf(velocity.y + thermal_lift * delta, thermal_rise_speed)
 		if direction.length_squared() < 0.01:
@@ -109,7 +117,7 @@ func apply(direction: Vector3, delta: float) -> void:
 			target = Vector3(to_center.x, 0.0, to_center.z) * thermal_centering
 		target = target.limit_length(speed * thermal_speed_factor)
 	# Nel getto dei motori la spinta arriva subito: il getto catapulta.
-	var push := _frog.wind_push()
+	var push := _frog.wind_push() * wind_push_factor
 	var rate := acceleration if push == Vector3.ZERO else wind_acceleration
 	horizontal = horizontal.move_toward(target + push, rate * delta)
 	_frog.velocity = Vector3(horizontal.x, vertical, horizontal.z)

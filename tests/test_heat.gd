@@ -39,8 +39,16 @@ func _physics_process(_delta: float) -> bool:
 				frog.power_used.emit(&"punch")
 				t.check(is_equal_approx(heat.value - before, 1.0), "pugno: +1")
 				before = heat.value
-				Lib.cars(main).filter(func(c): return c.state == 0)[0].become_wreck()
-				t.check(is_equal_approx(heat.value - before, 0.6), "un rottame: +0,6")
+				var driving: Array = Lib.cars(main).filter(func(c): return c.state == 0)
+				driving.sort_custom(func(a, b): return a.global_position.distance_to(frog.global_position) < b.global_position.distance_to(frog.global_position))
+				driving[0].become_wreck()
+				t.check(is_equal_approx(heat.value - before, 0.6), "un rottame vicino alla rana: +0,6")
+				before = heat.value
+				var far: Node3D = driving[1]
+				far.get_parent().set_physics_process(false)
+				far.global_position = frog.global_position + Vector3(0, 0, 320)
+				far.become_wreck()
+				t.check(is_equal_approx(heat.value, before), "un rottame lontano dalla rana non scalda")
 				main.get_node("Course").best_distance = 123.0
 				Lib.place(frog, Vector3(0, 0.5, 0))
 				frog.take_hit(1000, Vector3.ZERO)

@@ -1,6 +1,8 @@
 extends SceneTree
-## Aeroporto: l'aereo travolge la rana, il getto la spinge via, col deltaplano
-## nel getto si vola, sull'ala si sta sicuri, un'auto in pista diventa rottame.
+## Aeroporto: l'aereo travolge la rana, la fiamma dietro i motori brucia, il
+## getto la spinge via e scaglia i rottami, col deltaplano nel getto si sale
+## in alto, sull'ala si sta sicuri, un'auto in pista diventa rottame, sotto i
+## motori corrono le strade di servizio.
 
 const Lib := preload("res://tests/lib.gd")
 const LANE := Vector3(0, 0, 320)
@@ -59,33 +61,50 @@ func _physics_process(_delta: float) -> bool:
 				t.check(m.car.state == 1, "un'auto sotto il motore diventa rottame")
 				t.check(not plane.has_method("become_wreck"), "l'aereo non diventa mai rottame")
 				_next(2)
-		2: # il getto spinge la rana
+		2: # la fiamma brucia, più indietro il getto spinge soltanto
 			if f == 1:
 				_new_plane(-10.0)
 			if f == 3:
-				# Dietro il motore destro, a terra.
-				Lib.place(frog, plane.to_global(Vector3(6, 0, 6)) + Vector3(0, 0.1, 0))
-				m.x = frog.global_position.x
+				frog.heal_full()
+				# Subito dietro il motore destro, a terra: nella fiamma.
+				Lib.place(frog, plane.to_global(Vector3(6, 0, 3)) + Vector3(0, 0.1, 0))
 			if f == 33:
+				t.check(frog.health < frog.max_health - 10, "la fiamma dietro il motore brucia (vita %d)" % frog.health)
+				frog.heal_full()
+				# Più indietro, a terra: solo vento.
+				Lib.place(frog, plane.to_global(Vector3(6, 0, 12)) + Vector3(0, 0.1, 0))
+				m.x = frog.global_position.x
+			if f == 63:
 				var pushed: float = m.x - frog.global_position.x
 				t.check(pushed > 2.0, "il getto spinge via la rana (%.1f m in 0,5 s)" % pushed)
-				t.check(frog.health == frog.max_health, "il getto spinge ma non ferisce")
+				t.check(frog.health == frog.max_health, "lontano dalla fiamma il getto spinge ma non ferisce")
+				var wreck: Node3D = Lib.cars(main).filter(func(c): return c.state == 0 and c.model_type == "compact")[0]
+				wreck.get_parent().set_physics_process(false)
+				wreck.global_position = plane.to_global(Vector3(-6, 0, 10)) + Vector3(0, 0.8, 0)
+				wreck.become_wreck()
+				wreck.linear_velocity = Vector3.ZERO
+				m.wreck = wreck
+				m.wreck_x = wreck.global_position.x
+			if f == 93:
+				var thrown: float = m.wreck_x - m.wreck.global_position.x
+				t.check(thrown > 4.0, "il getto scaglia i rottami (%.1f m in 0,5 s)" % thrown)
 				_next(3)
-		3: # col deltaplano il getto diventa una corrente
+		3: # col deltaplano il getto è un ascensore
 			if f == 1:
 				_new_plane(-10.0)
 			if f < 12:
-				Lib.place(frog, plane.to_global(Vector3(6, 0, 5)) + Vector3(0, 3.0, 0))
+				Lib.place(frog, plane.to_global(Vector3(6, 0, 10)) + Vector3(0, 3.0, 0))
 			if f == 12:
 				Input.action_press("jump")
 				frog.glider_power.gliding = true
 				m.y = frog.global_position.y
-				m.x = frog.global_position.x
-			if f == 42:
+				m.charge = frog.glider_power.charge
+			if f == 60:
+				t.check(frog.glider_power.charge == m.charge, "nel getto la carica non si consuma (%.1f su %.1f)" % [frog.glider_power.charge, m.charge])
+			if f == 102:
 				Input.action_release("jump")
-				var travelled: float = m.x - frog.global_position.x
-				t.check(travelled > 4.0, "col deltaplano il getto lancia lontano (%.1f m in 0,5 s)" % travelled)
-				t.check(frog.global_position.y > m.y - 0.3, "nel getto il deltaplano non scende (%+.1f m)" % (frog.global_position.y - m.y))
+				var risen: float = frog.global_position.y - m.y
+				t.check(risen > 6.0, "nel getto il deltaplano sale in alto (%+.1f m in 1,5 s)" % risen)
 				_next(4)
 		4: # sull'ala si sta sicuri e si viaggia con l'aereo
 			if f == 1:
@@ -99,5 +118,11 @@ func _physics_process(_delta: float) -> bool:
 				var plane_moved: float = plane.global_position.x - m.plane_x
 				t.check(absf(moved - plane_moved) < 1.0, "sull'ala la rana viaggia con l'aereo (%.1f m contro %.1f)" % [moved, plane_moved])
 				t.check(frog.health == frog.max_health, "sull'ala non si fa male")
+				var taxiway: Node3D = load("res://scripts/taxiway.gd").new()
+				taxiway.position = LANE + Vector3(0, 0, -40)
+				main.add_child(taxiway)
+				var lanes: Array = taxiway.get_children().filter(func(n): return n.get_script() and n.get_script().resource_path.get_file() == "lane.gd")
+				var under_engines := lanes.size() == 2 and lanes.all(func(l): return absf(absf(l.position.z) - 6.0) < 0.01)
+				t.check(under_engines, "sotto i motori corrono due strade di servizio (%d)" % lanes.size())
 				t.finish(self)
 	return false

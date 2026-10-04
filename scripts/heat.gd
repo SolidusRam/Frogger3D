@@ -16,8 +16,10 @@ const LEVELS := 5
 @export var per_punch := 1.0
 @export var per_super_jump := 3.0
 @export var per_glide := 2.0
-## Ogni veicolo trasformato in rottame, anche nelle catene.
+## Ogni veicolo trasformato in rottame, anche nelle catene, ma solo vicino
+## alla rana: conta il caos che si vede, non quello di un aeroporto lontano.
 @export var per_wreck := 0.6
+@export var wreck_radius := 50.0
 
 @export_group("Effetti al massimo del calore")
 ## Velocità dei veicoli e delle correnti: +80% e +40% al massimo.
@@ -65,7 +67,9 @@ func level() -> int:
 
 
 func on_wreck(car: Node3D) -> void:
-	add(per_wreck)
+	var frog := get_tree().get_first_node_in_group("frog") as Node3D
+	if frog == null or frog.global_position.distance_to(car.global_position) <= wreck_radius:
+		add(per_wreck)
 	wreck_created.emit(car)
 
 

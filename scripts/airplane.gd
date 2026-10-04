@@ -3,18 +3,30 @@ extends AnimatableBody3D
 ## Un aereo di linea in rullaggio: enorme e lento, non diventa mai rottame.
 ## Sotto le ali si passa; fusoliera, motori e carrelli travolgono rana e
 ## veicoli; sulle ali e sulla fusoliera si sta sicuri. Dietro ogni motore c'è
-## un getto che spinge via la rana e i rottami: col deltaplano aperto la
-## solleva e la lancia lontano. Corre lungo l'asse X locale del raccordo.
+## una fiamma che brucia, e poi un getto a cono che spinge via la rana e
+## scaglia i rottami: col deltaplano aperto la solleva in alto. Corre lungo
+## l'asse X locale del raccordo.
 
 const MODEL := preload("res://assets/models/airplane.glb")
 const LENGTH := 24.0
 ## Getto dietro i motori: lunghezza, velocità del vento che spinge la rana,
-## spinta verso l'alto per il deltaplano e accelerazione data ai rottami.
+## spinta verso l'alto per il deltaplano e accelerazione data ai rottami. Il
+## getto si allarga e si alza: in fondo è largo BLAST_END_WIDTH e alto
+## BLAST_END_HEIGHT.
 const BLAST_LENGTH := 22.0
+const BLAST_END_WIDTH := 8.0
+const BLAST_END_HEIGHT := 12.0
 const BLAST_WIND := 16.0
-const BLAST_LIFT := 30.0
+const BLAST_LIFT := 45.0
 const BLAST_STRENGTH := 55.0
+## La fiamma subito dietro ogni motore: lunga, larga e quanta vita toglie al
+## secondo. Si vede: è il pericolo di chi attraversa dietro l'aereo.
+const FLAME_LENGTH := 7.0
+const FLAME_WIDTH := 2.2
+const FLAME_BURN := 60.0
 const ENGINE_X := 6.0
+## Il retro dei motori, da dove escono fiamma e getto.
+const NOZZLE := Vector3(ENGINE_X, 1.75, 0.5)
 
 var direction := 1.0
 var speed := 7.0
@@ -23,6 +35,8 @@ var smash_speed := 14.0
 
 var _hazards: Array[Area3D] = []
 var _blasts: Array[Area3D] = []
+var _flames: Array[Area3D] = []
+var _flame_meshes: Array[MeshInstance3D] = []
 var _last_hit := {}
 
 
@@ -56,13 +70,24 @@ func _ready() -> void:
 	for side in [-1.0, 1.0]:
 		_hazard(Vector3(2.0, 1.9, 3.8), Vector3(side * ENGINE_X, 1.75, -1.2))
 		_hazard(Vector3(0.8, 2.5, 1.6), Vector3(side * 2.4, 1.25, 0.5))
-		_blast(Vector3(side * ENGINE_X, 1.8, 0.5 + BLAST_LENGTH / 2.0))
+		var nozzle := Vector3(side * NOZZLE.x, NOZZLE.y, NOZZLE.z)
+		_blasts.append(_blast_area(nozzle))
+		_flames.append(_area(Vector3(FLAME_WIDTH, FLAME_WIDTH, FLAME_LENGTH), nozzle + Vector3(0.0, 0.0, FLAME_LENGTH / 2.0)))
+		_flame_meshes.append(_flame_mesh(nozzle))
+		add_child(_blast_streaks(nozzle))
 
 
 func _physics_process(delta: float) -> void:
 	position.x += direction * speed * delta
 	_smash()
 	_push()
+	_burn(delta)
+
+
+func _process(_delta: float) -> void:
+	# La fiamma tremola.
+	for flame in _flame_meshes:
+		flame.scale = Vector3(randf_range(0.85, 1.1), randf_range(0.9, 1.15), randf_range(0.85, 1.1))
 
 
 ## Coda dell'aereo lungo il raccordo (l'origine è al centro).
@@ -95,13 +120,20 @@ func _push() -> void:
 	var backward := global_basis.z
 	for area in _blasts:
 		for body in area.get_overlapping_bodies():
-			var distance: float = (body.global_position - area.global_position).dot(backward) + BLAST_LENGTH / 2.0
+			var distance: float = (body.global_position - area.global_position).dot(backward)
 			var strength := 1.0 - 0.6 * clampf(distance / BLAST_LENGTH, 0.0, 1.0)
 			if body is Frog:
 				body.apply_wind(backward * BLAST_WIND * strength, BLAST_LIFT * strength)
 			elif body is RigidBody3D and not body.freeze:
-				var acceleration := (backward * BLAST_STRENGTH + Vector3.UP * 9.0) * strength
-				body.apply_central_force(acceleration * body.mass * 0.5)
+				var acceleration := (backward * BLAST_STRENGTH + Vector3.UP * 12.0) * strength
+				body.apply_central_force(acceleration * body.mass)
+
+
+func _burn(delta: float) -> void:
+	for area in _flames:
+		for body in area.get_overlapping_bodies():
+			if body is Frog:
+				body.burn(FLAME_BURN, delta)
 
 
 func _solid(size: Vector3, at: Vector3) -> void:
@@ -117,8 +149,67 @@ func _hazard(size: Vector3, at: Vector3) -> void:
 	_hazards.append(_area(size, at))
 
 
-func _blast(at: Vector3) -> void:
-	_blasts.append(_area(Vector3(3.2, 3.6, BLAST_LENGTH), at))
+## Il getto è un tronco di piramide che parte dal motore e si allarga
+## all'indietro, soprattutto verso l'alto.
+func _blast_area(at: Vector3) -> Area3D:
+	var area := _area(Vector3.ONE, at)
+	var shape := ConvexPolygonShape3D.new()
+	var near := Vector2(1.6, 1.8)
+	var points := PackedVector3Array()
+	for x in [-1.0, 1.0]:
+		points.append(Vector3(x * near.x, -near.y, 0.0))
+		points.append(Vector3(x * near.x, near.y, 0.0))
+		points.append(Vector3(x * BLAST_END_WIDTH / 2.0, -at.y, BLAST_LENGTH))
+		points.append(Vector3(x * BLAST_END_WIDTH / 2.0, BLAST_END_HEIGHT - at.y, BLAST_LENGTH))
+	shape.points = points
+	(area.get_child(0) as CollisionShape3D).shape = shape
+	return area
+
+
+## Strisce d'aria che corrono all'indietro e si aprono verso l'alto: fanno
+## vedere dove arriva il getto, cioè dove il deltaplano sale.
+func _blast_streaks(at: Vector3) -> CPUParticles3D:
+	var streaks := CPUParticles3D.new()
+	streaks.position = at
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(0.12, 1.2, 0.12)
+	mesh.material = Style.material("jet_air")
+	streaks.mesh = mesh
+	streaks.amount = 36
+	streaks.lifetime = 0.9
+	streaks.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	streaks.emission_box_extents = Vector3(1.0, 0.8, 0.2)
+	# Indietro (+Z) e un po' in su: lo stesso cono della zona che spinge.
+	streaks.direction = Vector3(0.0, 0.22, 1.0)
+	streaks.spread = 9.0
+	streaks.gravity = Vector3.ZERO
+	streaks.initial_velocity_min = 20.0
+	streaks.initial_velocity_max = 28.0
+	streaks.particle_flag_align_y = true
+	streaks.scale_amount_min = 0.8
+	streaks.scale_amount_max = 1.6
+	return streaks
+
+
+## Un cono basso e luminoso: largo al motore, si stringe all'indietro.
+func _flame_mesh(at: Vector3) -> MeshInstance3D:
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = 0.3
+	mesh.bottom_radius = 0.85
+	mesh.height = FLAME_LENGTH
+	mesh.radial_segments = 6
+	mesh.rings = 1
+	mesh.material = Style.material("jet_flame")
+	var pivot := MeshInstance3D.new()
+	pivot.position = at
+	add_child(pivot)
+	var flame := MeshInstance3D.new()
+	flame.mesh = mesh
+	# L'asse del cilindro (Y) va all'indietro (+Z): la base larga sta al motore.
+	flame.rotation.x = PI / 2.0
+	flame.position.z = FLAME_LENGTH / 2.0
+	pivot.add_child(flame)
+	return pivot
 
 
 func _area(size: Vector3, at: Vector3) -> Area3D:

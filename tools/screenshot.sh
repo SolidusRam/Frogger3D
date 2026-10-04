@@ -5,7 +5,7 @@
 #   tools/screenshot.sh shot_biome aereo 0 /tmp/aereo.png
 #   tools/screenshot.sh shot_biome porto 100 /tmp/porto_notte.png
 #   tools/screenshot.sh shot_rail passaggio 0 /tmp/treno.png
-# Scene: shot_biome = aereo | getto | gru | caduta | porto;
+# Scene: shot_biome = aereo | getto | dietro | gru | caduta | porto | insegue;
 #        shot_rail  = arrivo | passaggio | tetto.
 # WAYLAND_DISPLAY va tolto: se il display virtuale fallisse, Godot aprirebbe
 # la finestra sul vero schermo.

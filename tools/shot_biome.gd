@@ -1,6 +1,7 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
-## Screenshot di aeroporto e porto. SCENE: aereo | getto | gru | caduta. HEAT, SHOT.
+## Screenshot di aeroporto e porto. SCENE: aereo | getto | dietro | gru |
+## caduta | porto | insegue. HEAT, SHOT.
 var frame := 0
 var main: Node
 var frog: Node3D
@@ -11,8 +12,8 @@ var done_at := -1
 var drop_seen := -1
 var lit_frames := 0
 var scene := OS.get_environment("SCENE")
-var kind := 6 if scene in ["aereo", "getto"] else 7
-var aerial := scene == "porto"
+var kind := 6 if scene in ["aereo", "getto", "dietro"] else 7
+var aerial := scene in ["porto", "insegue"]
 var prefix := "AIRPORT" if kind == 6 else "PORT"
 
 func _initialize() -> void:
@@ -28,6 +29,17 @@ func _initialize() -> void:
 func aim_camera(at: Vector3) -> void:
 	var d := at - frog.global_position
 	frog.get_node("CameraRig").rotation.y = atan2(-d.x, -d.z)
+
+## Una telecamera libera, per inquadrare con precisione.
+func shoot_from(eye: Vector3, target: Vector3) -> void:
+	var cam := root.get_node_or_null("ShotCamera") as Camera3D
+	if cam == null:
+		cam = Camera3D.new()
+		cam.name = "ShotCamera"
+		cam.fov = 60.0
+		root.add_child(cam)
+		cam.make_current()
+	cam.look_at_from_position(eye, target)
 
 func by_script(root_node: Node, file: String) -> Array:
 	var out := []
@@ -85,6 +97,35 @@ func _process(_d: float) -> bool:
 					if x > -12.0 and x < 8.0 and not frog.has_meta("set"):
 						frog.set_meta("set", frame)
 						subject = p
+			"dietro":
+				# Dopo un po' di passaggi: rottami in giro. Rana dietro la coda.
+				var planes := by_script(chunk, "airplane.gd")
+				for p in planes:
+					var x: float = p.global_position.x * p.direction
+					if frame > 150 and x > -6.0 and x < 0.0 and not frog.has_meta("set"):
+						frog.set_meta("set", frame)
+						subject = p
+			"insegue":
+				var belts := by_script(chunk, "conveyor.gd")
+				var cranes := by_script(chunk, "crane.gd")
+				if frame == 5:
+					for c in cranes:
+						c.aim_chance = 1.0
+					frog.global_position = belts[0].global_position + Vector3(0, 0.5, 0)
+					frog.reset_physics_interpolation()
+					frog.get_node("CameraRig/Pitch").rotation.x = -0.6
+					frog.get_node("CameraRig/Pitch/SpringArm3D").spring_length = 12.0
+				if frog.global_position.x < -25.0 or frog.global_position.x > 25.0:
+					frog.global_position.x = 0.0
+					frog.reset_physics_interpolation()
+				var locked := cranes.filter(func(c): return c.is_locked() and absf(c.global_position.x - frog.global_position.x) < 3.0)
+				lit_frames = lit_frames + 1 if not locked.is_empty() else 0
+				# Di lato: rana, ombra fissa e container appeso.
+				for c in cranes:
+					if absf(c.global_position.x - frog.global_position.x) < 8.0:
+						shoot_from(frog.global_position + Vector3(-6, 8, 11), frog.global_position + Vector3(0, 3, 0))
+				if lit_frames >= 2 and frame > 60 and done_at < 0:
+					done_at = frame
 			"porto":
 				var crane: Node3D = by_script(chunk, "crane.gd")[0]
 				# La rana davanti alla gru: la telecamera guarda verso di lei.
@@ -107,21 +148,37 @@ func _process(_d: float) -> bool:
 					if drop_seen > 0 and frame == drop_seen + 22:
 						done_at = frame
 	if scene == "getto" and frog.has_meta("set"):
+		# Come un giocatore: super salto dietro il motore, deltaplano nel getto.
 		var p: Node3D = subject
-		var f: int = frame - frog.get_meta("set")
-		if f < 8:
-			frog.global_position = p.to_global(Vector3(6, 0, 4)) + Vector3(0, 3.0, 0)
+		if not frog.has_meta("t0"):
+			frog.set_meta("t0", Engine.get_physics_frames())
+			frog.global_position = p.to_global(Vector3(6, 0, 12))
+			frog.global_position.y = 0.1
 			frog.velocity = Vector3.ZERO
 			frog.reset_physics_interpolation()
-			aim_camera(p.global_position + Vector3(0, 2, 0))
-		if f == 8:
+			Input.action_press("super_jump")
+		var f: int = Engine.get_physics_frames() - frog.get_meta("t0")
+		if f >= 2:
+			Input.action_release("super_jump")
+		if f >= 14:
 			Input.action_press("jump")
-			frog.glider_power.gliding = true
-			frog.glider_power._unfold()
-		if f == 30:
-			aim_camera(p.global_position + Vector3(0, 3, 0))
-		if f == 40:
-			done_at = frame
+		aim_camera(p.to_global(Vector3(4, 4, -4)))
+		frog.get_node("CameraRig/Pitch").rotation.x = -0.1
+		if f >= 52 and done_at < 0:
+			done_at = frame + 1
+	if scene == "dietro" and frog.has_meta("set"):
+		# Di lato alla fiamma del motore destro, fuori dal getto e dalle strade.
+		var p: Node3D = subject
+		if not frog.has_meta("t0"):
+			frog.set_meta("t0", Engine.get_physics_frames())
+		var f: int = Engine.get_physics_frames() - frog.get_meta("t0")
+		frog.global_position = p.to_global(Vector3(11.5, 0, 9))
+		frog.global_position.y = 0.1
+		frog.velocity = Vector3.ZERO
+		frog.reset_physics_interpolation()
+		shoot_from(p.to_global(Vector3(17, 5, 17)), p.to_global(Vector3(4, 1.5, 5)))
+		if f >= 6 and done_at < 0:
+			done_at = frame + 1
 	if done_at > 0 and frame == done_at:
 		root.get_texture().get_image().save_png(OS.get_environment("SHOT"))
 		print("salvato " + OS.get_environment("SHOT").get_file())

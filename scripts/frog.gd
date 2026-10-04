@@ -82,6 +82,7 @@ var _squash_tween: Tween
 ## l'alto che conta solo col deltaplano aperto.
 var _wind_push := Vector3.ZERO
 var _wind_lift := 0.0
+var _burn_owed := 0.0
 
 
 func _ready() -> void:
@@ -153,6 +154,16 @@ func apply_wind(push: Vector3, lift: float) -> void:
 	if push.length() > _wind_push.length():
 		_wind_push = Vector3(push.x, 0.0, push.z)
 	_wind_lift = maxf(_wind_lift, lift)
+
+
+## Danno continuo, come la fiamma dei motori: non stordisce e non dà
+## invulnerabilità, toglie vita a ogni passo finché la rana ci resta dentro.
+func burn(damage_per_second: float, delta: float) -> void:
+	_burn_owed += damage_per_second * delta
+	if _burn_owed >= 1.0:
+		var damage := floori(_burn_owed)
+		_burn_owed -= damage
+		_lose_health(damage)
 
 
 func wind_push() -> Vector3:
