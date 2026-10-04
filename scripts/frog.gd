@@ -83,6 +83,8 @@ var _squash_tween: Tween
 var _wind_push := Vector3.ZERO
 var _wind_lift := 0.0
 var _burn_owed := 0.0
+## Modalità prova: niente toglie vita.
+var invincible := false
 
 
 func _ready() -> void:
@@ -285,7 +287,7 @@ func take_hit(damage: int, knockback: Vector3) -> void:
 
 
 func _lose_health(amount: int) -> void:
-	if is_dead:
+	if is_dead or invincible:
 		return
 	health = maxi(health - amount, 0)
 	health_changed.emit(health, max_health)

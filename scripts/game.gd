@@ -27,6 +27,8 @@ extends Node3D
 @export var slowmo_cooldown_seconds := 4.0
 
 var run_time := 0.0
+## Run di prova (vedi TestMode): il record non si salva.
+var test_run := false
 var max_heat_level := 0
 var record_distance := 0.0
 
@@ -51,6 +53,7 @@ func _ready() -> void:
 	hud.restart_requested.connect(restart)
 	upgrades.equipped.connect(_on_equipped)
 	hud.set_record(record_distance)
+	add_child(TestMode.new())
 
 
 func _process(delta: float) -> void:
@@ -134,6 +137,11 @@ func _on_den_reached(_count: int, distance: float) -> void:
 	_save_record_if_better(distance)
 	if _over:
 		return
+	offer_upgrade()
+
+
+## Ferma il gioco e offre tre power-up (anche dalla modalità prova).
+func offer_upgrade() -> void:
 	var options := upgrades.make_offer()
 	if options.is_empty():
 		return
@@ -168,7 +176,7 @@ func _on_frog_died() -> void:
 
 
 func _save_record_if_better(distance: float) -> bool:
-	if distance <= record_distance:
+	if test_run or distance <= record_distance:
 		return false
 	record_distance = distance
 	var config := ConfigFile.new()

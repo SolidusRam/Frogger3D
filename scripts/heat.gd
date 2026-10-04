@@ -54,6 +54,12 @@ func reset() -> void:
 	changed.emit(value, level())
 
 
+## Solo per la modalità prova: nel gioco il calore non scende mai.
+func set_value(new_value: float) -> void:
+	value = clampf(new_value, 0.0, MAX)
+	changed.emit(value, level())
+
+
 func add(amount: float) -> void:
 	value = minf(value + amount, MAX)
 	changed.emit(value, level())

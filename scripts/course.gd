@@ -64,6 +64,20 @@ func _physics_process(_delta: float) -> void:
 	best_distance = maxf(best_distance, _start_z - frog.global_position.z)
 
 
+## Modalità prova: crea subito, in fondo al percorso pronto, una striscia
+## sicura, un blocco del tipo dato e un'altra striscia, e ci porta la rana.
+## Il percorso poi continua come previsto.
+func jump_to(kind: Kind) -> void:
+	_add_chunk(Kind.SAFE)
+	var landing := Vector3(0.0, 0.5, _front_z + safe_depth / 2.0)
+	_add_chunk(kind)
+	_add_chunk(Kind.SAFE)
+	frog.global_position = landing
+	frog.velocity = Vector3.ZERO
+	frog.reset_physics_interpolation()
+	frog.set_respawn_point(landing)
+
+
 ## Distanza percorsa dall'inizio, in metri.
 func distance() -> float:
 	return best_distance

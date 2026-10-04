@@ -119,9 +119,12 @@ Il gioco base è finito e giocabile: una run infinita in cui si muore e si ricom
 | Power-up nelle tane | Scelta uno tra tre a gioco fermo; slot-attrezzo (guantoni, molle, ala, corpo). Fatti: guantoni esplosivi, correnti calde, quattro numerici |
 | Biomi | Ferrovia (treni inarrestabili, avviso leale); aeroporto (fiamma e getto dei motori, trenini bagagli il cui carico vola via nel getto, il getto come ascensore per il deltaplano); porto (acqua e navi portacontainer: le gru caricano le navi mentre ci sei sopra, un labirinto che si chiude; dal livello 3 cacciano la rana) |
 | Difficoltà nei biomi | Criteri decisi (sezione sopra); un gradino al livello 3 in ogni bioma: auto che sbandano, tronchi che affondano, il rapido, il decollo, le gru che cacciano |
-| Strumenti | 14 test automatici (tests/run.sh) e screenshot senza finestre (tools/screenshot.sh) |
+| Strumenti | 15 test automatici (tests/run.sh), screenshot senza finestre (tools/screenshot.sh) e la modalità prova per giocare (F1 in gioco, oppure tools/prova.sh) |
 
 ### Da provare giocando
+
+Per arrivarci subito c'è la **modalità prova**: in gioco F1 apre un pannello (livello di calore, calore bloccato, salto a un bioma, invincibile, poteri sempre carichi, una tana a richiesta); oppure si avvia già pronti, per esempio `tools/prova.sh --bioma=aeroporto --calore=3 --blocca-calore --invincibile`. Una run di prova non salva il record.
+
 
 - Il porto nuovo: salire sulla nave, attraversare il labirinto di container, leggere l'ombra sulla casella; dal livello 3 di calore la gru che dà la caccia.
 - L'aeroporto: il super salto con il deltaplano nel getto, il momento giusto per attraversare dietro l'aereo.
