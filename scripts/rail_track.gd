@@ -70,8 +70,12 @@ func _send_train() -> void:
 	train.express = Heat.level() >= Heat.STEP_LEVEL and randf() < express_chance
 	train.speed = express_speed if train.express else base_speed * (1.0 + max_heat_bonus * Heat.ratio())
 	train.build(2 if train.express else randi_range(3, 5))
-	add_child(train)
+	# Il treno si mette al suo posto prima di entrare nella scena: con
+	# sync_to_physics i vagoni esisterebbero per un passo dove sono stati
+	# composti, in mezzo alla zona di gioco, e travolgerebbero chi c'è senza
+	# farsi vedere.
 	train.place_nose(-direction * (play_half_width + train.speed * warning_time))
+	add_child(train)
 	phase = Phase.WARNING
 	_timer = warning_time
 

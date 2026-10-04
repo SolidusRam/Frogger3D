@@ -65,7 +65,9 @@ func _physics_process(_delta: float) -> bool:
 				var lead: float = (m.entered_at - m.warning_at) / 60.0
 				t.check(m.has("lamps_seen"), "le luci lampeggiano durante l'avviso")
 				t.check(lead > 2.3 and lead < 2.7, "il treno entra nella zona di gioco dopo circa 2,5 s di avviso (%.2f)" % lead)
-			if m.has("entered_at") and f == m.entered_at + 90:
+				t.check(not m.has("hit"), "prima che il treno arrivi, la rana sui binari non viene colpita")
+			# Il treno entra a 37 m dalla rana: la raggiunge dopo circa 1,4 s.
+			if m.has("entered_at") and f == m.entered_at + 150:
 				t.check(m.has("hit") and m.hit <= 40, "il treno travolge la rana sui binari (vita %s)" % str(m.get("hit", "intatta")))
 				t.check(absf(frog.global_position.z - TRACK_Z) > 2.0, "la rana è sbalzata fuori dal binario")
 				var car: Node3D = m.car

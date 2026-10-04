@@ -119,6 +119,9 @@ func _build() -> void:
 		_heights.append(_rng.randf_range(2.5, 6.0))
 	var flames := MultiMeshInstance3D.new()
 	flames.multimesh = _flames
+	# Il tremolio si aggiorna a ogni fotogramma: niente interpolazione fisica
+	# (altrimenti Godot avvisa a ogni aggiornamento).
+	flames.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	add_child(flames)
 
 	# Dietro il fuoco, la terra bruciata.

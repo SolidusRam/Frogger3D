@@ -109,11 +109,14 @@ func _smash() -> void:
 			_last_hit[id] = frame
 			var side_sign := 1.0 if (body.global_position - area.global_position).dot(side) >= 0.0 else -1.0
 			var push := (forward * 0.7 + side * side_sign + Vector3.UP * 0.6).normalized()
+			# La rana va sbalzata di lato e bassa: verso l'alto atterrerebbe sul
+			# tetto dei vagoni che seguono, e viaggerebbe col treno che l'ha presa.
+			var frog_push := (forward * 0.5 + side * side_sign + Vector3.UP * 0.3).normalized()
 			if body is Car:
 				body.become_wreck()
 				body.apply_central_impulse(push * body.mass * smash_speed)
 			elif body is Frog:
-				body.take_hit(damage, push * 16.0)
+				body.take_hit(damage, frog_push * 18.0)
 
 
 func _make_wagon(info: Dictionary) -> AnimatableBody3D:
