@@ -17,6 +17,15 @@ var enabled := false
 var cooldown_left := 0.0
 ## Vero mentre la rana piomba giù.
 var diving := false
+## Miglioramenti speciali: doppia onda (mezzo secondo dopo, una seconda onda
+## più larga) e dal cielo (più si cade dall'alto, più l'onda è grande, fino al
+## doppio).
+var double_wave := false
+var from_the_sky := false
+
+var _start_y := 0.0
+var _second_wave_left := -1.0
+var _second_wave_at := Vector3.ZERO
 
 var _frog: Frog
 
@@ -27,6 +36,10 @@ func setup(frog: Frog) -> void:
 
 func tick(delta: float) -> void:
 	cooldown_left = maxf(cooldown_left - delta, 0.0)
+	if _second_wave_left > 0.0:
+		_second_wave_left -= delta
+		if _second_wave_left <= 0.0:
+			_wave(_second_wave_at, radius * 1.5)
 
 
 func is_ready() -> bool:
@@ -50,6 +63,7 @@ func can_start() -> bool:
 
 func use() -> void:
 	diving = true
+	_start_y = _frog.global_position.y
 	cooldown_left = cooldown
 	_frog.squash(Vector3(0.8, 1.3, 0.8), 0.2)
 
@@ -74,35 +88,48 @@ func _shock() -> void:
 	_frog.power_used.emit(&"slam")
 	_frog.squash(Vector3(1.5, 0.6, 1.5), 0.35)
 	_frog.camera_rig.shake(0.35, 0.3)
+	var size := radius
+	if from_the_sky:
+		size *= 1.0 + clampf((_start_y - _frog.global_position.y - 2.0) / 8.0, 0.0, 1.0)
+	_wave(_frog.global_position, size)
+	if double_wave:
+		_second_wave_at = _frog.global_position
+		_second_wave_left = 0.5
+
+
+## Un'onda: le auto entro size metri da at diventano rottami e volano.
+func _wave(at: Vector3, size: float) -> void:
 	var query := PhysicsShapeQueryParameters3D.new()
 	var sphere := SphereShape3D.new()
-	sphere.radius = radius
+	sphere.radius = size
 	query.shape = sphere
-	query.transform = Transform3D(Basis(), _frog.global_position)
+	query.transform = Transform3D(Basis(), at)
 	query.collision_mask = 4 # veicoli, bagagli, container
 	var hit: Array[Car] = []
 	for result in _frog.get_world_3d().direct_space_state.intersect_shape(query, 32):
 		var body := result.collider as RigidBody3D
 		if body == null:
 			continue
-		var out := body.global_position - _frog.global_position
+		var out := body.global_position - at
 		out.y = 0.0
 		var launch := (out.normalized() + Vector3.UP * 1.6).normalized() * launch_speed
 		if body is Car:
 			if body.state == Car.State.DRIVING:
 				body.become_wreck()
-			hit.append(body)
+				hit.append(body)
 		elif body.freeze:
 			continue
 		body.linear_velocity = launch
 		body.angular_velocity = Vector3(randf_range(-3.0, 3.0), randf_range(-2.0, 2.0), randf_range(-3.0, 3.0))
-	_ring()
+	_ring(at, size)
+	Progress.trial_add("slam", 0, hit.size())
+	Progress.trial_best("slam", 1, hit.size())
 	if not hit.is_empty():
 		_frog.punched.emit(hit)
 
 
 ## Un anello che si allarga a terra: l'onda si vede.
-func _ring() -> void:
+func _ring(at: Vector3, size: float) -> void:
 	var ring := MeshInstance3D.new()
 	var mesh := TorusMesh.new()
 	mesh.inner_radius = 0.85
@@ -112,7 +139,7 @@ func _ring() -> void:
 	mesh.material = Style.material("spark")
 	ring.mesh = mesh
 	_frog.get_parent().add_child(ring)
-	ring.global_position = _frog.global_position + Vector3.UP * 0.1
+	ring.global_position = at + Vector3.UP * 0.1
 	var tween := ring.create_tween()
-	tween.tween_property(ring, "scale", Vector3(radius, 1.0, radius), 0.25).set_ease(Tween.EASE_OUT)
+	tween.tween_property(ring, "scale", Vector3(size, 1.0, size), 0.25).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(ring.queue_free)

@@ -226,3 +226,15 @@ func _set_special(id: String, first: bool, second: bool) -> void:
 		"long_glove":
 			frog.punch_power.piercing = first
 			frog.punch_power.yank = second
+		"trampoline":
+			frog.trampoline_crescendo = first
+			frog.trampoline_wrecks = second
+		"slam":
+			frog.slam_power.double_wave = first
+			frog.slam_power.from_the_sky = second
+		"thermals":
+			frog.glider_power.phoenix = first
+			frog.glider_power.chimney = second
+		"jet_wing":
+			frog.glider_power.afterburner = first
+			frog.glider_power.cooled = second

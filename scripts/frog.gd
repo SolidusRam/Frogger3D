@@ -101,8 +101,12 @@ var invincible := false
 ## Molle-trampolino (power-up): sui tetti delle auto si rimbalza da soli.
 var trampoline := false
 var trampoline_height := 2.6
-## Carta migliorata: rimbalzando si ribalta l'auto sotto.
+## Miglioramenti speciali delle molle-trampolino: crescendo (ogni rimbalzo
+## di fila più alto) e bombardiera (rimbalzando si ribalta l'auto sotto).
+var trampoline_crescendo := false
 var trampoline_wrecks := false
+## Rimbalzi di fila sui tetti, senza toccare altro.
+var bounce_streak := 0
 ## Statistica dello stagno "Ricarica": frazione dei tempi di ricarica.
 var cooldown_factor := 1.0
 ## Pelle impermeabile (power-up): l'acqua non toglie vita.
@@ -182,9 +186,15 @@ func _physics_process(delta: float) -> void:
 		# Molle-trampolino: sui tetti delle auto si rimbalza da soli.
 		if trampoline_wrecks and floor_body().state == Car.State.DRIVING:
 			floor_body().become_wreck()
+		bounce_streak += 1
+		Progress.trial_add("trampoline", 0, 1)
+		Progress.trial_best("trampoline", 1, bounce_streak)
+		var height := trampoline_height + (0.6 * mini(bounce_streak - 1, 5) if trampoline_crescendo else 0.0)
 		# Senza Spazio premuto si sale con la gravità di discesa.
-		launch(Vector3(velocity.x, sqrt(2.0 * gravity_down * trampoline_height), velocity.z))
+		launch(Vector3(velocity.x, sqrt(2.0 * gravity_down * height), velocity.z))
 		squash(Vector3(1.3, 0.7, 1.3), 0.2)
+	elif is_on_floor() or is_swimming():
+		bounce_streak = 0
 	if is_on_floor() and not was_on_floor and fall_speed > 4.0:
 		# Si spiaccica all'atterraggio, tanto più quanto cadeva veloce.
 		var amount := clampf(fall_speed / 25.0, 0.1, 0.4)
@@ -250,6 +260,12 @@ func launch(new_velocity: Vector3) -> void:
 	velocity = new_velocity
 	_time_since_floor = INF
 	_time_since_jump_pressed = INF
+
+
+## Recupera vita, fino al massimo.
+func heal(amount: int) -> void:
+	health = mini(health + amount, max_health)
+	health_changed.emit(health, max_health)
 
 
 ## Velocità e gravità del salto da altezza e tempi (di nuovo quando le

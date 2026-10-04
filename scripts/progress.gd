@@ -55,11 +55,11 @@ const CARD_UPGRADES := {
 	],
 	"slam": [
 		{"name": "Doppia onda", "text": "Mezzo secondo dopo, una seconda onda più larga.", "trial": "Ribalta 40 auto con lo schianto", "goal": 40, "kind": "total", "cost": 2},
-		{"name": "Dal cielo", "text": "Anche col deltaplano aperto; più cadi dall'alto, più l'onda è grande.", "trial": "Ribalta 5 auto con un solo schianto", "goal": 5, "kind": "best", "cost": 4},
+		{"name": "Dal cielo", "text": "Più cadi dall'alto, più l'onda è grande (fino al doppio).", "trial": "Ribalta 5 auto con un solo schianto", "goal": 5, "kind": "best", "cost": 4},
 	],
 	"thermals": [
 		{"name": "Fenice", "text": "Nella colonna di fumo recuperi vita.", "trial": "Sali per 100 m nel fumo", "goal": 100, "kind": "total", "cost": 2},
-		{"name": "Camino", "text": "Anche il fumo dell'incendio ti solleva come una corrente calda.", "trial": "Resta 6 s di fila in una colonna di fumo", "goal": 6, "kind": "best", "cost": 4},
+		{"name": "Camino", "text": "Anche il fumo davanti all'incendio ti solleva come una corrente calda.", "trial": "Resta 6 s di fila in una colonna di fumo", "goal": 6, "kind": "best", "cost": 4},
 	],
 	"jet_wing": [
 		{"name": "Postbruciatore", "text": "Dietro l'ala una scia di fuoco ribalta le auto sotto di te.", "trial": "Vola 800 m con l'ala a reazione", "goal": 800, "kind": "total", "cost": 2},

@@ -53,6 +53,17 @@ var jet := false
 @export var jet_heat_per_second := 1.5
 ## Napalm (fusione): le colonne di fumo sono più larghe.
 var wide_thermals := false
+## Miglioramenti speciali. Correnti calde: fenice (nel fumo si recupera
+## vita) e camino (anche il fumo dell'incendio solleva). Ala a reazione:
+## postbruciatore (una scia di fuoco ribalta le auto sotto) e raffreddata
+## (in volo il calore non sale).
+var phoenix := false
+var chimney := false
+var afterburner := false
+var cooled := false
+@export var phoenix_heal_per_second := 10.0
+## Il fumo dell'incendio solleva fin dove arriva davanti al fronte.
+@export var chimney_depth := 25.0
 ## Vero mentre il deltaplano sale in una colonna di fumo.
 var in_thermal := false
 
@@ -61,8 +72,14 @@ var _wing: Node3D
 var _tween: Tween
 var _folding := false
 var _model: Node3D
-## Il rottame la cui colonna di fumo solleva la rana.
+## Il rottame la cui colonna di fumo solleva la rana (null nel fumo
+## dell'incendio, che non attira verso un centro).
 var _thermal_source: Car
+var _thermal_time := 0.0
+var _heal_owed := 0.0
+## Metri volati in questo volo con l'ala a reazione.
+var _flight := 0.0
+var _afterburn_query := PhysicsShapeQueryParameters3D.new()
 
 
 func setup(frog: Frog) -> void:
@@ -87,17 +104,21 @@ func update(delta: float) -> void:
 		charge = minf(charge + recharge_per_second * delta, duration)
 		return
 	if gliding:
-		if jet:
+		if jet and not cooled:
 			Heat.add(jet_heat_per_second * delta)
 		# Nelle correnti calde e nel getto dei motori la carica non si consuma.
 		_thermal_source = _smoke_below() if thermals else null
-		in_thermal = _thermal_source != null
+		in_thermal = _thermal_source != null or (thermals and chimney and _over_fire())
+		_track_thermal(delta)
+		if jet:
+			_track_jet(delta)
 		if not in_thermal and _frog.wind_lift() == 0.0:
 			charge = maxf(charge - delta, 0.0)
 		if not Input.is_action_pressed("jump") or charge == 0.0:
 			close()
 	elif Input.is_action_just_pressed("jump") and _frog.can_act() and _can_open():
 		gliding = true
+		_flight = 0.0
 		_unfold()
 		# La pressione ha aperto il deltaplano: non va ricordata come salto.
 		_frog.forget_jump_press()
@@ -121,7 +142,7 @@ func apply(direction: Vector3, delta: float) -> void:
 		target = target.limit_length(speed * wind_speed_factor)
 	if in_thermal:
 		vertical = minf(velocity.y + thermal_lift * delta, thermal_rise_speed)
-		if direction.length_squared() < 0.01:
+		if direction.length_squared() < 0.01 and _thermal_source:
 			var to_center := _thermal_source.global_position - _frog.global_position
 			target = Vector3(to_center.x, 0.0, to_center.z) * thermal_centering
 		target = target.limit_length(speed * thermal_speed_factor)
@@ -150,6 +171,55 @@ func set_jet(on: bool) -> void:
 func _refresh_wing() -> void:
 	var stripe := "wing_hot" if thermals else ("wing_jet" if jet else "")
 	Style.apply_palette(_model, {"wing_stripe": stripe} if stripe != "" else {})
+
+
+## Le prove di correnti calde e fenice: salita nel fumo, secondi di fila.
+func _track_thermal(delta: float) -> void:
+	if not in_thermal:
+		_thermal_time = 0.0
+		return
+	_thermal_time += delta
+	Progress.trial_add("thermals", 0, maxf(_frog.velocity.y, 0.0) * delta)
+	Progress.trial_best("thermals", 1, _thermal_time)
+	if phoenix:
+		_heal_owed += phoenix_heal_per_second * delta
+		if _heal_owed >= 1.0:
+			_frog.heal(floori(_heal_owed))
+			_heal_owed -= floori(_heal_owed)
+
+
+## Le prove dell'ala a reazione e il postbruciatore.
+func _track_jet(delta: float) -> void:
+	var travelled := Vector2(_frog.velocity.x, _frog.velocity.z).length() * delta
+	_flight += travelled
+	Progress.trial_add("jet_wing", 0, travelled)
+	Progress.trial_best("jet_wing", 1, _flight)
+	if afterburner:
+		_burn_below()
+
+
+## Il postbruciatore: le auto sotto l'ala, fino a 8 m più in basso, diventano
+## rottami.
+func _burn_below() -> void:
+	var box := BoxShape3D.new()
+	box.size = Vector3(4.0, 8.0, 4.0)
+	_afterburn_query.shape = box
+	_afterburn_query.collision_mask = 4
+	_afterburn_query.transform = Transform3D(Basis(), _frog.global_position + Vector3.DOWN * 4.0)
+	for result in _frog.get_world_3d().direct_space_state.intersect_shape(_afterburn_query, 8):
+		var car := result.collider as Car
+		if car and car.state == Car.State.DRIVING:
+			car.become_wreck()
+
+
+## Camino: davanti all'incendio, dove arriva il suo fumo, si sale come in una
+## corrente calda. Premia chi resta vicino al fuoco, a suo rischio.
+func _over_fire() -> bool:
+	var fire := _frog.get_tree().get_first_node_in_group("wildfire") as Node3D
+	if fire == null:
+		return false
+	var ahead: float = fire.front_z - _frog.global_position.z
+	return ahead > 1.0 and ahead < chimney_depth and _frog.global_position.y < thermal_height
 
 
 ## Il rottame nella cui colonna di fumo si trova la rana (null se nessuno).

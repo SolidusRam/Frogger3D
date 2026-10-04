@@ -45,6 +45,7 @@ var _rng := RandomNumberGenerator.new()
 
 
 func _ready() -> void:
+	add_to_group("wildfire")
 	front_z = frog.global_position.z + max_gap
 	course.den_reached.connect(_on_den_reached)
 	_build()

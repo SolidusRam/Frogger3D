@@ -27,6 +27,8 @@ func finish(tree: SceneTree) -> void:
 ## Carica la partita con un seme fisso e un file del record solo per i test.
 static func load_main(tree: SceneTree) -> Node:
 	seed(1234)
+	# Anche le mosche, che hanno un generatore tutto loro: test ripetibili.
+	load("res://scripts/fly.gd").rng().seed = 1234
 	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://record_test.cfg"))
 	DirAccess.remove_absolute(ProjectSettings.globalize_path("user://progressi_test.cfg"))
 	var main: Node = load("res://scenes/main.tscn").instantiate()
