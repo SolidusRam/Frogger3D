@@ -70,6 +70,8 @@ var jump_velocity: float
 var gravity_up: float
 var gravity_down: float
 var is_dead := false
+## Nel menu la rana aspetta sulla striscia di partenza: non risponde ai tasti.
+var asleep := false
 
 @onready var health := max_health
 @onready var visual: Node3D = $Visual
@@ -227,9 +229,9 @@ func _physics_process(delta: float) -> void:
 
 # --- Usati dai poteri ---------------------------------------------------------
 
-## Falsa durante lo stordimento dopo un colpo.
+## Falsa durante lo stordimento dopo un colpo, e nel menu (asleep).
 func can_act() -> bool:
-	return _stun_time == 0.0
+	return _stun_time == 0.0 and not asleep
 
 
 ## Vento per il prossimo passo di fisica, come il getto dei motori: conta il

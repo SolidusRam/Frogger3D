@@ -1,6 +1,7 @@
 extends SceneTree
 ## La cornice: Esc mette in pausa e riprende; abbandonare la run salva le
-## mosche e porta al menu; nel menu il calore è fermo e lo stile non tocca la
+## mosche e porta al menu, sopra la partita che aspetta; nel menu il calore è
+## fermo e lo stile non tocca la
 ## partita che non c'è più; con "Più scelta" la tana mostra quattro carte; il
 ## rimborso dello stagno chiede conferma; da morta la rana non raccoglie più
 ## mosche.
@@ -20,10 +21,10 @@ func _initialize() -> void:
 	hud = main.get_node("Hud")
 
 
-func _press(action: String) -> void:
+func _press(action: String, pressed := true) -> void:
 	var event := InputEventAction.new()
 	event.action = action
-	event.pressed = true
+	event.pressed = pressed
 	Input.parse_input_event(event)
 
 
@@ -70,8 +71,19 @@ func _physics_process(_delta: float) -> bool:
 			progress.load_from(PROGRESS)
 			t.check(progress.flies == 7, "abbandonando, le mosche raccolte restano (%d)" % progress.flies)
 			m.heat = heat.value
+			# Dietro il menu c'è la partita vera, in attesa.
+			var game: Node = current_scene.get_child(0)
+			t.check(game.attract and game.get_node("Frog").asleep and not game.get_node("Hud").visible, "dietro il menu la partita aspetta, senza HUD")
+			m.frog_z = game.get_node("Frog").global_position.z
+			_press("pause")
+			_press("move_forward")
+		70:
+			t.check(not paused, "nel menu Esc non mette in pausa")
 		150:
 			t.check(heat.value == m.heat and not heat.running, "nel menu il calore non sale")
+			var frog: Node3D = current_scene.get_child(0).get_node("Frog")
+			t.check(absf(frog.global_position.z - m.frog_z) < 0.1, "nel menu la rana non si muove coi tasti")
+			_press("move_forward", false)
 			# Lo stile nel menu: niente errori sui nodi della partita (li
 			# controlla run.sh).
 			heat.add(50.0)

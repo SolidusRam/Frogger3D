@@ -1,6 +1,6 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
-## Screenshot delle schermate: menu | stagno | maestria | hud | carte | pausa | fine | prova.
+## Screenshot delle schermate: menu | partenza | stagno | maestria | hud | carte | pausa | fine | prova.
 ## HEAT, SHOT.
 var frame := 0
 var main: Node
@@ -18,9 +18,10 @@ func _initialize() -> void:
 	progress.stat_levels = {"health": 2, "speed": 1, "choice": 1}
 	progress.trials = {"explosive_gloves:0": 30.0, "uppercut:0": 12.0, "slam:1": 3.0}
 	progress.save()
-	if scene == "menu" or scene == "stagno" or scene == "maestria":
+	if scene in ["menu", "stagno", "maestria", "partenza"]:
 		var menu: Node = load("res://scenes/menu.tscn").instantiate()
 		menu.progress_path = PROGRESS
+		menu.record_path = "user://record_shot.cfg"
 		root.add_child(menu)
 		current_scene = menu
 		return
@@ -59,7 +60,11 @@ func _process(_d: float) -> bool:
 				main.get_node("Upgrades").apply("tongue")
 				main.get_node("Upgrades").apply("explosive_gloves")
 				main.get_node("Hud").show_equipment(main.get_node("Upgrades"))
-	if frame == 50:
+	if scene == "menu" and frame == 45 and OS.get_environment("ANGLE") != "":
+		current_scene.get_child(0).get_node("Frog/CameraRig").rotation.y = float(OS.get_environment("ANGLE"))
+	if scene == "partenza" and frame == 60:
+		current_scene._play()
+	if frame == (90 if scene == "partenza" else 50):
 		get_root().get_texture().get_image().save_png(OS.get_environment("SHOT"))
 		print("salvato ", OS.get_environment("SHOT"))
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(PROGRESS))

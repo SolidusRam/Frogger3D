@@ -2,7 +2,7 @@ extends SceneTree
 ## Lo stagno: comprare statistiche (il prezzo sale), carte migliorate,
 ## rimborso; le statistiche valgono dalla run dopo (vita, carte offerte,
 ## incendio, seconda vita); una carta migliorata vale quando la si
-## equipaggia; la schermata dello stagno; il menu iniziale porta al gioco.
+## equipaggia; la schermata dello stagno; il menu iniziale fa partire la run.
 
 const Lib := preload("res://tests/lib.gd")
 const PROGRESS := "user://progressi_test.cfg"
@@ -97,7 +97,8 @@ func _physics_process(_delta: float) -> bool:
 				t.check(play != null, "il menu iniziale ha Gioca")
 				play.pressed.emit()
 			if frame == m.at + 15:
-				t.check(current_scene.has_node("Frog"), "Gioca porta al gioco")
+				var game: Node = current_scene.get_child(0)
+				t.check(game.has_node("Frog") and not game.attract and not game.get_node("Frog").asleep, "Gioca fa partire la run sul posto")
 				DirAccess.remove_absolute(ProjectSettings.globalize_path(PROGRESS))
 				DirAccess.remove_absolute(ProjectSettings.globalize_path("user://record_test.cfg"))
 				t.finish(self)

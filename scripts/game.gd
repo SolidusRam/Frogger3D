@@ -2,6 +2,12 @@ extends Node3D
 ## La partita: collega poteri, calore e stile, gestisce i tempi speciali
 ## (fermo-immagine e rallentatore), chiude la run alla morte della rana,
 ## salva il record e fa ricominciare.
+## Fa anche da sfondo al menu (attract): il mondo vive, ma la rana aspetta,
+## calore e incendio sono fermi e l'HUD è nascosto; start_run() fa partire
+## la run sul posto.
+
+const GAME_SCENE := "res://scenes/main.tscn"
+const MENU_SCENE := "res://scenes/menu.tscn"
 
 
 @export var frog: Frog
@@ -15,6 +21,10 @@ extends Node3D
 ## per non toccare quelli veri.
 @export var record_path := "user://record.cfg"
 @export var progress_path := "user://progressi.cfg"
+## Vero quando la partita fa da sfondo al menu (lo imposta il menu).
+@export var attract := false
+## Secondi in cui la telecamera torna dietro la rana quando parte la run.
+@export var start_seconds := 0.9
 
 @export_group("Mosche")
 ## Mosche date da ogni tana, e in più quando la tana non ha carte da offrire
@@ -75,12 +85,42 @@ func _ready() -> void:
 	upgrades.equipped.connect(_on_equipped)
 	frog.revived.connect(hud.announce.bind("Seconda vita!"))
 	hud.set_record(record_distance)
+	if attract:
+		_enter_attract()
+	else:
+		add_child(TestMode.new())
+
+
+## Lo sfondo del menu: il traffico passa, la telecamera gira attorno alla
+## rana che aspetta, l'incendio è fermo all'orizzonte.
+func _enter_attract() -> void:
+	Heat.running = false
+	hud.visible = false
+	frog.asleep = true
+	$Wildfire.stopped = true
+	frog.camera_rig.start_orbit()
+
+
+## Dal menu alla run, senza cambiare scena: la telecamera torna dietro la
+## rana, l'HUD compare, calore e incendio partono.
+func start_run() -> void:
+	if not attract:
+		return
+	attract = false
+	Heat.reset()
+	run_time = 0.0
+	hud.visible = true
+	frog.asleep = false
+	var fire: Wildfire = $Wildfire
+	fire.stopped = false
+	fire.front_z = frog.global_position.z + fire.max_gap
+	frog.camera_rig.end_orbit(start_seconds)
 	add_child(TestMode.new())
 
 
 func _process(delta: float) -> void:
 	_update_time_scale()
-	if not _over:
+	if not _over and not attract:
 		run_time += delta
 		max_heat_level = maxi(max_heat_level, Heat.level())
 
@@ -93,7 +133,8 @@ func _unhandled_input(event: InputEvent) -> void:
 func restart() -> void:
 	Engine.time_scale = 1.0
 	Heat.reset()
-	get_tree().reload_current_scene()
+	# Una run nuova parte subito, senza menu.
+	get_tree().change_scene_to_file(GAME_SCENE)
 
 
 func to_menu() -> void:
@@ -102,7 +143,7 @@ func to_menu() -> void:
 	# Nel menu il calore non sale: la run nuova lo fa ripartire.
 	Heat.running = false
 	get_tree().paused = false
-	get_tree().change_scene_to_file("res://scenes/menu.tscn")
+	get_tree().change_scene_to_file(MENU_SCENE)
 
 
 ## Il fermo-immagine vince sul rallentatore; il tempo è misurato in ms reali,

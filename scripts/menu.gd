@@ -1,13 +1,22 @@
-extends Control
-## Il menu iniziale: Gioca, Lo stagno, Esci, e le mosche messe da parte.
+extends Node
+## Il menu iniziale, sopra il gioco vivo: dietro c'è la partita vera (in
+## modalità attract), col traffico che passa e la telecamera che gira attorno
+## alla rana sulla striscia di partenza. A sinistra Gioca, Lo stagno, Esci;
+## in basso mosche e record. Gioca fa partire la run sul posto: la telecamera
+## torna dietro la rana e il menu sparisce.
 ## Avviato con le opzioni della modalità prova (tools/prova.sh), salta il
 ## menu e parte subito.
 
 const GAME := "res://scenes/main.tscn"
 
 @export var progress_path := "user://progressi.cfg"
+@export var record_path := "user://record.cfg"
 
+var _game: Node
+var _ui: Control
 var _flies_label: Label
+var _golden_label: Label
+var _play_button: Button
 var _pond: Pond
 
 
@@ -15,51 +24,112 @@ func _ready() -> void:
 	if not OS.get_cmdline_user_args().is_empty():
 		get_tree().change_scene_to_file.call_deferred(GAME)
 		return
-	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	get_tree().paused = false
-	Heat.running = false
 	Progress.load_from(progress_path)
-	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	theme = UiTheme.get_theme()
-	var background := ColorRect.new()
-	background.color = UiTheme.INK
-	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	add_child(background)
+	_game = load(GAME).instantiate()
+	_game.attract = true
+	_game.progress_path = progress_path
+	_game.record_path = record_path
+	add_child(_game)
+	_build()
+	_refresh()
 
-	var box := VBoxContainer.new()
-	box.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
-	box.offset_left = -220
-	box.offset_right = 220
-	box.offset_top = -230
-	box.offset_bottom = 230
-	box.add_theme_constant_override("separation", 14)
-	add_child(box)
-	box.add_child(_label("Frogger 3D", "Logo"))
-	box.add_child(_label("La rana scappa dall'incendio", "Note"))
-	_flies_label = _label("", "Money")
-	box.add_child(_flies_label)
-	var play := _button("Gioca", _play)
-	play.theme_type_variation = "PrimaryButton"
-	box.add_child(play)
-	box.add_child(_button("Lo stagno", _open_pond))
-	var quit := _button("Esci", get_tree().quit)
-	quit.theme_type_variation = "FlatButton"
-	box.add_child(quit)
+
+func _build() -> void:
+	# Sopra l'HUD e sopra il post-processing: le scritte del menu non si
+	# sgranano con lo stile PS1.
+	var layer := CanvasLayer.new()
+	layer.layer = 5
+	add_child(layer)
+	_ui = Control.new()
+	_ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ui.theme = UiTheme.get_theme()
+	layer.add_child(_ui)
+
+	# Un'ombra da sinistra: il menu si legge sopra qualsiasi cosa passi.
+	var shade := TextureRect.new()
+	var gradient := Gradient.new()
+	gradient.set_color(0, Color(UiTheme.INK, 0.9))
+	gradient.set_color(1, Color(UiTheme.INK, 0.0))
+	var texture := GradientTexture2D.new()
+	texture.gradient = gradient
+	texture.width = 256
+	texture.height = 4
+	shade.texture = texture
+	shade.stretch_mode = TextureRect.STRETCH_SCALE
+	shade.anchor_bottom = 1.0
+	shade.anchor_right = 0.62
+	shade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ui.add_child(shade)
+
+	var column := VBoxContainer.new()
+	column.set_anchors_and_offsets_preset(Control.PRESET_CENTER_LEFT)
+	column.offset_left = 72
+	column.offset_right = 72 + 420
+	column.grow_vertical = Control.GROW_DIRECTION_BOTH
+	column.add_theme_constant_override("separation", 14)
+	_ui.add_child(column)
+	column.add_child(_label("Frogger 3D", "Logo"))
+	var subtitle := _label("La rana scappa dall'incendio", "Strong")
+	subtitle.add_theme_color_override("font_color", UiTheme.TEXT_MUTED)
+	column.add_child(subtitle)
+	var gap := Control.new()
+	gap.custom_minimum_size.y = 18
+	column.add_child(gap)
+	var play := _button("Gioca", _play, "PrimaryButton")
+	_play_button = play
+	play.custom_minimum_size = Vector2(340, 64)
+	play.add_theme_font_size_override("font_size", 32)
+	column.add_child(play)
+	column.add_child(_button("Lo stagno", _open_pond))
+	column.add_child(_button("Esci", get_tree().quit, "FlatButton"))
 	play.grab_focus()
+
+	# In basso a sinistra: quello che ti porti dietro fra una run e l'altra.
+	var stats := HBoxContainer.new()
+	stats.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	stats.offset_left = 72
+	stats.offset_top = -72
+	stats.offset_bottom = -40
+	stats.grow_horizontal = Control.GROW_DIRECTION_END
+	stats.add_theme_constant_override("separation", 28)
+	_ui.add_child(stats)
+	_flies_label = _label("", "Money")
+	stats.add_child(_flies_label)
+	_golden_label = _label("", "Money")
+	stats.add_child(_golden_label)
+	var record: float = _game.record_distance
+	stats.add_child(_label("Record: %d m" % roundi(record) if record > 0.0 else "Nessun record", "Strong"))
+
+	var hint := _label("F2: cambia stile grafico", "Note")
+	hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	hint.offset_left = -320
+	hint.offset_right = -32
+	hint.offset_top = -56
+	hint.offset_bottom = -32
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_ui.add_child(hint)
 
 	_pond = Pond.new()
 	_pond.visible = false
-	_pond.closed.connect(_refresh)
-	add_child(_pond)
-	_refresh()
+	_pond.closed.connect(_on_pond_closed)
+	_ui.add_child(_pond)
 
 
 func _refresh() -> void:
 	_flies_label.text = "Mosche: %d" % Progress.flies
+	_golden_label.text = "Mosche d'oro: %d" % Progress.golden
+	_golden_label.visible = Progress.golden > 0
 
 
+## Il menu sparisce e la run parte sul posto.
 func _play() -> void:
-	get_tree().change_scene_to_file(GAME)
+	_ui.mouse_filter = Control.MOUSE_FILTER_STOP
+	var tween := create_tween()
+	tween.tween_property(_ui, "modulate:a", 0.0, 0.3)
+	tween.tween_callback(_ui.get_parent().queue_free)
+	_game.start_run()
 
 
 func _open_pond() -> void:
@@ -67,16 +137,25 @@ func _open_pond() -> void:
 	_pond.visible = true
 
 
+func _on_pond_closed() -> void:
+	_refresh()
+	_play_button.grab_focus()
+
+
+## Le scritte del menu stanno sopra il mondo: bordo scuro, come nell'HUD.
 func _label(text: String, variation: String) -> Label:
 	var label := Label.new()
 	label.text = text
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.theme_type_variation = variation
+	if variation != "Logo":
+		label.add_theme_constant_override("outline_size", 6)
 	return label
 
 
-func _button(text: String, action: Callable) -> Button:
+func _button(text: String, action: Callable, variation := "") -> Button:
 	var button := Button.new()
 	button.text = text
+	button.theme_type_variation = variation
+	button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	button.pressed.connect(action)
 	return button

@@ -222,7 +222,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _pause.visible:
 			get_viewport().set_input_as_handled()
 			resume()
-		elif not get_tree().paused and not _game_over.visible and not frog.is_dead:
+		# HUD nascosto: la partita fa da sfondo al menu.
+		elif visible and not get_tree().paused and not _game_over.visible and not frog.is_dead:
 			get_viewport().set_input_as_handled()
 			pause()
 		return

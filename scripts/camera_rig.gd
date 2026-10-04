@@ -11,13 +11,24 @@ extends Node3D
 @export var target_height := 1.2
 @export var follow_speed := 15.0
 
+@export_group("Menu")
+## Nel menu la telecamera gira piano attorno alla rana, un po' più larga e
+## più bassa, con la rana spostata a destra (il menu sta a sinistra).
+@export var orbit_speed := 0.12
+@export var orbit_pitch_degrees := -10.0
+@export var orbit_length := 7.5
+@export var orbit_offset := -2.6
+
 @onready var pitch: Node3D = $Pitch
 @onready var spring_arm: SpringArm3D = $Pitch/SpringArm3D
+@onready var camera: Camera3D = $Pitch/SpringArm3D/Camera3D
 
 var _target: Node3D
 var _shake_strength := 0.0
 var _shake_left := 0.0
 var _shake_duration := 1.0
+var _orbiting := false
+var _play_pitch := 0.0
 
 
 func _ready() -> void:
@@ -29,6 +40,8 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if _orbiting:
+		rotation.y += orbit_speed * delta
 	var weight := 1.0 - exp(-follow_speed * delta)
 	global_position = global_position.lerp(_target_point(), weight)
 	# La scossa usa il tempo reale: deve vedersi anche nel fermo-immagine.
@@ -51,6 +64,31 @@ func _unhandled_input(event: InputEvent) -> void:
 			deg_to_rad(min_pitch_degrees),
 			deg_to_rad(max_pitch_degrees)
 		)
+
+
+## Il menu sopra il gioco: la telecamera gira attorno alla rana e non
+## risponde al mouse (che resta libero per i pulsanti).
+func start_orbit() -> void:
+	_orbiting = true
+	_play_pitch = pitch.rotation.x
+	set_process_unhandled_input(false)
+	pitch.rotation.x = deg_to_rad(orbit_pitch_degrees)
+	spring_arm.spring_length = orbit_length
+	camera.h_offset = orbit_offset
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+## Dal menu al gioco: la telecamera torna dietro la rana in duration secondi.
+func end_orbit(duration: float) -> void:
+	_orbiting = false
+	set_process_unhandled_input(true)
+	var from := rotation.y
+	var tween := create_tween().set_parallel().set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_method(func(t: float) -> void: rotation.y = lerp_angle(from, 0.0, t), 0.0, 1.0, duration)
+	tween.tween_property(pitch, "rotation:x", _play_pitch, duration)
+	tween.tween_property(spring_arm, "spring_length", 6.0, duration)
+	tween.tween_property(camera, "h_offset", 0.0, duration)
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 ## Scossa: sposta la telecamera a caso per un attimo, in tempo reale.
