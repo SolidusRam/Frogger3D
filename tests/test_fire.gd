@@ -116,6 +116,6 @@ func _physics_process(_delta: float) -> bool:
 				t.check(absf(heat.value - m.heat) < 0.01, "i rottami dell'incendio non scaldano")
 				t.check(Engine.time_scale == 1.0, "e non fanno scattare il rallentatore")
 				var label: String = main.get_node("Hud")._fire_label.text
-				t.check(label.begins_with("Fuoco:"), "l'HUD mostra la distanza dal fuoco (%s)" % label)
+				t.check(label.ends_with(" m") and label.to_int() > 0, "l'HUD mostra la distanza dal fuoco (%s)" % label)
 				t.finish(self)
 	return false

@@ -4,7 +4,8 @@ extends Control
 ## modelli low-poly: guantone, molla, ala a delta, goccia (il corpo), lingua.
 ## Più tre icone che non sono attrezzi: "" (un potenziamento numerico: una
 ## freccia in su), "fusion" (due anelli intrecciati) e le mosche ("fly",
-## "golden"). Il colore viene da UiTheme.SLOT_COLORS.
+## "golden") e la fiamma dell'incendio ("fire"). Il colore viene da
+## UiTheme.SLOT_COLORS.
 
 var kind := "":
 	set(value):
@@ -77,6 +78,17 @@ func _draw() -> void:
 			draw_arc(p.call(0.62, 0.5), 0.24 * s, 0.0, TAU, 24, ink, line * 2.2)
 			draw_arc(p.call(0.38, 0.5), 0.24 * s, 0.0, TAU, 24, color, line * 1.2)
 			draw_arc(p.call(0.62, 0.5), 0.24 * s, 0.0, TAU, 24, color.lightened(0.2), line * 1.2)
+		"fire":
+			# Una fiamma: due lingue, fuori rossa e dentro gialla.
+			var outer := PackedVector2Array([
+				p.call(0.5, 0.06), p.call(0.66, 0.32), p.call(0.76, 0.24), p.call(0.84, 0.58),
+				p.call(0.72, 0.86), p.call(0.5, 0.94), p.call(0.28, 0.86), p.call(0.16, 0.58),
+				p.call(0.3, 0.36), p.call(0.38, 0.46),
+			])
+			_shape(outer, Color(0.95, 0.32, 0.08), ink, line)
+			draw_colored_polygon(PackedVector2Array([
+				p.call(0.5, 0.42), p.call(0.64, 0.66), p.call(0.58, 0.84), p.call(0.42, 0.84), p.call(0.36, 0.66),
+			]), Color(1.0, 0.82, 0.25))
 		"fly", "golden":
 			var body_color := UiTheme.GOLD if kind == "golden" else Color(0.16, 0.15, 0.14)
 			for side in [-1.0, 1.0]:

@@ -63,7 +63,7 @@ func _physics_process(_delta: float) -> bool:
 				var config := ConfigFile.new()
 				var saved := config.load("user://record_test.cfg") == OK and is_equal_approx(config.get_value("record", "distance", 0.0), 123.0)
 				t.check(saved, "il record è salvato su disco")
-				t.check(hud._game_over_text.text.contains("Nuovo record"), "la schermata annuncia il nuovo record")
+				t.check(hud.game_over_text().contains("Nuovo record"), "la schermata annuncia il nuovo record")
 				main.restart()
 				step = 2
 				start = frame

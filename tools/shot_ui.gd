@@ -57,9 +57,16 @@ func _process(_d: float) -> bool:
 					if child.get_script() and child.get_script().resource_path.ends_with("test_mode.gd"):
 						child._set_open(true)
 			"hud":
-				main.get_node("Upgrades").apply("tongue")
-				main.get_node("Upgrades").apply("explosive_gloves")
-				main.get_node("Hud").show_equipment(main.get_node("Upgrades"))
+				var upgrades: Node = main.get_node("Upgrades")
+				for id in ["tongue", "explosive_gloves", "thermals", "waterproof", "punch_power", "punch_power", "tough_skin"]:
+					upgrades.apply(id)
+				main.get_node("Hud").show_equipment(upgrades)
+				main.add_flies(23)
+				main.add_golden(1)
+				var frog: Node = main.get_node("Frog")
+				frog.super_jump_power.cooldown_left = frog.super_jump_power.cooldown * 0.6
+				frog.take_hit(30, Vector3.ZERO)
+				main.get_node("Wildfire").front_z = frog.global_position.z + 12.0
 	if scene == "menu" and frame == 45 and OS.get_environment("ANGLE") != "":
 		current_scene.get_child(0).get_node("Frog/CameraRig").rotation.y = float(OS.get_environment("ANGLE"))
 	if scene == "partenza" and frame == 60:

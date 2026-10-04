@@ -60,6 +60,9 @@ func _physics_process(_delta: float) -> bool:
 			_press("pause")
 		42:
 			t.check(not paused and not hud.is_paused(), "Esc di nuovo riprende")
+			# L'HUD mostra il modificatore sotto il suo potere.
+			main.get_node("Upgrades").apply("explosive_gloves")
+			t.check(hud._chips.punch._modifier.text == "Guantoni esplosivi", "l'HUD mostra i guantoni esplosivi sotto il pugno")
 			# Mosche raccolte, poi si abbandona dalla pausa.
 			main.add_flies(7)
 			_press("pause")
@@ -112,7 +115,7 @@ func _physics_process(_delta: float) -> bool:
 			main.add_flies(5)
 			main.add_golden(1)
 			t.check(main.run_flies == m.flies and main.run_golden == 0, "da morta la rana non raccoglie più mosche")
-			t.check(main.get_node("Hud")._game_over_text.text.contains("Run di prova"), "la fine di una run di prova dice che le mosche non contano")
+			t.check(main.get_node("Hud").game_over_text().contains("Run di prova"), "la fine di una run di prova dice che le mosche non contano")
 		220:
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(PROGRESS))
 			DirAccess.remove_absolute(ProjectSettings.globalize_path("user://record_test.cfg"))

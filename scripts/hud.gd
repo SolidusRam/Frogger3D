@@ -1,10 +1,11 @@
 class_name Hud
 extends CanvasLayer
-## L'HUD: vita e calore in alto a sinistra, distanza e tane in alto a destra,
-## poteri in basso a sinistra, messaggi al centro, la pausa (Esc) e la
-## schermata di fine run.
-## Costruito da codice per restare in un solo file finché i modelli e la
-## grafica definitiva non arrivano.
+## L'HUD: vita e calore (a cinque gradini) in alto a sinistra; distanza, tana,
+## record e mosche in alto a destra; i poteri in basso a sinistra, ognuno col
+## colore e l'icona del suo attrezzo, il tasto, il modificatore equipaggiato e
+## la ricarica; l'incendio in basso al centro; gli attrezzi senza potere (il
+## corpo) e i potenziamenti numerici in basso a destra. Poi messaggi, catene,
+## carte della tana, pausa (Esc) e la schermata di fine run.
 
 signal restart_requested
 signal menu_requested
@@ -17,35 +18,41 @@ const MAX_CARDS := 4
 
 const HEALTH_COLOR := Color(0.4, 0.8, 0.3)
 const HEALTH_LOW_COLOR := Color(0.9, 0.25, 0.2)
-const HEAT_COLORS: Array[Color] = [
-	Color(0.95, 0.85, 0.3), Color(0.98, 0.7, 0.2), Color(0.98, 0.5, 0.15),
-	Color(0.95, 0.3, 0.1), Color(0.85, 0.1, 0.1), Color(0.6, 0.0, 0.15),
-]
-const POWER_COLOR := Color(0.56, 0.66, 0.82)
+## Sotto questa frazione la barra della vita diventa rossa e pulsa.
+const HEALTH_LOW := 0.3
+## I poteri: nome, tasto, attrezzo. L'ordine è quello dall'alto in basso.
+const POWERS := {
+	"punch": ["Pugno", "Clic", "gloves"],
+	"super_jump": ["Super salto", "Clic dx", "springs"],
+	"glide": ["Deltaplano", "Spazio", "wing"],
+	"tongue": ["Lingua", "E", "tongue"],
+	"slam": ["Schianto", "Ctrl", "springs"],
+}
 
 @export var frog: Frog
 @export var course: Course
 
 var _health_bar: ProgressBar
 var _health_label: Label
-var _heat_bar: ProgressBar
+var _heat_meter: HeatMeter
 var _heat_label: Label
 var _distance_label: Label
 var _dens_label: Label
 var _record_label: Label
 var _flies_label: Label
-var _super_jump_bar: ProgressBar
-var _glide_bar: ProgressBar
-## Lingua e schianto: si vedono solo quando sono equipaggiati.
-var _tongue_row: VBoxContainer
-var _tongue_bar: ProgressBar
-var _slam_row: VBoxContainer
-var _slam_bar: ProgressBar
+var _golden_label: Label
+var _golden_icon: SlotIcon
+## I poteri nell'HUD, per nome (vedi POWERS).
+var _chips := {}
 var _message: Label
 var _fire_label: Label
+var _fire_box: HBoxContainer
 var _vignette: ColorRect
 var _game_over: PanelContainer
 var _game_over_text: Label
+var _game_over_distance: Label
+var _game_over_record: Label
+var _game_over_flies: Label
 var _pond: Pond
 var _chain_label: Label
 var _offer: PanelContainer
@@ -54,7 +61,8 @@ var _offer_buttons: Array[Button] = []
 ## Le parti di ogni carta: icona, nome dello slot, nome, durata, effetto.
 var _card_parts: Array[Dictionary] = []
 var _upgrades: Upgrades
-var _equipment_label: Label
+## In basso a destra: il corpo e i potenziamenti numerici.
+var _extras: VBoxContainer
 var _pause: Control
 ## Radice di tutti i controlli: porta il tema.
 var _root: Control
@@ -91,64 +99,81 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	_distance_label.text = "%d m" % roundi(course.distance())
-	_dens_label.text = "Tane: %d" % course.dens_reached
-	_super_jump_bar.value = frog.super_jump_power.ready_ratio()
-	_glide_bar.value = frog.glide_charge_ratio()
-	_tongue_row.visible = frog.tongue_power.enabled
-	_tongue_bar.value = frog.tongue_power.ready_ratio()
-	_slam_row.visible = frog.slam_power.enabled
-	_slam_bar.value = frog.slam_power.ready_ratio()
+	_dens_label.text = "Tana %d" % course.dens_reached
+	var punch := frog.punch_power
+	_chips.punch.set_ratio(1.0 - punch.cooldown_left / maxf(punch.cooldown, 0.001))
+	_chips.super_jump.set_ratio(frog.super_jump_power.ready_ratio())
+	_chips.glide.set_ratio(frog.glide_charge_ratio())
+	_chips.tongue.visible = frog.tongue_power.enabled
+	_chips.tongue.set_ratio(frog.tongue_power.ready_ratio())
+	_chips.slam.visible = frog.slam_power.enabled
+	_chips.slam.set_ratio(frog.slam_power.ready_ratio())
+	# Poca vita: la barra pulsa.
+	var low := float(frog.health) / frog.max_health < HEALTH_LOW and not frog.is_dead
+	_health_bar.modulate.a = 0.65 + 0.35 * sin(Time.get_ticks_msec() * 0.012) if low else 1.0
 
 
 ## L'incendio dietro la rana: la distanza, e il bordo dello schermo che si
 ## arrossa (danger da 0 a 1) quando è vicino.
 func set_fire_distance(distance: float, danger: float) -> void:
-	_fire_label.text = "Fuoco: %d m" % maxi(roundi(distance), 0)
-	_fire_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.6).lerp(Color(1.0, 0.25, 0.1), danger))
+	_fire_label.text = "%d m" % maxi(roundi(distance), 0)
+	_fire_label.add_theme_color_override("font_color", UiTheme.TEXT.lerp(Color(1.0, 0.3, 0.1), danger))
+	# Vicino, l'indicatore pulsa.
+	var pulse := 1.0 + 0.12 * danger * absf(sin(Time.get_ticks_msec() * 0.008))
+	_fire_box.scale = Vector2(pulse, pulse)
 	(_vignette.material as ShaderMaterial).set_shader_parameter("strength", danger)
 
 
 func set_flies(count: int, golden := 0) -> void:
-	_flies_label.text = "Mosche: %d" % count + ("   d'oro: %d" % golden if golden > 0 else "")
+	_flies_label.text = str(count)
+	_golden_label.text = str(golden)
+	_golden_label.visible = golden > 0
+	_golden_icon.visible = golden > 0
 
 
 func set_record(distance: float) -> void:
 	if _record_label:
-		_record_label.text = "Record: %d m" % roundi(distance)
+		_record_label.text = "Record %d m" % roundi(distance)
 
 
 func show_game_over(stats: Dictionary) -> void:
-	var lines := [
-		"Distanza: %d m" % roundi(stats.distance),
-		"Tane raggiunte: %d" % stats.dens,
-		"Tempo: %d:%02d" % [floori(stats.time / 60.0), floori(stats.time) % 60],
-		"Calore massimo: livello %d" % stats.heat_level,
-		"Nuovo record!" if stats.new_record else "Record: %d m" % roundi(stats.record),
-		"Mosche: +%d (in tutto %d)" % [stats.flies, stats.total_flies],
-		"Mosche d'oro: +%d (in tutto %d)" % [stats.golden, stats.total_golden],
-	]
+	_game_over_distance.text = "%d m" % roundi(stats.distance)
+	if stats.new_record:
+		_game_over_record.text = "Nuovo record!"
+		_game_over_record.add_theme_color_override("font_color", UiTheme.GOLD)
+	else:
+		_game_over_record.text = "Record: %d m" % roundi(stats.record)
+	_game_over_text.text = "Tane %d   ·   Tempo %d:%02d   ·   Calore massimo %d" % [
+		stats.dens, floori(stats.time / 60.0), floori(stats.time) % 60, stats.heat_level]
 	if stats.get("test_run", false):
-		lines.resize(lines.size() - 2)
-		lines.append("Run di prova: le mosche non contano")
-	_game_over_text.text = "\n".join(lines)
+		_game_over_flies.text = "Run di prova: le mosche non contano"
+	else:
+		_game_over_flies.text = "+%d mosche, +%d d'oro   (in tutto %d e %d)" % [
+			stats.flies, stats.golden, stats.total_flies, stats.total_golden]
 	_game_over.visible = true
+
+
+## Tutte le scritte della schermata di fine, per i test.
+func game_over_text() -> String:
+	return "\n".join(_game_over.find_children("*", "Label", true, false).map(func(label): return label.text))
 
 
 func _on_health_changed(health: int, max_health: int) -> void:
 	_health_bar.max_value = max_health
 	_health_bar.value = health
-	_health_label.text = "Vita %d / %d" % [health, max_health]
-	var low := float(health) / max_health < 0.3
-	_set_fill(_health_bar, HEALTH_LOW_COLOR if low else HEALTH_COLOR)
+	_health_label.text = "VITA  %d / %d" % [health, max_health]
+	_set_fill(_health_bar, HEALTH_LOW_COLOR if float(health) / max_health < HEALTH_LOW else HEALTH_COLOR)
 
 
 func _on_heat_changed(value: float, level: int) -> void:
-	_heat_bar.value = value
+	_heat_meter.value = value
 	if level > _last_heat_level:
 		_show_message("Calore: livello %d" % level)
+		# Un nuovo gradino: il calore lampeggia.
+		_heat_meter.modulate = Color(2.0, 2.0, 2.0)
+		create_tween().set_ignore_time_scale(true).tween_property(_heat_meter, "modulate", Color.WHITE, 0.5)
 	_last_heat_level = level
-	_heat_label.text = "Calore: livello %d / %d" % [level, Heat.LEVELS]
-	_set_fill(_heat_bar, HEAT_COLORS[level])
+	_heat_label.text = "CALORE  %d / %d" % [level, Heat.LEVELS]
 
 
 func _on_den_reached(count: int, distance: float) -> void:
@@ -156,7 +181,7 @@ func _on_den_reached(count: int, distance: float) -> void:
 
 
 func _on_style_changed(style_name: String) -> void:
-	_show_message("Stile: %s   (F2 per cambiare)" % style_name)
+	_show_message("Stile: %s" % style_name)
 
 
 ## "CATENA ×N" sotto il centro, che pulsa a ogni rottame in più.
@@ -235,21 +260,33 @@ func hide_offer() -> void:
 	_offer.visible = false
 
 
-## L'equipaggiamento in basso a destra: un modificatore per slot e i
-## potenziamenti numerici presi.
+## L'equipaggiamento: il modificatore di ogni slot va sotto il suo potere
+## (una fusione sotto entrambi); il corpo, che non ha un potere, e i
+## potenziamenti numerici in basso a destra.
 func show_equipment(upgrades: Upgrades) -> void:
-	var lines: Array[String] = []
-	var listed := {}
-	for slot: String in Upgrades.SLOT_NAMES:
+	for power: String in POWERS:
+		var slot: String = POWERS[power][2]
 		var id: String = upgrades.slots[slot]
-		if id == "" or listed.has(id):
-			continue
-		listed[id] = true
-		var names := " + ".join(Upgrades.slots_of(id).map(func(sl): return Upgrades.SLOT_NAMES[sl]))
-		lines.append("%s: %s" % [names, Upgrades.CATALOG[id].name])
+		# Lingua e schianto sono loro stessi il modificatore.
+		var shown := id != "" and id != power and not (power == "super_jump" and id == "slam")
+		_chips[power].set_modifier(Upgrades.CATALOG[id].name if shown else "")
+	for child in _extras.get_children():
+		child.queue_free()
+	var body: String = upgrades.slots["body"]
+	if body != "":
+		_extras.add_child(_extra("body", Upgrades.CATALOG[body].name))
 	for id: String in upgrades.stacks:
-		lines.append("%s ×%d" % [Upgrades.CATALOG[id].name, upgrades.stacks[id]])
-	_equipment_label.text = "\n".join(lines)
+		_extras.add_child(_extra("", "%s ×%d" % [Upgrades.CATALOG[id].name, upgrades.stacks[id]]))
+
+
+func _extra(slot: String, text: String) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.alignment = BoxContainer.ALIGNMENT_END
+	row.add_theme_constant_override("separation", 6)
+	var label := _label(15, text)
+	row.add_child(label)
+	row.add_child(SlotIcon.make(slot, 22.0))
+	return row
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -300,77 +337,79 @@ func _show_message(text: String) -> void:
 
 func _build_top_left() -> void:
 	var box := VBoxContainer.new()
-	box.position = Vector2(16, 12)
-	box.add_theme_constant_override("separation", 4)
+	box.position = Vector2(20, 18)
+	box.add_theme_constant_override("separation", 8)
 	_root.add_child(box)
-	_health_label = _label(18)
-	box.add_child(_health_label)
-	_health_bar = _bar(Vector2(300, 18), HEALTH_COLOR)
+	_health_bar = _bar(Vector2(300, 26), HEALTH_COLOR)
 	box.add_child(_health_bar)
-	_heat_label = _label(18)
-	box.add_child(_heat_label)
-	_heat_bar = _bar(Vector2(300, 18), HEAT_COLORS[0])
-	_heat_bar.max_value = Heat.MAX
-	box.add_child(_heat_bar)
+	_health_label = _inside(_health_bar)
+	_heat_meter = HeatMeter.new()
+	_heat_meter.custom_minimum_size = Vector2(300, 26)
+	box.add_child(_heat_meter)
+	_heat_label = _inside(_heat_meter)
+
+
+## Una scritta dentro una barra, a sinistra.
+func _inside(bar: Control) -> Label:
+	var label := _label(15)
+	label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	label.offset_left = 10
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	bar.add_child(label)
+	return label
 
 
 func _build_top_right() -> void:
 	var box := VBoxContainer.new()
 	box.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	box.offset_left = -260
-	box.offset_right = -16
-	box.offset_top = 12
-	box.alignment = BoxContainer.ALIGNMENT_BEGIN
+	box.offset_left = -360
+	box.offset_right = -20
+	box.offset_top = 10
+	box.add_theme_constant_override("separation", 2)
 	_root.add_child(box)
-	_distance_label = _label(42)
+	_distance_label = _label(46)
 	_distance_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	box.add_child(_distance_label)
-	_dens_label = _label(18)
-	_dens_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	box.add_child(_dens_label)
-	_record_label = _label(15)
-	_record_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_record_label.modulate = Color(1, 1, 1, 0.7)
-	box.add_child(_record_label)
-	_flies_label = _label(18, "Mosche: 0")
-	_flies_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	var info := HBoxContainer.new()
+	info.alignment = BoxContainer.ALIGNMENT_END
+	info.add_theme_constant_override("separation", 14)
+	box.add_child(info)
+	_dens_label = _label(16)
+	info.add_child(_dens_label)
+	_record_label = _label(16)
+	_record_label.add_theme_color_override("font_color", UiTheme.TEXT_MUTED)
+	info.add_child(_record_label)
+	var flies := HBoxContainer.new()
+	flies.alignment = BoxContainer.ALIGNMENT_END
+	flies.add_theme_constant_override("separation", 6)
+	box.add_child(flies)
+	flies.add_child(SlotIcon.make("fly", 28.0))
+	_flies_label = _label(22, "0")
 	_flies_label.add_theme_color_override("font_color", UiTheme.GOLD)
-	box.add_child(_flies_label)
+	flies.add_child(_flies_label)
+	_golden_icon = SlotIcon.make("golden", 28.0)
+	_golden_icon.visible = false
+	flies.add_child(_golden_icon)
+	_golden_label = _label(22, "0")
+	_golden_label.add_theme_color_override("font_color", UiTheme.GOLD)
+	_golden_label.visible = false
+	flies.add_child(_golden_label)
 
 
 func _build_powers() -> void:
 	var box := VBoxContainer.new()
 	box.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
-	box.offset_left = 16
+	box.offset_left = 20
 	# Cresce verso l'alto quando si aggiungono lingua e schianto.
 	box.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	box.offset_top = -16
-	box.offset_bottom = -16
-	box.add_theme_constant_override("separation", 2)
+	box.offset_top = -20
+	box.offset_bottom = -20
+	box.add_theme_constant_override("separation", 6)
 	_root.add_child(box)
-	box.add_child(_label(15, "Super salto (tasto destro)"))
-	_super_jump_bar = _bar(Vector2(220, 10), POWER_COLOR)
-	_super_jump_bar.max_value = 1.0
-	box.add_child(_super_jump_bar)
-	box.add_child(_label(15, "Deltaplano (Spazio in aria)"))
-	_glide_bar = _bar(Vector2(220, 10), POWER_COLOR)
-	_glide_bar.max_value = 1.0
-	box.add_child(_glide_bar)
-	_tongue_row = VBoxContainer.new()
-	_tongue_row.add_theme_constant_override("separation", 2)
-	_tongue_row.add_child(_label(15, "Lingua (E)"))
-	_tongue_bar = _bar(Vector2(220, 10), POWER_COLOR)
-	_tongue_bar.max_value = 1.0
-	_tongue_row.add_child(_tongue_bar)
-	box.add_child(_tongue_row)
-	_slam_row = VBoxContainer.new()
-	_slam_row.add_theme_constant_override("separation", 2)
-	_slam_row.add_child(_label(15, "Schianto (Ctrl in aria)"))
-	_slam_bar = _bar(Vector2(220, 10), POWER_COLOR)
-	_slam_bar.max_value = 1.0
-	_slam_row.add_child(_slam_bar)
-	box.add_child(_slam_row)
-	box.add_child(_label(14, "F2: cambia stile grafico"))
+	for power: String in POWERS:
+		var chip := PowerChip.make(POWERS[power][0], POWERS[power][1], POWERS[power][2])
+		box.add_child(chip)
+		_chips[power] = chip
 
 
 func _build_fire() -> void:
@@ -391,14 +430,20 @@ void fragment() {
 	_vignette.material = material
 	_root.add_child(_vignette)
 	_root.move_child(_vignette, 0)
-	_fire_label = _label(18, "Fuoco")
-	_fire_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
-	_fire_label.offset_left = -120
-	_fire_label.offset_right = 120
-	_fire_label.offset_top = -44
-	_fire_label.offset_bottom = -14
-	_fire_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_root.add_child(_fire_label)
+	# L'incendio, in basso al centro: la fiamma e i metri che mancano.
+	_fire_box = HBoxContainer.new()
+	_fire_box.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
+	_fire_box.offset_left = -80
+	_fire_box.offset_right = 80
+	_fire_box.offset_top = -56
+	_fire_box.offset_bottom = -20
+	_fire_box.pivot_offset = Vector2(80, 18)
+	_fire_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	_fire_box.add_theme_constant_override("separation", 6)
+	_root.add_child(_fire_box)
+	_fire_box.add_child(SlotIcon.make("fire", 32.0))
+	_fire_label = _label(22, "")
+	_fire_box.add_child(_fire_label)
 
 
 func _build_message() -> void:
@@ -504,15 +549,15 @@ func _on_card_pressed(index: int) -> void:
 
 
 func _build_equipment() -> void:
-	_equipment_label = _label(15)
-	_equipment_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	_equipment_label.offset_left = -360
-	_equipment_label.offset_right = -16
-	_equipment_label.offset_top = -130
-	_equipment_label.offset_bottom = -16
-	_equipment_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_equipment_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
-	_root.add_child(_equipment_label)
+	_extras = VBoxContainer.new()
+	_extras.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	_extras.offset_left = -360
+	_extras.offset_right = -20
+	_extras.grow_vertical = Control.GROW_DIRECTION_BEGIN
+	_extras.offset_top = -20
+	_extras.offset_bottom = -20
+	_extras.add_theme_constant_override("separation", 4)
+	_root.add_child(_extras)
 
 
 func _build_game_over() -> void:
@@ -525,12 +570,29 @@ func _build_game_over() -> void:
 	center.add_child(_game_over)
 
 	var box := VBoxContainer.new()
-	box.custom_minimum_size.x = 400
-	box.add_theme_constant_override("separation", 12)
+	box.custom_minimum_size.x = 460
+	box.add_theme_constant_override("separation", 10)
 	_game_over.add_child(box)
-	box.add_child(_text("Title", "Fine della corsa"))
-	_game_over_text = _text("")
+	box.add_child(_text("Header", "Fine della corsa"))
+	# La distanza in grande: è il numero della run.
+	_game_over_distance = _text("Logo")
+	box.add_child(_game_over_distance)
+	_game_over_record = _text("Strong")
+	_game_over_record.add_theme_color_override("font_color", UiTheme.TEXT_MUTED)
+	box.add_child(_game_over_record)
+	_game_over_text = _text("Note")
 	box.add_child(_game_over_text)
+	var flies := HBoxContainer.new()
+	flies.alignment = BoxContainer.ALIGNMENT_CENTER
+	flies.add_theme_constant_override("separation", 8)
+	box.add_child(flies)
+	flies.add_child(SlotIcon.make("fly", 30.0))
+	_game_over_flies = _text("Strong")
+	_game_over_flies.add_theme_color_override("font_color", UiTheme.GOLD)
+	flies.add_child(_game_over_flies)
+	var gap := Control.new()
+	gap.custom_minimum_size.y = 6
+	box.add_child(gap)
 	box.add_child(_button("Ricomincia (Invio)", restart_requested.emit, "PrimaryButton"))
 	box.add_child(_button("Lo stagno", _open_pond))
 	box.add_child(_button("Menu", menu_requested.emit, "FlatButton"))

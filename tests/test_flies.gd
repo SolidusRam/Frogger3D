@@ -104,7 +104,7 @@ func _physics_process(_delta: float) -> bool:
 				config.load("user://progressi_test.cfg")
 				var saved: int = config.get_value("stagno", "mosche", -1)
 				t.check(saved == m.run, "a fine run le mosche si sommano al totale salvato (%d)" % saved)
-				t.check(main.get_node("Hud")._game_over_text.text.contains("Mosche: +%d" % m.run), "la fine della corsa le mostra")
+				t.check(main.get_node("Hud").game_over_text().contains("+%d mosche" % m.run), "la fine della corsa le mostra")
 				DirAccess.remove_absolute(ProjectSettings.globalize_path("user://progressi_test.cfg"))
 				DirAccess.remove_absolute(ProjectSettings.globalize_path("user://record_test.cfg"))
 				t.finish(self)
