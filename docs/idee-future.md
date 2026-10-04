@@ -25,9 +25,17 @@ Oggi il calore agisce sul fiume solo rendendo più veloci le correnti dei fiumi 
 - **Aironi**: predatori naturali delle rane, arrivano dall'alto. Sarebbero l'unica minaccia per chi plana col deltaplano, che oggi permette di saltare il fiume. Inclinazione di Claude, da discutere.
 - **Tronchi che marciscono**: al calore alto sono più corti, o affondano dopo qualche secondo che la rana ci sta sopra.
 
-## Esperienza dal caos e ingorgo
+## Esperienza dal caos (accantonata)
 
-Se l'esperienza cade a terra tra i rottami, l'ingorgo diventa il posto più comodo per raccoglierla. Alternativa: l'esperienza sparisce dopo pochi secondi, così bisogna tuffarsi nel caos mentre le auto si muovono ancora.
+Il 4 ottobre 2026 l'utente ha deciso che, per ora, il caos non dà forza: la forza si guadagna nelle tane. L'idea resta qui se si volesse riprenderla. Il nodo era l'ingorgo: se l'esperienza cade a terra tra i rottami, l'ingorgo diventa il posto più comodo per raccoglierla. Le alternative erano l'esperienza che sparisce dopo pochi secondi, o l'esperienza accreditata subito e moltiplicata dalle catene, come in Burnout.
+
+## Il caos senza ricompensa: perché provocarlo?
+
+Se il caos non dà forza, deve servire a passare, altrimenti la strategia migliore è evitarlo. Oggi serve già in parte: un'auto ribaltata blocca una corsia, un rottame fa da zattera, il fumo solleva il deltaplano (correnti calde), un'esplosione svuota la strada (guantoni esplosivi). Da tenere d'occhio nelle prove: il giocatore usa il pugno per passare, o lo evita perché scalda? I power-up nuovi dovrebbero dare al caos sempre più usi.
+
+## Meta-progressione del roguelite (da decidere)
+
+Proposta di Claude, non ancora discussa: una run infinita ma tarata per finire in 15-20 minuti; fra una run e l'altra si sbloccano opzioni, non forza (power-up che entrano nel mazzo delle tane, rane con attrezzi di partenza diversi); ogni tot tane cambia la "zona".
 
 ## La tana che "mette in banca"
 
@@ -50,7 +58,7 @@ Ogni power-up si vede addosso alla rana (è un supereroe con gli attrezzi). Già
 | Corpo | Pelle impermeabile | l'acqua non toglie vita |
 | Corpo | Assicurazione | si sopravvive a un colpo mortale, ma il calore sale di un livello |
 | Calore | Più caldo, più forte | i poteri crescono col livello del calore |
-| Calore | Benzina sul fuoco | calore ×1,5, esperienza ×2 |
+| Calore | Benzina sul fuoco | calore ×1,5, ma nelle tane si sceglie tra quattro carte invece che tra tre |
 
 Combinazioni da cercare: correnti calde + guantoni esplosivi (il caos sulla strada fa volare sopra il fiume), molle-trampolino + traffico veloce, montante + atterraggio sismico. Domanda aperta: un secondo slot per attrezzo come premio raro?
 
@@ -76,6 +84,8 @@ La proposta del 4 ottobre (criteri di difficoltà e porto con le navi) è stata 
 
 ## Pubblicazione e aspetto economico (discussione, 4 ottobre)
 
+Deciso: il gioco si pubblica comunque, senza budget; il nome verrà più avanti. Il percorso in quattro fasi sta nella roadmap di regole-design.md.
+
 - **Il nome va cambiato**: "Frogger" è un marchio di Konami. Le meccaniche non sono protette (Crossy Road esiste), il nome sì. Va deciso prima di qualsiasi pagina Steam.
 - **Quanto può valere**: dipende quasi tutto dalla visibilità. Ordini di grandezza per un indie su Steam a 5-10 €, con la regola pratica che nella prima settimana si vende il 10-20% delle wishlist e che il netto è circa il 50-55% del lordo (quota di Steam, IVA, rimborsi; le tasse a parte):
 
@@ -87,7 +97,7 @@ La proposta del 4 ottobre (criteri di difficoltà e porto con le navi) è stata 
   | Virale (Megabonk, Vampire Survivors) | centinaia di migliaia | milioni | milioni |
 
 - **A favore**: il gancio si capisce in 3 secondi (una rana che prende a pugni le macchine); il caos fa clip per TikTok, Shorts e streamer; il genere (roguelite, run infinite, prezzo basso) tira.
-- **Rischi**: genere affollato; manca ancora il ciclo "il caos ti dà forza"; niente suono.
+- **Rischi**: genere affollato; mancano ancora la ragione per rigiocare e il suono.
 - **Cosa serve**: un nome proprio, la pagina Steam aperta presto (6-12 mesi prima) per le wishlist, una demo per la Steam Next Fest, clip brevi con costanza. Il costo vivo è basso: 100 $ per Steam Direct, rimborsati dopo 1.000 $ di incassi.
 
 ## Nuovi ambienti

@@ -4,33 +4,34 @@ Ultimo aggiornamento: 2026-10-04
 
 ## Visione
 
-Una rana con i superpoteri attraversa all'infinito strade e fiumi. Il caos che provoca le dà forza, ma rende il mondo sempre più ostile.
+Una rana con i superpoteri attraversa all'infinito strade, fiumi, ferrovie, aeroporti e porti. Si rafforza nelle tane; il caos che provoca le apre la strada, ma rende il mondo sempre più ostile.
 
 Il Frogger originale parla di una creatura fragile in un mondo indifferente. Qui la rana può reagire, e il mondo reagisce a sua volta: più caos provochi, più il mondo ti dà la caccia.
 
 Riferimenti:
 
 - **Frogger**: gli ostacoli (strada, fiume, coccodrilli) e le tane.
-- **Megabonk**: grafica low-poly, esperienza e oggetti durante la run, alta intensità.
+- **Megabonk**: grafica low-poly, potenziamenti durante la run, alta intensità.
 - **GTA**: il livello di ricercato, cioè il mondo che reagisce alle tue azioni.
 - **Risk of Rain**: la difficoltà sale col tempo e non si ferma mai.
 - **Left 4 Dead (AI Director)**: l'intensità arriva a ondate, con momenti in cui si respira.
-- **Burnout (modalità Crash)**: tamponamenti a catena come fonte di punti.
+- **Burnout (modalità Crash)**: i tamponamenti a catena come spettacolo.
 
 ## Regole decise
 
-Il cuore del gioco è uno scambio: ogni potere usato ti rende più forte ma accelera l'ostilità del mondo, che non torna mai indietro.
+Il cuore del gioco è uno scambio: il caos è un attrezzo che apre la strada, e si paga col calore, che non torna mai indietro. La forza invece si guadagna nelle tane.
 
 ```mermaid
 flowchart LR
-    P["Usi un potere"] --> XP["Esperienza e oggetti"] --> F["Rana più forte"]
+    D["Raggiungi una tana"] --> F["Scegli un potenziamento: rana più forte"]
+    F --> P["Usi i poteri: il caos apre la strada"]
+    P --> D
     P --> H["Il calore sale"] --> O["Mondo più ostile"]
     T["Il tempo passa"] -. anche senza poteri .-> H
-    F -- più forza per altro caos --> P
     O -- più pericoli: servono di nuovo i poteri --> P
 ```
 
-Il calore sale anche se il giocatore non fa nulla; i poteri lo accelerano, ma sono anche l'unico modo di diventare più forti.
+Il caos serve a passare: auto ribaltate che bloccano una corsia, rottami che fanno da zattera nel fiume, fumo che solleva il deltaplano, un'esplosione che svuota la strada. Ma ogni potere e ogni rottame scaldano il mondo. Il calore sale anche se il giocatore non fa nulla.
 
 | Area | Regola |
 | --- | --- |
@@ -58,8 +59,10 @@ Il calore sale anche se il giocatore non fa nulla; i poteri lo accelerano, ma so
 | Percorso | Infinito, a sezioni: strade, fiumi, ferrovie (dalla seconda sezione), aeroporti e porti (dalla terza), separati da strisce sicure, poi una tana. Ogni sezione ha più corsie e veicoli e correnti più veloci; i fiumi hanno sempre terra su entrambi i lati. Muri invisibili ai lati della zona di gioco |
 | Calore | Un'unica barra da 0 a 100 in 5 livelli, per strada e palude insieme; sale di continuo col tempo (0,15 al secondo); i poteri (pugno +1, deltaplano +2, super salto +3) e ogni rottame entro 50 m dalla rana (+0,6: conta il caos che si vede, non quello di un aeroporto lontano) lo fanno salire più in fretta; non cala mai. Effetti al massimo: veicoli e correnti più veloci (+80% e +40%), veicoli un po' più radi (+25% di spazio): meno auto ma più veloci, così il traffico minaccia invece di ingorgarsi, frenata -60%, schianti più facili; dal 60% le auto perdono il controllo da sole. Al massimo 80 rottami insieme |
 | Ritmo | Ondate di pericolo sopra una base che cresce sempre |
-| Ricompensa | Provocare caos dà esperienza o oggetti, in stile Megabonk |
-| Vita | Statistiche e vita che crescono durante la run; auto, acqua e coccodrilli tolgono vita: un solo colpo non basta a perdere |
+| Genere | Roguelite con run infinite (deciso il 4 ottobre 2026). Come si rigioca fra una run e l'altra (sblocchi) è ancora da decidere |
+| Ricompensa | La forza si guadagna nelle tane, scegliendo un potenziamento. Il caos non dà forza (decisione del 4 ottobre 2026, "per ora"): è un attrezzo per passare e costa calore |
+| Pubblicazione | Il gioco si pubblica comunque, senza budget: esce quando è pronto. Il nome definitivo verrà più avanti, prima della pagina Steam ("Frogger" è un marchio di Konami) |
+| Vita | Vita e potenziamenti che crescono durante la run, dalle tane; auto, acqua e coccodrilli tolgono vita: un solo colpo non basta a perdere |
 | Sconfitta | Colpito dalle macchine (anche quelle che hai colpito tu), mangiato dal coccodrillo, caduto in acqua |
 | Traffico | Ibrido: le auto guidano in modo cinematico e diventano rottami fisici quando vengono colpite forte; un rottame che colpisce un'auto la trasforma a sua volta. Con il calore alto il traffico passa alla fisica e diventa instabile da solo. I veicoli frenano davanti agli ostacoli e si formano code; se non fanno in tempo a fermarsi si schiantano. I rottami spariscono dopo 25 s |
 | Tetto dei veicoli | Si può stare sul tetto: non fa danno e la rana viene trasportata, come su un tronco |
@@ -103,7 +106,7 @@ Ogni passo si aggiunge solo quando il precedente è divertente. L'ordine dei pas
 
 ### Dove siamo (4 ottobre 2026)
 
-Il gioco base è finito e giocabile: una run infinita in cui si muore e si ricomincia. Sopra il gioco base ci sono già i modelli in Blender, i power-up nelle tane e tre biomi. Manca ancora metà del ciclo del gioco: oggi il caos fa salire solo il calore, e la rana si rafforza solo nelle tane. "Il caos ti dà forza" non esiste ancora.
+Il gioco base è finito e giocabile: una run infinita in cui si muore e si ricomincia. Sopra il gioco base ci sono già i modelli in Blender, i power-up nelle tane e tre biomi. È un bel giocattolo; per essere un gioco da pubblicare gli mancano soprattutto una ragione per rigiocare, abbastanza power-up da costruire build diverse, il suono e la cornice (menu, opzioni, inglese).
 
 ### Fatto
 
@@ -124,20 +127,28 @@ Il gioco base è finito e giocabile: una run infinita in cui si muore e si ricom
 - I bagagli scagliati dal getto. Prova del giocatore (4 ottobre): non sono un vero problema, e una volta volati via la pista si attraversa facilmente. Da rivedere insieme al gradino del decollo.
 - Il calore che ora conta solo i rottami entro 50 m dalla rana.
 
-### Da fare, in ordine proposto
+### Il percorso verso l'uscita
 
-Prima di tutto, **finire i gradini di calore** (sezione "Difficoltà nei biomi"):
+Il gioco si pubblica comunque, senza budget: quattro fasi, e si passa alla successiva quando il criterio è soddisfatto.
 
-- i gradini di aeroporto, ferrovia e fiume, e la frequenza degli aerei con la distanza;
-- la seconda fase del porto, dopo averlo provato: la nave che si inclina col carico (fino a circa 10°) e i container che scivolano in acqua e galleggiano. Qui il pugno trova un ruolo: spostare il peso.
+| Fase | Cosa | Criterio per passare oltre |
+| --- | --- | --- |
+| 1. È un gioco | I punti qui sotto | 5-10 persone esterne lo provano e vogliono rigiocare |
+| 2. Pagina Steam | Il nome, le immagini, un trailer di 30-60 s, clip brevi con costanza | Le wishlist crescono da sole |
+| 3. Demo | I primi minuti, per una Steam Next Fest (tre all'anno) | Chi prova la demo la rigioca e mette il gioco in wishlist |
+| 4. Uscita | Accesso anticipato o versione completa, a 5-8 € | — |
 
-1. **Esperienza dal caos**: è la metà mancante del ciclo. Gli incidenti danno esperienza, e le catene valgono più delle auto singole; il passaggio di livello fa scegliere una statistica. Prima va sciolto il nodo con l'ingorgo (vedi idee-future.md): l'esperienza a terra fa dell'ingorgo il posto più comodo per raccoglierla.
-2. **Reazioni del mondo**: auto che danno la caccia, coccodrilli aggressivi. Ogni reazione ha un avviso visibile, come l'ombra delle gru.
-3. **Ondate**: picchi di pericolo sopra la base del calore, con momenti di respiro.
-4. **Altri power-up** dal catalogo di idee-future.md, compresi gli oggetti che cambiano le regole e non solo i numeri.
-5. **Suono**.
-6. **Altri biomi** (lago ghiacciato, città con semafori, palude) e forse il bivio nella tana.
-7. **Multiplayer** cooperativo, se lo facciamo. Per ora si sviluppa e si testa in singleplayer.
+### Fase 1: da fare, in ordine proposto
+
+1. **Finire i gradini di calore** (sezione "Difficoltà nei biomi"): aeroporto, ferrovia e fiume, e la frequenza degli aerei con la distanza. Poi la seconda fase del porto, dopo averlo provato: la nave che si inclina col carico (fino a circa 10°) e i container che scivolano in acqua e galleggiano; qui il pugno trova un ruolo, spostare il peso.
+2. **Annunci meno invasivi**: il pannello "La soglia del caos" al centro dà fastidio. Proposta: una riga piccola sotto la barra del calore, la prima volta che si entra in un bioma dopo la soglia, col solo gradino di quel bioma.
+3. **Più power-up**: ora che la forza viene solo dalle tane, sono il cuore delle build. Obiettivo 25-30, con combinazioni da scoprire (catalogo in idee-future.md).
+4. **La ragione per rigiocare**: gli sblocchi fra una run e l'altra, e la durata attesa di una run. Da decidere.
+5. **Suono** ed effetti sonori del caos; poi la musica.
+6. **La cornice**: menu, pausa, opzioni (audio, grafica, tasti), testi in inglese, controller, un tutorial per il primo minuto.
+7. **Prova esterna** con 5-10 persone.
+
+Dopo la fase 1, o quando servono: **reazioni del mondo** (auto che danno la caccia, coccodrilli aggressivi), **ondate**, **altri biomi** (lago ghiacciato, città con semafori, palude) e forse il bivio nella tana. Il **multiplayer** cooperativo solo dopo l'uscita, se lo facciamo.
 
 ## Domande aperte
 
