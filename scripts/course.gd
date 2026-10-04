@@ -142,9 +142,12 @@ func _add_chunk(kind: Kind) -> void:
 			var road := Road.new()
 			road.lane_count = lanes
 			road.lane_width = road_lane_width
+			# Le corsie continuano dentro le gallerie del bordo: le auto nascono lì.
+			road.length = (play_half_width + Edges.TUNNEL_DEPTH * 0.65) * 2.0
 			road.min_speed = minf(6.0 + difficulty * 0.7, 14.0)
 			road.max_speed = minf(12.0 + difficulty * 0.9, 20.0)
 			chunk.add_child(road)
+			chunk.set_meta("lanes", lanes)
 		Kind.RIVER:
 			var currents := clampi(3 + floori(difficulty / 2.0) + randi_range(-1, 1), 2, 6)
 			depth = currents * river_lane_width
@@ -193,6 +196,15 @@ func _add_chunk(kind: Kind) -> void:
 			_add_den(chunk, depth)
 
 	_add_side_walls(chunk, depth)
+	var edges := Edges.new()
+	edges.name = "Edges"
+	edges.kind = kind
+	edges.depth = depth
+	edges.edge_x = play_half_width + 0.5
+	if kind == Kind.ROAD:
+		edges.lanes = chunk.get_meta("lanes")
+		edges.lane_width = road_lane_width
+	chunk.add_child(edges)
 	_add_props(chunk, kind, depth)
 	chunk.position.z = _front_z - depth / 2.0
 	chunk.set_meta("near_z", _front_z)

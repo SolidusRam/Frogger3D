@@ -47,6 +47,13 @@ func _physics_process(_delta: float) -> bool:
 				bad += 1
 		t.check(max_chunks <= 25, "i blocchi non si accumulano (al massimo %d insieme)" % max_chunks)
 		t.check(bad == 0, "ogni fiume ha terra su entrambi i lati")
+		var without_edges := 0
+		for chunk in course.get_children():
+			if chunk.has_meta("kind") and (not chunk.has_node("Edges") or chunk.get_node("Edges").get_child_count() == 0):
+				without_edges += 1
+		t.check(without_edges == 0, "ogni blocco ha il suo bordo visibile (%d senza)" % without_edges)
+		var lanes: Array = Lib.by_script(course, "lane.gd")
+		t.check(not lanes.is_empty() and lanes.all(func(l): return l.half_length > 40.0), "le auto nascono dentro le gallerie, oltre il bordo")
 		# La prima sezione finisce con la prima tana.
 		var first_section := order.slice(0, order.find("DEN"))
 		t.check(order.count("RAIL") >= 1 and not first_section.has("RAIL"), "le ferrovie compaiono, ma non nella prima sezione (%d)" % order.count("RAIL"))

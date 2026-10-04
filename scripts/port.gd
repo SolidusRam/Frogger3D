@@ -2,7 +2,8 @@ class_name Port
 extends Node3D
 ## Il porto: una banchina, una o due corsie d'acqua con le navi portacontainer
 ## e le loro gru, e una banchina sicura dall'altra parte; tra due corsie c'è
-## un molo. L'acqua è ferma e ha le regole del fiume. Il blocco va da +Z (dove
+## un molo. L'acqua è ferma e ha le regole del fiume. Le banchine finiscono al
+## bordo della zona di gioco: oltre c'è solo acqua. Il blocco va da +Z (dove
 ## arriva la rana) a -Z.
 
 const NEAR_QUAY := 6.0
@@ -57,13 +58,14 @@ func _quay(near_z: float, depth: float) -> void:
 	var ground := StaticBody3D.new()
 	ground.collision_mask = 0
 	ground.position = Vector3(0.0, -2.0, near_z - depth / 2.0)
+	var width := (play_half_width + 0.5) * 2.0
 	var shape := BoxShape3D.new()
-	shape.size = Vector3(length, 4.0, depth)
+	shape.size = Vector3(width, 4.0, depth)
 	var collision := CollisionShape3D.new()
 	collision.shape = shape
 	ground.add_child(collision)
 	var mesh := MeshInstance3D.new()
-	mesh.mesh = _box(Vector3(length, 4.0, depth), "concrete")
+	mesh.mesh = _box(Vector3(width, 4.0, depth), "concrete")
 	ground.add_child(mesh)
 	add_child(ground)
 	var far_edge := near_z - depth
@@ -73,7 +75,7 @@ func _quay(near_z: float, depth: float) -> void:
 		if absf(edge_z) >= depth_total / 2.0 - 0.01:
 			continue
 		var line := MeshInstance3D.new()
-		line.mesh = _box(Vector3(length, 0.02, EDGE), "taxi_line")
+		line.mesh = _box(Vector3(width, 0.02, EDGE), "taxi_line")
 		line.position = Vector3(0.0, 0.01, edge_z - signf(edge_z - (near_z - depth / 2.0)) * EDGE / 2.0)
 		add_child(line)
 
