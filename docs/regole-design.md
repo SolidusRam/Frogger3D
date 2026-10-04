@@ -1,6 +1,6 @@
 # Frogger 3D — Regole di design
 
-Ultimo aggiornamento: 2026-10-01
+Ultimo aggiornamento: 2026-10-04
 
 ## Visione
 
@@ -70,40 +70,40 @@ Il calore sale anche se il giocatore non fa nulla; i poteri lo accelerano, ma so
 | Urti | Fa male solo un veicolo che ti viene addosso: chi viaggia insieme a un veicolo, sopra o accanto, non si fa male, e nemmeno chi sbatte contro un veicolo fermo. I rottami che galleggiano sono zattere e non fanno mai male |
 | Caos | Deve essere emergente: nasce da regole semplici che si incrociano, non da eventi scritti a mano |
 
-## Gioco base (proposta da discutere)
+## Roadmap
 
-La prima versione giocabile ha un solo obiettivo: capire se attraversare e prendere a pugni le macchine è divertente anche con dei cubi grigi.
+Ogni passo si aggiunge solo quando il precedente è divertente. L'ordine dei passi da fare è una proposta e si può riordinare.
 
-**Dentro:**
+### Dove siamo (4 ottobre 2026)
 
-- La rana in terza persona che salta, controllata con mouse e tastiera.
-- Una strada con più corsie di traffico; le auto hanno la fisica e possono scontrarsi tra loro.
-- Un fiume con tronchi e coccodrilli.
-- La tana come checkpoint, poi il percorso ricomincia più difficile.
-- La vita: auto, acqua e coccodrilli tolgono vita; si perde quando la vita finisce.
-- Una sola barra di calore che sale col tempo e rende il traffico più fitto e veloce.
-- **Tutti e tre i poteri: pugno, super salto e deltaplano.** Il pugno è la prima fonte di caos; ogni potere usato fa salire il calore.
+Il gioco base è finito e giocabile: una run infinita in cui si muore e si ricomincia. Sopra il gioco base ci sono già i modelli in Blender, i power-up nelle tane e tre biomi. Manca ancora metà del ciclo del gioco: oggi il caos fa salire solo il calore, e la rana si rafforza solo nelle tane. "Il caos ti dà forza" non esiste ancora.
 
-**Fuori, per ora:**
+### Fatto
 
-- Esperienza, oggetti e statistiche: senza niente da comprare non servono.
-- Le reazioni del mondo (auto che danno la caccia, coccodrilli aggressivi).
-- Grafica e modelli in Blender: si usano forme semplici.
+| Passo | Cosa c'è |
+| --- | --- |
+| Gioco base | Rana in terza persona, strade con traffico ibrido (auto cinematiche che diventano rottami fisici), fiumi con tronchi e coccodrilli, vita, percorso infinito a sezioni con le tane, calore, fine della run e record su disco |
+| Poteri | Pugno, super salto, deltaplano, ognuno come nodo separato della rana |
+| Grafica | Modelli low-poly in Blender, stile PS1 (più Base e Arcade con F2), il giorno che scende verso la notte col calore, fermo-immagine e rallentatore sulle catene di rottami |
+| Power-up nelle tane | Scelta uno tra tre a gioco fermo; slot-attrezzo (guantoni, molle, ala, corpo). Fatti: guantoni esplosivi, correnti calde, quattro numerici |
+| Biomi | Ferrovia (treni inarrestabili, avviso leale); aeroporto (fiamma e getto dei motori, mezzi scagliati, il getto come ascensore per il deltaplano); porto (nastri, gru che inseguono la rana) |
+| Primi segni del mondo che reagisce | Col calore le auto perdono il controllo da sole, e le gru mirano alla rana e la inseguono |
+| Strumenti | 14 test automatici (tests/run.sh) e screenshot senza finestre (tools/screenshot.sh) |
 
-Il gioco base è finito quando si può giocare una run infinita, morire e ricominciare.
+### Da provare giocando
 
-## Feature da aggiungere, in ordine
+- Aeroporto e porto dopo le ultime modifiche: il super salto con il deltaplano nel getto, il momento giusto per attraversare dietro l'aereo, l'ombra fissa delle gru.
+- Il calore che ora conta solo i rottami entro 50 m dalla rana.
 
-Ogni passo si aggiunge solo quando il precedente è divertente. L'ordine è una proposta e si può riordinare.
+### Da fare, in ordine proposto
 
-1. **Gioco base**: la sezione qui sopra.
-2. **Esperienza dal caos**: gli incidenti danno esperienza e le catene di scontri valgono di più delle auto singole. Il passaggio di livello fa scegliere una statistica. Per ora l'esperienza cade a terra e va raccolta tra i rottami, come in Megabonk; si rivede quando si arriva qui.
-3. **Reazioni del mondo**: al crescere del calore le auto ti danno la caccia e i coccodrilli diventano aggressivi. Ogni reazione ha un avviso visibile.
-4. **Ondate**: picchi di pericolo sopra la base del calore, con momenti di respiro.
-5. **Oggetti che cambiano le regole**, non solo i numeri; per esempio un oggetto che dà meno calore ma anche meno esperienza.
-6. **Poteri nuovi e potenziamenti** dei tre poteri base.
-7. **Modelli low-poly in Blender** e stile grafico definitivo. Si può anticipare in parallelo, ma non prima che il gioco base funzioni.
-8. **Multiplayer** cooperativo, se lo facciamo: teniamo aperta la porta, ma per ora si sviluppa e si testa in singleplayer.
+1. **Esperienza dal caos**: è la metà mancante del ciclo. Gli incidenti danno esperienza, e le catene valgono più delle auto singole; il passaggio di livello fa scegliere una statistica. Prima va sciolto il nodo con l'ingorgo (vedi idee-future.md): l'esperienza a terra fa dell'ingorgo il posto più comodo per raccoglierla.
+2. **Reazioni del mondo**: auto che danno la caccia, coccodrilli aggressivi. Ogni reazione ha un avviso visibile, come l'ombra delle gru.
+3. **Ondate**: picchi di pericolo sopra la base del calore, con momenti di respiro.
+4. **Altri power-up** dal catalogo di idee-future.md, compresi gli oggetti che cambiano le regole e non solo i numeri.
+5. **Suono**.
+6. **Altri biomi** (lago ghiacciato, città con semafori, palude) e forse il bivio nella tana.
+7. **Multiplayer** cooperativo, se lo facciamo. Per ora si sviluppa e si testa in singleplayer.
 
 ## Domande aperte
 
