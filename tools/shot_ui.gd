@@ -11,6 +11,8 @@ const PROGRESS := "user://progressi_shot.cfg"
 func _initialize() -> void:
 	get_root().size = DisplayServer.window_get_size()
 	seed(11)
+	if OS.get_environment("PERF") != "":
+		load("res://scripts/perf_overlay.gd").shown = true
 	var progress: GDScript = load("res://scripts/progress.gd")
 	progress.load_from(PROGRESS)
 	progress.flies = 137

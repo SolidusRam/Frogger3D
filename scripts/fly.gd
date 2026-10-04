@@ -53,6 +53,8 @@ func _ready() -> void:
 	sphere.rings = 3
 	sphere.material = Style.material("gold" if golden else "pupil")
 	body.mesh = sphere
+	# Troppo piccola per fare ombra: sarebbero solo chiamate di disegno in più.
+	body.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(body)
 	for side in [-1.0, 1.0]:
 		var wing := MeshInstance3D.new()
@@ -60,6 +62,7 @@ func _ready() -> void:
 		box.size = Vector3(0.3, 0.02, 0.16)
 		box.material = Style.material("eye")
 		wing.mesh = box
+		wing.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		wing.position = Vector3(side * 0.18, 0.08, 0.0)
 		add_child(wing)
 		_wings.append(wing)
@@ -72,6 +75,7 @@ func _ready() -> void:
 	ring.ring_segments = 3
 	ring.material = Style.material("gold" if golden else "sign_white")
 	(_halo as MeshInstance3D).mesh = ring
+	(_halo as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(_halo)
 
 

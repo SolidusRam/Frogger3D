@@ -37,7 +37,7 @@ Il caos serve a passare: auto ribaltate che bloccano una corsia, rottami che fan
 | --- | --- |
 | Motore | Godot |
 | Telecamera | Terza persona, dietro la rana |
-| Controlli | Mouse e tastiera. Provvisori: WASD movimento, mouse telecamera, Spazio salto (premuto di nuovo in aria e tenuto: deltaplano), tasto sinistro pugno, tasto destro super salto, E lingua-rampino e Ctrl in aria schianto sismico (tutti e due solo se sbloccati nella tana), Esc pausa (Riprendi o Abbandona la run), F1 modalità prova |
+| Controlli | Mouse e tastiera. Provvisori: WASD movimento, mouse telecamera, Spazio salto (premuto di nuovo in aria e tenuto: deltaplano), tasto sinistro pugno, tasto destro super salto, E lingua-rampino e Ctrl in aria schianto sismico (tutti e due solo se sbloccati nella tana), Esc pausa (Riprendi o Abbandona la run), F1 modalità prova, F3 contatore delle prestazioni |
 | Movimento | Libero, non su griglia |
 | Grafica | 3D low-poly in stile Megabonk, modelli fatti in Blender. Stile scelto: PS1 sgranato (gli altri, Base e Arcade, restano disponibili con F2). Tutti i materiali vengono da una tavolozza per stile, scelti per nome del materiale. I modelli si costruiscono con assets/models/build_models.py (Blender): ogni modello ha il suo .blend da ritoccare a mano e il .glb per Godot |
 | Ferrovia | Da 1 a 3 binari. Il treno (locomotiva e 3-5 vagoni tra carri chiusi, alti, e pianali, bassi) è l'unico veicolo che non diventa mai rottame: travolge auto e rottami e toglie 60 di vita alla rana; sul tetto si viaggia sicuri. Avviso leale: le luci dei pali lampeggiano 2,5 s prima che il muso entri nella zona di gioco, e l'avviso non cala col calore; il calore rende i treni più veloci solo fino al +30% |

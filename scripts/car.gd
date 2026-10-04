@@ -37,6 +37,12 @@ const CHAIN_FUSE := 0.35
 const EXPLOSION_PUSH := 12.0
 const EXPLOSION_FROG_RADIUS := 4.5
 const EXPLOSION_FROG_DAMAGE := 30
+## Lo sguardo in avanti (la ShapeCast che fa frenare) costa: con 150-200
+## veicoli vivi era un quarto del tempo di CPU. Chi ha strada libera guarda
+## una volta ogni LOOK_INTERVAL passi; chi ha qualcosa entro LOOK_NEAR metri,
+## a ogni passo (lì servono frenata e urti precisi).
+const LOOK_INTERVAL := 4
+const LOOK_NEAR := 12.0
 ## Se non urta niente, esplode comunque dopo questi secondi.
 const EXPLOSION_FUSE := 1.2
 ## Prima di questo tempo un urto non la fa esplodere: l'auto deve allontanarsi
@@ -124,6 +130,8 @@ var wreck_lifetime := 25.0
 var _speed := 0.0
 var _hitbox: Area3D
 var _look_ahead: ShapeCast3D
+## Passi di fisica che mancano al prossimo sguardo in avanti.
+var _look_wait := 0
 ## Superfici verniciate del modello, per annerirle quando diventa rottame.
 var _painted := []
 var _wheels: Array[Node] = []
@@ -292,6 +300,11 @@ func explode() -> void:
 
 func _drive(delta: float) -> void:
 	var target_speed := cruise_speed
+	_look_wait -= 1
+	if _look_wait <= 0:
+		_look_ahead.force_shapecast_update()
+		var near := _look_ahead.is_colliding() and _look_ahead.get_closest_collision_safe_fraction() * _look_ahead.target_position.length() < LOOK_NEAR
+		_look_wait = 1 if near else LOOK_INTERVAL
 	if _look_ahead.is_colliding():
 		var distance := _look_ahead.get_closest_collision_safe_fraction() * _look_ahead.target_position.length()
 		var ahead := _look_ahead.get_collider(0) as Car
@@ -571,6 +584,9 @@ func _build_look_ahead() -> void:
 	_look_ahead.position = Vector3(0.0, 0.0, -size.z / 2.0 - 0.3)
 	var length := cruise_speed * cruise_speed / (2.0 * braking) + safe_gap + 1.0
 	_look_ahead.target_position = Vector3(0.0, 0.0, -length)
+	# Si aggiorna a mano, in _drive; i veicoli sono sfalsati fra loro.
+	_look_ahead.enabled = false
+	_look_wait = get_instance_id() % LOOK_INTERVAL
 	add_child(_look_ahead)
 
 

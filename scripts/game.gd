@@ -85,6 +85,7 @@ func _ready() -> void:
 	upgrades.equipped.connect(_on_equipped)
 	frog.revived.connect(hud.announce.bind("Seconda vita!"))
 	hud.set_record(record_distance)
+	add_child(PerfOverlay.new())
 	if attract:
 		_enter_attract()
 	else:
