@@ -158,10 +158,8 @@ func show_offer(options: Array[String], upgrades: Upgrades) -> void:
 		if item.slot == "fusion":
 			slot = "Fusione: %s" % " + ".join(Upgrades.slots_of(id).map(func(sl): return Upgrades.SLOT_NAMES[sl]))
 		elif item.slot != "":
-			slot = "Slot: %s" % Upgrades.SLOT_NAMES[item.slot]
-		var replaced := upgrades.replaced_by(id)
-		var warning := "\n\nSostituisce: %s" % Upgrades.CATALOG[replaced].name if replaced != "" else ""
-		button.text = "%d.  %s\n%s\n\n%s%s" % [i + 1, item.name, slot, item.text, warning]
+			slot = "Slot: %s (resta fino a fine run)" % Upgrades.SLOT_NAMES[item.slot]
+		button.text = "%d.  %s\n%s\n\n%s" % [i + 1, item.name, slot, item.text]
 	_offer.visible = true
 	_offer_buttons[0].grab_focus()
 

@@ -219,9 +219,17 @@ func _physics_process(_delta: float) -> bool:
 					if again.has("explosive_gloves") or again.has("thermals") or again.has("napalm"):
 						parts_offered = true
 				t.check(not parts_offered, "col Napalm le sue parti non vengono più offerte")
+				var occupied_offered := false
+				for i in 30:
+					for id in upgrades.make_offer():
+						var slot: String = upgrades.CATALOG[id].slot
+						if slot != "" and slot != "fusion" and upgrades.slots[slot] != "":
+							occupied_offered = true
+				t.check(not occupied_offered, "la tana non offre carte per uno slot già occupato: resta per tutta la run")
+				# Solo la modalità prova sostituisce: toglie tutta la fusione.
 				upgrades.apply("uppercut")
 				smoke = load("res://scripts/car.gd").smoke_seconds
-				t.check(upgrades.slots.wing == "" and not frog.punch_power.explosive and not frog.glider_power.thermals and smoke == 6.0, "un'altra carta per i guantoni toglie tutta la fusione")
+				t.check(upgrades.slots.wing == "" and not frog.punch_power.explosive and not frog.glider_power.thermals and smoke == 6.0, "sostituendo (modalità prova) un pezzo della fusione la si toglie tutta")
 				upgrades.apply("slam")
 				offer = upgrades.make_offer()
 				t.check(offer[0] == "earthquake", "con montante e schianto la tana offre il Terremoto")

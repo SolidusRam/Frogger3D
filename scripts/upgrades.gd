@@ -2,13 +2,15 @@ class_name Upgrades
 extends Node
 ## I power-up della rana e il suo equipaggiamento. Si scelgono nelle tane, uno
 ## tra tre. Gli slot sono gli attrezzi della rana (guantoni, molle, ala, corpo,
-## lingua): ogni slot porta un solo modificatore, e sceglierne un altro per lo
-## stesso slot sostituisce il primo. I potenziamenti numerici non hanno slot e
-## si sommano, fino a un massimo ciascuno.
+## lingua): ogni slot porta un solo modificatore, e una volta scelto resta
+## per tutta la run: la tana non offre più carte per uno slot occupato. I
+## potenziamenti numerici non hanno slot e si sommano, fino a un massimo
+## ciascuno.
 ## Le fusioni: quando sono equipaggiati entrambi i modificatori di una fusione,
-## la tana successiva la offre di sicuro. La fusione occupa i due slot e tiene
-## gli effetti di tutti e due, più il suo. Se poi si sceglie un'altra carta per
-## uno dei due slot, la fusione si perde tutta.
+## la tana successiva la offre di sicuro. La fusione non sostituisce niente:
+## occupa i due slot e tiene gli effetti di tutti e due, più il suo.
+## apply() sa anche sostituire un modificatore (e togliere una fusione): lo usa
+## la modalità prova, non la tana.
 
 signal offered(options: Array[String])
 signal equipped(id: String)
@@ -97,7 +99,7 @@ func fusion_ready(id: String) -> bool:
 	return item.slot == "fusion" and item.parts.all(func(part): return slots[CATALOG[part].slot] == part)
 
 
-## Prepara un'offerta: tre power-up diversi, senza quelli già equipaggiati e
+## Prepara un'offerta: tre power-up diversi, solo per slot ancora liberi e
 ## senza i numerici già al massimo. Una fusione pronta c'è sempre.
 func make_offer(count := 3) -> Array[String]:
 	var fusions: Array[String] = []
@@ -108,10 +110,8 @@ func make_offer(count := 3) -> Array[String]:
 			if fusion_ready(id):
 				fusions.append(id)
 			continue
-		if item.slot != "" and slots[item.slot] == id:
-			continue
-		# Già dentro una fusione equipaggiata.
-		if item.slot != "" and slots[item.slot] != "" and CATALOG[slots[item.slot]].get("parts", []).has(id):
+		# Lo slot è occupato per tutta la run.
+		if item.slot != "" and slots[item.slot] != "":
 			continue
 		if item.slot == "" and stacks.get(id, 0) >= item.max:
 			continue
@@ -130,20 +130,6 @@ func choose(index: int) -> void:
 	var id := current_offer[index]
 	current_offer.clear()
 	apply(id)
-
-
-## Il power-up che la carta id toglierebbe ("" se nessuno): ciò che occupa
-## ora uno dei suoi slot. Una fusione non toglie le sue parti.
-func replaced_by(id: String) -> String:
-	var item: Dictionary = CATALOG[id]
-	for slot: String in slots_of(id):
-		var current: String = slots[slot]
-		if current == "" or current == id:
-			continue
-		if item.slot == "fusion" and current in item.parts:
-			continue
-		return current
-	return ""
 
 
 func apply(id: String) -> void:
