@@ -496,7 +496,7 @@ func _die() -> void:
 	var tween := create_tween()
 	tween.tween_property(visual, "rotation:z", PI, 0.4)
 	Sfx.unloop(self, &"sizzle")
-	Sfx.play(&"frog_die")
+	Sfx.play(&"frog_die", 0.0, 1.0, true)
 	died.emit()
 
 

@@ -71,6 +71,7 @@ var _slowmo_ready_at := 0
 
 func _ready() -> void:
 	add_to_group("game")
+	Sfx.muffle_world(attract)
 	Engine.time_scale = 1.0
 	Heat.reset()
 	Progress.load_from(progress_path)
@@ -111,6 +112,7 @@ func start_run() -> void:
 	if not attract:
 		return
 	attract = false
+	Sfx.muffle_world(false)
 	Heat.reset()
 	run_time = 0.0
 	hud.visible = true
@@ -298,6 +300,7 @@ func _on_equipped(id: String) -> void:
 
 func _on_frog_died() -> void:
 	var stats := _finish_run()
+	Sfx.muffle_world(true)
 	if stats.new_record:
 		get_tree().create_timer(1.6, true, false, true).timeout.connect(Sfx.play.bind(&"ui_record"))
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE

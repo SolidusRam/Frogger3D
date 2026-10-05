@@ -498,7 +498,7 @@ func _animate_driving(delta: float) -> void:
 	_visual.position.y = wobble + _hop_offset
 
 	_scare_cooldown -= delta
-	if _scare_cooldown <= 0.0 and _speed > 3.0 and _frog:
+	if _scare_cooldown <= 0.0 and _speed > 3.0 and _frog and not _frog.is_dead:
 		var to_frog := _frog.global_position - global_position
 		var ahead := to_frog.dot(drive_direction)
 		var sideways := (to_frog - drive_direction * ahead - Vector3.UP * to_frog.y).length()

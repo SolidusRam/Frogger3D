@@ -35,7 +35,7 @@ const VOLUME := {
 	"container_land": 0.0,
 	"den_arrive": -4.0, "flower_pop": -12.0, "fly_collect": -8.0, "fly_golden": -4.0,
 	"fly_buzz": -10.0, "heat_up": -6.0, "chain_ding": -8.0,
-	"ui_hover": -14.0, "ui_click": -8.0, "ui_back": -8.0, "ui_card_in": -10.0,
+	"ui_hover": -22.0, "ui_click": -8.0, "ui_back": -8.0, "ui_card_in": -10.0,
 	"ui_card_pick": -4.0, "ui_buy": -6.0, "ui_refund": -6.0,
 	"ui_pause": -8.0, "ui_resume": -8.0, "ui_record": -4.0,
 }
@@ -64,6 +64,9 @@ const MAX_DISTANCE := 90.0
 const DOPPLER_SPEED := 200.0
 ## Ogni quanto si scelgono le sorgenti più vicine dei loop.
 const LOOP_REASSIGN_SECONDS := 0.2
+## Il mondo dietro i menu: quanto più piano e quanto ovattato.
+const MUFFLED_DB := -16.0
+const MUFFLED_CUTOFF := 700.0
 
 ## Quante volte è partito ogni suono (per i test).
 var played := {}
@@ -83,6 +86,9 @@ var _listener_last := Vector3.ZERO
 var _reassign_wait := 0.0
 var _one_shots: Array[Node] = []
 var _last_tick := 0
+## Quanto il mondo è attutito, da 0 a 1 (vedi muffle_world).
+var _muffle := 0.0
+var _muffle_target := 0.0
 
 
 func _ready() -> void:
@@ -108,10 +114,19 @@ func _exit_tree() -> void:
 	_loops.clear()
 
 
+## Dietro i menu (quello iniziale, la fine della corsa, lo stagno) il mondo
+## si sente lontano e ovattato: si capisce che è vivo, ma non disturba.
+## L'interfaccia resta piena.
+func muffle_world(on: bool) -> void:
+	_muffle_target = 1.0 if on else 0.0
+
+
 func _process(delta: float) -> void:
 	var now := Time.get_ticks_usec()
-	_age_one_shots((now - _last_tick) / 1000000.0 if _last_tick > 0 else 0.0)
+	var real_delta := (now - _last_tick) / 1000000.0 if _last_tick > 0 else 0.0
+	_age_one_shots(real_delta)
 	_last_tick = now
+	_update_muffle(real_delta)
 	_place_listener(delta)
 	_reassign_wait -= delta
 	var reassign := _reassign_wait <= 0.0
@@ -125,7 +140,8 @@ func _process(delta: float) -> void:
 
 ## Un suono senza posizione: la rana stessa, l'interfaccia. I suoni ui_*
 ## suonano anche a gioco fermo, e così quelli con always (la festa in tana,
-## che continua mentre si scelgono le carte).
+## che continua mentre si scelgono le carte, e la morte della rana): passano
+## dal bus dell'interfaccia, che non si attutisce dietro i menu.
 func play(sound: StringName, volume_db := 0.0, pitch := 1.0, always := false) -> void:
 	if _silenced(sound):
 		return
@@ -135,7 +151,7 @@ func play(sound: StringName, volume_db := 0.0, pitch := 1.0, always := false) ->
 	var ui := String(sound).begins_with("ui_")
 	var player := AudioStreamPlayer.new()
 	player.stream = stream
-	player.bus = &"Interfaccia" if ui else &"Effetti"
+	player.bus = &"Interfaccia" if ui or always else &"Effetti"
 	player.process_mode = Node.PROCESS_MODE_ALWAYS if ui or always else Node.PROCESS_MODE_PAUSABLE
 	player.volume_db = VOLUME.get(sound, 0.0) + volume_db
 	player.pitch_scale = pitch * _jitter(sound)
@@ -435,6 +451,22 @@ func _setup_buses() -> void:
 			squeeze.threshold = -16.0
 			squeeze.ratio = 3.0
 			AudioServer.add_bus_effect(index, squeeze)
+			# Il quarto: il mondo ovattato dietro i menu (muffle_world).
+			var muffler := AudioEffectLowPassFilter.new()
+			muffler.cutoff_hz = 20000.0
+			AudioServer.add_bus_effect(index, muffler)
+
+
+func _update_muffle(real_delta: float) -> void:
+	if _muffle == _muffle_target:
+		return
+	# Si attutisce in 0,8 s, si riapre in 0,4.
+	_muffle = move_toward(_muffle, _muffle_target, real_delta / (0.8 if _muffle_target > _muffle else 0.4))
+	for bus_name in ["Effetti", "Ambiente"]:
+		var index := AudioServer.get_bus_index(bus_name)
+		AudioServer.set_bus_volume_db(index, lerpf(0.0, MUFFLED_DB, _muffle))
+		var muffler := AudioServer.get_bus_effect(index, 3) as AudioEffectLowPassFilter
+		muffler.cutoff_hz = lerpf(20000.0, MUFFLED_CUTOFF, pow(_muffle, 0.3))
 
 
 func _apply_style() -> void:

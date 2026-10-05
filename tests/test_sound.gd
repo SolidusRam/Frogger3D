@@ -2,7 +2,8 @@ extends SceneTree
 ## Il suono: ogni nome usato nel codice ha il suo file; le auto hanno il
 ## motore e l'incendio il suo crepitio; il salto, il pugno (che copre lo
 ## schianto dell'auto colpita), lo schianto di un'auto qualsiasi e il calore
-## che sale fanno partire il loro suono. Nei test non suona niente: Sfx conta
+## che sale fanno partire il loro suono; alla morte il mondo si attutisce,
+## come dietro il menu. Nei test non suona niente: Sfx conta
 ## soltanto (vedi Sfx.silent).
 
 const Lib := preload("res://tests/lib.gd")
@@ -58,6 +59,10 @@ func _physics_process(_delta: float) -> bool:
 			root.get_node("Heat").set_value(45.0)
 		50:
 			t.check(_count(&"heat_up") > m.heat, "il calore che sale di livello suona l'allarme")
+			t.check(sfx._muffle_target == 0.0, "in corsa il mondo si sente pieno")
+			Lib.place(frog, Vector3(0, 0.1, 5))
+			frog.take_hit(1000, Vector3.ZERO)
+			t.check(frog.is_dead and sfx._muffle_target == 1.0, "alla fine della corsa il mondo si attutisce")
 			t.finish(self)
 	return false
 
