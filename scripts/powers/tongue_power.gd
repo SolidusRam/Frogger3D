@@ -214,7 +214,7 @@ static func _is_loose(body: Node3D) -> bool:
 
 
 func _mouth() -> Vector3:
-	return _frog.global_position + Vector3.UP * 0.55
+	return _frog.mouth_position()
 
 
 func _draw_tongue() -> void:

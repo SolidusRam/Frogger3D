@@ -1,6 +1,7 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
-## Primo piano della rana. SCENE: fronte | lato | dietro | pugno. SHOT.
+## Primo piano della rana. SCENE: fronte | lato | dietro | pugno | salto |
+## caduta | boxe | fuoco. SHOT.
 var frame := 0
 var main: Node
 var scene := OS.get_environment("SCENE")
@@ -28,8 +29,21 @@ func _process(_d: float) -> bool:
 		cam.fov = 40
 		cam.make_current()
 		var at: Vector3 = frog.global_position + Vector3(0, 0.4, 0)
-		var eye: Vector3 = {"fronte": Vector3(1.0, 0.9, -2.6), "lato": Vector3(2.8, 0.7, 0.2), "dietro": Vector3(-1.4, 1.5, 2.4), "pugno": Vector3(2.4, 1.0, -1.6)}[scene]
-		cam.look_at_from_position(at + eye, at)
+		var eye: Vector3 = {"fronte": Vector3(1.0, 0.9, -2.6), "lato": Vector3(2.8, 0.7, 0.2), "dietro": Vector3(-1.4, 1.5, 2.4),
+			"pugno": Vector3(2.4, 1.0, -1.6), "salto": Vector3(3.2, 0.6, 0.0), "caduta": Vector3(3.2, 0.6, 0.0),
+			"boxe": Vector3(1.6, 0.9, -2.4), "fuoco": Vector3(0.6, 1.0, -2.8)}[scene]
+		cam.look_at_from_position(at + eye + (Vector3.UP * 2.0 if scene in ["salto", "caduta"] else Vector3.ZERO), at + (Vector3.UP * 2.0 if scene in ["salto", "caduta"] else Vector3.ZERO))
+		if scene == "boxe":
+			frog.animator._idle_time = 5.0
+		if scene == "fuoco":
+			var fire: Node = main.get_node("Wildfire")
+			fire.stopped = false
+			fire.burn = 0.0
+			fire.front_z = frog.global_position.z + 8.0
+	# Ferma a mezz'aria, mentre sale o scende.
+	if scene in ["salto", "caduta"] and frame >= 30:
+		frog.global_position.y = 2.0
+		frog.velocity.y = 9.0 if scene == "salto" else -7.0
 	if frame == 44 and scene == "pugno":
 		frog.punch()
 	if frame == 46:

@@ -80,6 +80,9 @@ var asleep := false
 @onready var _torso: Node3D = $Visual/Model/Torso
 @onready var _arms: Array[Node3D] = [$Visual/Model/Torso/ArmL, $Visual/Model/Torso/ArmR]
 @onready var _gloves: Array[Node3D] = [$Visual/Model/GloveL, $Visual/Model/GloveR]
+@onready var _head: Node3D = $Visual/Model/Torso/Head
+## Le animazioni dei pezzi del modello (vedi FrogAnimator).
+var animator: FrogAnimator
 @onready var glider: Node3D = $Visual/Glider
 @onready var camera_rig: CameraRig = $CameraRig
 @onready var punch_power: PunchPower = $Powers/Punch
@@ -153,9 +156,11 @@ func _ready() -> void:
 	for power in $Powers.get_children():
 		power.setup(self)
 	_apply_palette()
+	animator = FrogAnimator.new(self)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	animator.update(delta)
 	_aim_arms()
 
 
@@ -325,6 +330,16 @@ func set_palette(key: String, value: String) -> void:
 	else:
 		_palette[key] = value
 	_apply_palette()
+
+
+## A che punto è il saltello mentre cammina, da 0 a 1.
+func hop_phase() -> float:
+	return _hop_phase
+
+
+## La bocca, da dove parte la lingua: segue la testa.
+func mouth_position() -> Vector3:
+	return _head.global_transform * Vector3(0.0, -0.07, -0.4)
 
 
 func time_since_floor() -> float:
