@@ -10,8 +10,10 @@ uniform sampler2D screen_linear : hint_screen_texture, filter_linear;
 uniform int mode = 0;
 uniform float flash = 0.0;
 
-uniform float pixel_size = 3.0;
-uniform float color_levels = 24.0;
+uniform float pixel_size = 2.0;
+uniform float color_levels = 40.0;
+// Forza della retinatura: 1 piena, 0 niente.
+uniform float dither_strength = 0.6;
 
 uniform float curvature = 0.08;
 uniform float scanlines = 0.25;
@@ -28,7 +30,7 @@ vec3 ps1(vec2 frag_coord, vec2 texel) {
 	vec2 uv = (cell + 0.5) * size * texel;
 	vec3 color = textureLod(screen_nearest, uv, 0.0).rgb;
 	int index = int(mod(cell.y, 4.0)) * 4 + int(mod(cell.x, 4.0));
-	float dither = (BAYER[index] / 16.0 - 0.5) / color_levels;
+	float dither = (BAYER[index] / 16.0 - 0.5) / color_levels * dither_strength;
 	return floor((color + dither) * color_levels + 0.5) / color_levels;
 }
 
