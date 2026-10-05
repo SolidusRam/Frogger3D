@@ -104,6 +104,12 @@ func _physics_process(_delta: float) -> bool:
 				_next(4)
 		4: # brucia la rana che raggiunge; le auto raggiunte diventano rottami
 			if f == 1:
+				# Niente caos che non sia del fuoco: al calore alto le auto si
+				# schiantano da sole e il rallentatore delle catene altererebbe
+				# i tempi della prova.
+				heat.set_value(0.0)
+				main._recent_wrecks.clear()
+				main._slowmo_until = 0
 				frog.heal_full()
 				fire.front_z = frog.global_position.z + 0.5
 			if f == 30:
