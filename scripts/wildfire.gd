@@ -199,4 +199,5 @@ func _smoke(extents: Vector3, amount: int, lifetime: float, radius: float) -> CP
 	smoke.initial_velocity_max = 6.0
 	smoke.scale_amount_min = 0.8
 	smoke.scale_amount_max = 1.8
+	Style.fade_smoke(smoke)
 	return smoke

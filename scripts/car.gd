@@ -525,8 +525,8 @@ func _emit_explosion() -> void:
 	_emit_sparks(60)
 
 
-## Fumo dal rottame per qualche secondo: sbuffi low-poly che salgono e
-## crescono. Le particelle restano nel mondo mentre il rottame vola.
+## Fumo dal rottame per qualche secondo: sbuffi low-poly che salgono,
+## crescono e svaniscono. Le particelle restano nel mondo mentre il rottame vola.
 func _emit_smoke() -> void:
 	var smoke := CPUParticles3D.new()
 	smoke.amount = 10
@@ -539,10 +539,7 @@ func _emit_smoke() -> void:
 	smoke.gravity = Vector3(0.0, 0.5, 0.0)
 	smoke.scale_amount_min = 1.0
 	smoke.scale_amount_max = 1.6
-	var growth := Curve.new()
-	growth.add_point(Vector2(0.0, 0.3))
-	growth.add_point(Vector2(1.0, 1.0))
-	smoke.scale_amount_curve = growth
+	Style.fade_smoke(smoke)
 	var puff := SphereMesh.new()
 	puff.radius = 0.35
 	puff.height = 0.7

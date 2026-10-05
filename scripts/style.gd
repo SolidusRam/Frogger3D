@@ -62,7 +62,7 @@ var styles: Array[Dictionary] = [
 			"pupil": Color(0.05, 0.05, 0.05), "gold": Color(0.95, 0.75, 0.2),
 			"reed": Color(0.45, 0.6, 0.24), "cattail": Color(0.45, 0.27, 0.13), "flower": Color(0.97, 0.58, 0.72), "pad": Color(0.3, 0.7, 0.3), "glass": Color(0.1, 0.12, 0.15),
 			"wing": Color(0.95, 0.5, 0.1), "glove": Color(0.85, 0.1, 0.1),
-			"metal": Color(0.6, 0.6, 0.65), "smoke": Color(0.35, 0.35, 0.35),
+			"metal": Color(0.6, 0.6, 0.65), "smoke": Color(0.62, 0.6, 0.58),
 			"spark": Color(1.0, 0.7, 0.2),
 			"car_0": Color(0.85, 0.2, 0.2), "car_1": Color(0.95, 0.75, 0.15),
 			"car_2": Color(0.2, 0.45, 0.85), "car_3": Color(0.9, 0.5, 0.15),
@@ -125,7 +125,7 @@ var styles: Array[Dictionary] = [
 			"pupil": Color(0.05, 0.05, 0.05), "gold": Color(0.8, 0.6, 0.2),
 			"reed": Color(0.38, 0.46, 0.2), "cattail": Color(0.36, 0.22, 0.12), "flower": Color(0.82, 0.5, 0.6), "pad": Color(0.28, 0.5, 0.22), "glass": Color(0.08, 0.1, 0.12),
 			"wing": Color(0.8, 0.42, 0.12), "glove": Color(0.7, 0.12, 0.1),
-			"metal": Color(0.5, 0.5, 0.52), "smoke": Color(0.3, 0.3, 0.3),
+			"metal": Color(0.5, 0.5, 0.52), "smoke": Color(0.55, 0.53, 0.5),
 			"spark": Color(0.95, 0.65, 0.2),
 			"car_0": Color(0.62, 0.16, 0.14), "car_1": Color(0.75, 0.6, 0.2),
 			"car_2": Color(0.18, 0.3, 0.55), "car_3": Color(0.7, 0.4, 0.15),
@@ -190,7 +190,7 @@ var styles: Array[Dictionary] = [
 			"pupil": Color(0.0, 0.0, 0.0), "gold": Color(1.0, 0.85, 0.1),
 			"reed": Color(0.3, 0.9, 0.2), "cattail": Color(0.8, 0.3, 0.1), "flower": Color(1.0, 0.3, 0.8), "pad": Color(0.1, 0.8, 0.3), "glass": Color(0.0, 0.0, 0.0),
 			"wing": Color(1.0, 0.3, 0.6), "glove": Color(1.0, 0.1, 0.2),
-			"metal": Color(0.8, 0.8, 0.9), "smoke": Color(0.4, 0.3, 0.5),
+			"metal": Color(0.8, 0.8, 0.9), "smoke": Color(0.6, 0.5, 0.75),
 			"spark": Color(1.0, 0.9, 0.2),
 			"car_0": Color(1.0, 0.2, 0.6), "car_1": Color(1.0, 0.95, 0.2),
 			"car_2": Color(0.2, 0.9, 1.0), "car_3": Color(1.0, 1.0, 1.0),
@@ -289,6 +289,22 @@ func material(key: String) -> StandardMaterial3D:
 	return _materials[key]
 
 
+## Fumo che si allarga salendo e svanisce, invece di sfere piene che
+## sembrano sassi sospesi: la trasparenza va da quasi piena a zero, la
+## grandezza da un terzo a piena. Niente ombre.
+func fade_smoke(particles: CPUParticles3D) -> void:
+	var fade := Gradient.new()
+	fade.set_color(0, Color(1, 1, 1, 0.9))
+	fade.set_color(1, Color(1, 1, 1, 0.0))
+	fade.add_point(0.35, Color(1, 1, 1, 0.75))
+	particles.color_ramp = fade
+	var growth := Curve.new()
+	growth.add_point(Vector2(0.0, 0.35))
+	growth.add_point(Vector2(1.0, 1.0))
+	particles.scale_amount_curve = growth
+	particles.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
+
 ## Dà ai modelli importati da Blender i materiali della tavolozza, scelti per
 ## nome del materiale. overrides cambia una voce (per esempio "paint" in
 ## "car_3"). Restituisce le superfici verniciate ("paint"), come coppie
@@ -322,6 +338,11 @@ func _color_material(key: String, mat: StandardMaterial3D) -> void:
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if color.a < 1.0 else BaseMaterial3D.TRANSPARENCY_DISABLED
 	if key.begins_with("wing"):
 		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	# Il fumo: il colore di ogni sbuffo viene dalle particelle, che lo fanno
+	# svanire (vedi fade_smoke).
+	if key in ["smoke", "fire_smoke"]:
+		mat.vertex_color_use_as_albedo = true
+		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.emission_enabled = _is_emissive(key)
 	mat.emission = Color(color, 1.0)
 	# Le luci dei passaggi a livello, le ombre delle gru e le fiamme dei motori

@@ -1,9 +1,9 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
 ## Un'inquadratura di tre quarti su un bioma, con la rana in primo piano.
-## SCENE: strada | fiume | tana | tana_lontano | laghetto | ferrovia | aeroporto | porto.
+## SCENE: strada | fumo | fiume | tana | tana_lontano | laghetto | ferrovia | aeroporto | porto.
 ## HEAT, SHOT.
-const BIOMES := {"strada": 2, "fiume": 3, "ferrovia": 4, "tana": 5, "tana_lontano": 5, "laghetto": 5, "aeroporto": 6, "porto": 7}
+const BIOMES := {"strada": 2, "fiume": 3, "ferrovia": 4, "tana": 5, "tana_lontano": 5, "laghetto": 5, "fumo": 2, "aeroporto": 6, "porto": 7}
 var frame := 0
 var main: Node
 var scene := OS.get_environment("SCENE")
@@ -48,6 +48,12 @@ func _process(_d: float) -> bool:
 			cam.look_at_from_position(frog.global_position + Vector3(0, 3.0, 30.0), frog.global_position + Vector3(0, 1.5, -12.0))
 		else:
 			cam.look_at_from_position(frog.global_position + Vector3(-5.5, 3.2, 4.5), at)
+	if scene == "fumo" and frame == 120:
+		# Rottami fumanti davanti alla rana, e il fuoco a 15 m dietro.
+		for car in main.find_children("*", "RigidBody3D", true, false):
+			if car.has_method("become_wreck") and car.global_position.distance_to(frog.global_position) < 30.0:
+				car.become_wreck()
+		main.get_node("Wildfire").front_z = frog.global_position.z + 15.0
 	if frame == 200:
 		get_root().get_texture().get_image().save_png(OS.get_environment("SHOT"))
 		print("salvato ", OS.get_environment("SHOT"))
