@@ -13,6 +13,8 @@ extends RefCounted
 ##   Label:  Logo, Title, Header, Strong, Note, Money, HudLabel, HudBig
 ##   Button: PrimaryButton, DangerButton, FlatButton
 ##   PanelContainer: Backdrop (a tutto schermo, opaco)
+## I riquadri fatti da codice altrove (carte, tessere, poteri) passano da
+## UiTheme.box, così hanno tutti gli stessi angoli smussati.
 
 const DISPLAY_FONT := preload("res://assets/fonts/LilitaOne-Regular.ttf")
 const BODY_FONT := preload("res://assets/fonts/Nunito.ttf")
@@ -120,11 +122,8 @@ static func _build() -> Theme:
 	theme.set_constant("outline_size", "Button", 0)
 	theme.set_constant("h_separation", "Button", 10)
 	# La selezione da tastiera: un contorno d'oro.
-	var focus := StyleBoxFlat.new()
+	var focus := box(Color(0, 0, 0, 0), GOLD, 3, 12)
 	focus.draw_center = false
-	focus.set_border_width_all(3)
-	focus.border_color = GOLD
-	focus.set_corner_radius_all(12)
 	focus.expand_margin_left = 3
 	focus.expand_margin_right = 3
 	focus.expand_margin_top = 3
@@ -155,10 +154,10 @@ static func _build() -> Theme:
 	theme.set_color("font_color", "FlatButton", TEXT_MUTED)
 
 	# Pannelli.
-	var panel := _box(Color(INK, 0.95), LINE, 2, 14)
+	# I pannelli: niente ombra sfumata, un bordo sotto più spesso.
+	var panel := box(Color(INK, 0.95), LINE, 2, 14)
+	panel.border_width_bottom = 5
 	panel.set_content_margin_all(24)
-	panel.shadow_color = Color(0, 0, 0, 0.35)
-	panel.shadow_size = 14
 	theme.set_stylebox("panel", "PanelContainer", panel)
 	theme.set_type_variation("Backdrop", "PanelContainer")
 	var backdrop := StyleBoxFlat.new()
@@ -172,7 +171,7 @@ static func _build() -> Theme:
 	theme.set_color("font_selected_color", "TabContainer", GOLD)
 	theme.set_color("font_unselected_color", "TabContainer", TEXT_MUTED)
 	theme.set_color("font_hovered_color", "TabContainer", TEXT)
-	var tab_selected := _box(INK_SOFT, GOLD, 0, 10)
+	var tab_selected := box(INK_SOFT, GOLD, 0, 10)
 	tab_selected.border_width_top = 3
 	tab_selected.corner_radius_bottom_left = 0
 	tab_selected.corner_radius_bottom_right = 0
@@ -183,23 +182,23 @@ static func _build() -> Theme:
 	_margins(tab_other, 20, 8)
 	theme.set_stylebox("tab_unselected", "TabContainer", tab_other)
 	theme.set_stylebox("tab_hovered", "TabContainer", tab_other)
-	var tab_panel := _box(INK_SOFT, LINE, 0, 10)
+	var tab_panel := box(INK_SOFT, LINE, 0, 10)
 	tab_panel.corner_radius_top_left = 0
 	tab_panel.set_content_margin_all(16)
 	theme.set_stylebox("panel", "TabContainer", tab_panel)
 	theme.set_stylebox("tab_focus", "TabContainer", StyleBoxEmpty.new())
 
 	# Barre e barre di scorrimento.
-	var bar_bg := _box(Color(0, 0, 0, 0.55), Color(0, 0, 0, 0), 0, 6)
+	var bar_bg := box(Color(0, 0, 0, 0.55), Color(0, 0, 0, 0), 0, 6)
 	theme.set_stylebox("background", "ProgressBar", bar_bg)
-	theme.set_stylebox("fill", "ProgressBar", _box(TEXT, Color(0, 0, 0, 0), 0, 6))
+	theme.set_stylebox("fill", "ProgressBar", box(TEXT, Color(0, 0, 0, 0), 0, 6))
 	theme.set_font("font", "ProgressBar", bold)
-	var scroll := _box(Color(0, 0, 0, 0.25), Color(0, 0, 0, 0), 0, 4)
+	var scroll := box(Color(0, 0, 0, 0.25), Color(0, 0, 0, 0), 0, 4)
 	scroll.content_margin_left = 6
 	theme.set_stylebox("scroll", "VScrollBar", scroll)
-	theme.set_stylebox("grabber", "VScrollBar", _box(LINE, Color(0, 0, 0, 0), 0, 4))
-	theme.set_stylebox("grabber_highlight", "VScrollBar", _box(GOLD, Color(0, 0, 0, 0), 0, 4))
-	theme.set_stylebox("grabber_pressed", "VScrollBar", _box(GOLD, Color(0, 0, 0, 0), 0, 4))
+	theme.set_stylebox("grabber", "VScrollBar", box(LINE, Color(0, 0, 0, 0), 0, 4))
+	theme.set_stylebox("grabber_highlight", "VScrollBar", box(GOLD, Color(0, 0, 0, 0), 0, 4))
+	theme.set_stylebox("grabber_pressed", "VScrollBar", box(GOLD, Color(0, 0, 0, 0), 0, 4))
 	return theme
 
 
@@ -228,21 +227,25 @@ static func _button_colors(theme: Theme, type: String, color: Color, edge: Color
 
 
 static func _key(color: Color, edge: Color, depth: int) -> StyleBoxFlat:
-	var box := _box(color, edge, 2, 10)
+	var box := box(color, edge, 2, 10)
 	box.border_width_bottom = depth
 	_margins(box, 22, 10)
 	box.content_margin_bottom = 10 + depth - 2
 	return box
 
 
-static func _box(color: Color, border: Color, width: int, radius: int) -> StyleBoxFlat:
-	var box := StyleBoxFlat.new()
-	box.bg_color = color
-	box.border_color = border
-	box.set_border_width_all(width)
-	box.set_corner_radius_all(radius)
-	box.anti_aliasing = true
-	return box
+## Un riquadro dell'interfaccia: angoli smussati a 45° (non arrotondati),
+## sfaccettati come i modelli del gioco, e bordi netti senza sfumature.
+## chamfer è la misura dello smusso.
+static func box(color: Color, border: Color, width: int, chamfer: int) -> StyleBoxFlat:
+	var flat := StyleBoxFlat.new()
+	flat.bg_color = color
+	flat.border_color = border
+	flat.set_border_width_all(width)
+	flat.set_corner_radius_all(chamfer)
+	flat.corner_detail = 1
+	flat.anti_aliasing = false
+	return flat
 
 
 static func _margins(box: StyleBox, horizontal: float, vertical: float) -> void:

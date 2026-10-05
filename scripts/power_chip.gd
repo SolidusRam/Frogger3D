@@ -21,11 +21,8 @@ func _build(title: String, key: String, slot: String) -> void:
 	var color: Color = UiTheme.SLOT_COLORS[slot]
 	custom_minimum_size.x = 240
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var box := StyleBoxFlat.new()
-	box.bg_color = Color(UiTheme.INK, 0.72)
-	box.border_color = color
+	var box := UiTheme.box(Color(UiTheme.INK, 0.72), color, 0, 8)
 	box.border_width_left = 4
-	box.set_corner_radius_all(8)
 	box.content_margin_left = 10
 	box.content_margin_right = 10
 	box.content_margin_top = 6
@@ -63,9 +60,7 @@ func _build(title: String, key: String, slot: String) -> void:
 	_bar.max_value = 1.0
 	_bar.value = 1.0
 	_bar.custom_minimum_size.y = 6
-	_fill_ready = StyleBoxFlat.new()
-	_fill_ready.bg_color = color
-	_fill_ready.set_corner_radius_all(3)
+	_fill_ready = UiTheme.box(color, color, 0, 2)
 	_fill_charging = _fill_ready.duplicate()
 	_fill_charging.bg_color = color.darkened(0.45)
 	_bar.add_theme_stylebox_override("fill", _fill_ready)

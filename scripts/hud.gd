@@ -246,13 +246,9 @@ func show_offer(options: Array[String], upgrades: Upgrades) -> void:
 ## alto; passandoci sopra si schiarisce.
 func _style_card(button: Button, color: Color) -> void:
 	for state in ["normal", "hover", "pressed", "hover_pressed"]:
-		var box := StyleBoxFlat.new()
-		box.bg_color = UiTheme.INK_LIGHT if state.begins_with("hover") else UiTheme.INK_SOFT
-		box.border_color = color if state != "normal" else color.darkened(0.25)
-		box.set_border_width_all(2)
+		var box := UiTheme.box(UiTheme.INK_LIGHT if state.begins_with("hover") else UiTheme.INK_SOFT,
+				color if state != "normal" else color.darkened(0.25), 2, 12)
 		box.border_width_top = 6
-		box.set_corner_radius_all(12)
-		box.anti_aliasing = true
 		button.add_theme_stylebox_override(state, box)
 
 
@@ -667,7 +663,5 @@ func _bar(size: Vector2, color: Color) -> ProgressBar:
 
 
 func _set_fill(bar: ProgressBar, color: Color) -> void:
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = color
-	fill.set_corner_radius_all(6)
+	var fill := UiTheme.box(color, color, 0, 4)
 	bar.add_theme_stylebox_override("fill", fill)

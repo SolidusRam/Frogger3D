@@ -196,9 +196,7 @@ func _upgrade(card: String, index: int, color: Color) -> VBoxContainer:
 	bar.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	bar.max_value = info.goal
 	bar.value = value
-	var fill := StyleBoxFlat.new()
-	fill.bg_color = UiTheme.DONE if done else color
-	fill.set_corner_radius_all(6)
+	var fill := UiTheme.box(UiTheme.DONE if done else color, color, 0, 4)
 	bar.add_theme_stylebox_override("fill", fill)
 	progress.add_child(bar)
 	var count := _label("%d/%d" % [floori(value), info.goal], "Note")
@@ -213,16 +211,12 @@ func _upgrade(card: String, index: int, color: Color) -> VBoxContainer:
 func _tile(color: Color, top: bool) -> PanelContainer:
 	var tile := PanelContainer.new()
 	tile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var box := StyleBoxFlat.new()
-	box.bg_color = UiTheme.INK_LIGHT
-	box.border_color = color
+	var box := UiTheme.box(UiTheme.INK_LIGHT, color, 0, 10)
 	if top:
 		box.border_width_top = 5
 	else:
 		box.border_width_left = 5
-	box.set_corner_radius_all(10)
 	box.set_content_margin_all(14)
-	box.anti_aliasing = true
 	tile.add_theme_stylebox_override("panel", box)
 	return tile
 
