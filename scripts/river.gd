@@ -39,6 +39,7 @@ var _lane_shift: Array[float] = []
 func _ready() -> void:
 	_build_bed_and_water()
 	if still:
+		_build_streaks()
 		return
 	for i in lane_count:
 		var lane := RiverLane.new()
@@ -54,14 +55,16 @@ func _ready() -> void:
 
 
 ## Due file di scie chiare per corrente, sfalsate; la lunghezza varia un po'.
+## Sull'acqua ferma (il porto) sono onde corte che dondolano sul posto.
 ## Nessun numero casuale: la sequenza casuale è del percorso.
 func _build_streaks() -> void:
 	var spacing := 8.0
 	var per_row := int(length / spacing)
+	var rows := 2 if not still else maxi(int(lane_width / 2.5), 2)
 	for i in lane_count:
 		_lane_shift.append(0.0)
-		for row in 2:
-			var z := _lane_offset(i) + (row - 0.5) * lane_width * 0.45
+		for row in rows:
+			var z := _lane_offset(i) + ((row + 0.5) / rows - 0.5) * lane_width * 0.9
 			for k in per_row:
 				_streak_base.append(-length / 2.0 + (k + 0.5 * row + fmod(i * 0.37, 1.0)) * spacing)
 				_streak_lane.append(i)
@@ -87,9 +90,12 @@ func _process(delta: float) -> void:
 		return
 	for i in _lanes.size():
 		_lane_shift[i] += _lanes[i].direction * _lanes[i].speed * delta
+	var time := Time.get_ticks_msec() / 1000.0
 	for n in _streak_base.size():
 		var lane := _streak_lane[n]
 		var x := wrapf(_streak_base[n] + _lane_shift[lane], -length / 2.0, length / 2.0)
+		if still:
+			x += sin(time * 0.7 + n * 1.3) * 0.6
 		var golden := fmod(n * 0.618, 1.0)
 		var stretch := 0.8 + 1.4 * golden
 		var z := _streak_z[n] + (golden - 0.5) * lane_width * 0.3
