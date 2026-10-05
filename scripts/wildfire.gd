@@ -2,8 +2,10 @@ class_name Wildfire
 extends Node3D
 ## L'incendio che insegue la rana: è partito nella sua foresta, ed è il motivo
 ## per cui lei corre. Un muro di fuoco su tutta la larghezza avanza verso -Z,
-## dietro la rana. Il caos lo alimenta: più sale il calore, più corre. Non
-## resta mai più indietro di max_gap; raggiunta una tana viene respinto lì.
+## dietro la rana. Il caos lo alimenta: più sale il calore, più corre; e
+## accelera col tempo, minuto dopo minuto, finché corre più della rana. Non
+## resta mai più indietro di max_gap; raggiunta una tana viene respinto lì
+## (ma non rallenta: la velocità raggiunta resta).
 ## Sui fiumi e sull'acqua del porto rallenta. Chi ci finisce dentro brucia;
 ## le auto che raggiunge diventano rottami (che non scaldano).
 ## La telecamera guarda avanti, quindi lo si sente in tre modi: il bagliore
@@ -16,13 +18,18 @@ const FLAMES := 70
 @export var frog: Frog
 @export var course: Course
 @export var hud: Hud
-## Velocità a calore zero e al massimo, in m/s.
-@export var min_speed := 0.8
-@export var max_speed := 3.2
+## Velocità a calore zero e al massimo, in m/s, all'inizio della run.
+@export var min_speed := 1.2
+@export var max_speed := 4.0
+## Quanto accelera: m/s in più per ogni minuto di inseguimento. Al 15° minuto
+## corre come la rana che cammina (7 m/s).
+@export var acceleration_per_minute := 0.2
+## Più di così non corre.
+@export var top_speed := 7.5
 ## Sull'acqua corre questa frazione della velocità.
-@export var water_factor := 0.4
+@export var water_factor := 0.6
 ## Mai più indietro di così; è anche la distanza a cui lo respinge una tana.
-@export var max_gap := 50.0
+@export var max_gap := 40.0
 ## Vita tolta al secondo a chi è nel fuoco.
 @export var burn := 80.0
 ## Sotto questa distanza il bordo dello schermo si arrossa.
@@ -32,6 +39,8 @@ const FLAMES := 70
 var front_z := 0.0
 ## Modalità prova: l'incendio si ferma.
 var stopped := false
+## Secondi di inseguimento (fermo non conta): fanno accelerare il fuoco.
+var elapsed := 0.0
 
 var _flames: MultiMesh
 var _heights := PackedFloat32Array()
@@ -53,7 +62,8 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	if not stopped:
-		var speed := lerpf(min_speed, max_speed, Heat.ratio())
+		elapsed += delta
+		var speed := speed()
 		var kind := course.kind_at(front_z)
 		if kind == Course.Kind.RIVER or kind == Course.Kind.PORT:
 			speed *= water_factor
@@ -91,6 +101,11 @@ func _process(_delta: float) -> void:
 		_flames.set_instance_transform(i, Transform3D(basis, Vector3(x, height * 0.5, -0.5 + (i % 2) * 1.2)))
 	if hud:
 		hud.set_fire_distance(gap, clampf(1.0 - (gap - 3.0) / (danger_distance - 3.0), 0.0, 1.0))
+
+
+## Velocità sulla terra, in m/s: il calore e i minuti di inseguimento.
+func speed() -> float:
+	return minf(lerpf(min_speed, max_speed, Heat.ratio()) + acceleration_per_minute * elapsed / 60.0, top_speed)
 
 
 ## Metri fra la rana e il fronte del fuoco.

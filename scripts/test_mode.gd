@@ -120,8 +120,8 @@ func set_fire_off(on: bool) -> void:
 	_apply_options()
 
 
-## Le pose della rana a scatti, come sulla PS1: solo un'impressione da
-## provare, non rende la run di prova.
+## Le pose della rana a scatti, come sulla PS1 (il modo normale) o fluide:
+## solo un'impressione da confrontare, non rende la run di prova.
 func set_steps(on: bool) -> void:
 	FrogAnimator.pose_fps = 15.0 if on else 0.0
 	_apply_options()
@@ -238,7 +238,7 @@ func _build() -> void:
 	box.add_child(_toggle("Poteri sempre carichi", "charged", set_charged))
 	box.add_child(_toggle("Blocca il calore al livello attuale", "heat_locked", set_heat_locked))
 	box.add_child(_toggle("Ferma l'incendio", "fire_off", set_fire_off))
-	box.add_child(_toggle("Animazioni della rana a scatti (15 pose al secondo)", "steps", set_steps))
+	box.add_child(_toggle("Animazioni della rana a scatti (15 pose al secondo; spento: fluide)", "steps", set_steps))
 	box.add_child(_button("Apri una tana: scegli un power-up", offer_upgrade))
 	box.add_child(_button("+100 mosche (per lo stagno, restano)", give_flies.bind(100)))
 	box.add_child(_title("Equipaggia subito", 16))

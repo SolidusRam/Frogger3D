@@ -8,20 +8,17 @@ extends RefCounted
 ## - Il corpo segue la traiettoria: in salto si inclina col volo e le zampe
 ##   spingono indietro salendo e si raccolgono scendendo; col deltaplano si
 ##   piega in curva e le zampe penzolano; in acqua scalcia a rana.
-## - Quando l'incendio è vicino la rana si gira a guardarlo, sempre più spesso.
 ## - Da ferma la gola pulsa e le palpebre sbattono; dopo qualche secondo fa a
 ##   pugni con l'aria.
 ##
-## Le pose si possono aggiornare a scatti (pose_fps), come nei giochi PS1;
-## 0 vuol dire fluide.
+## Le pose si aggiornano a scatti (pose_fps), come nei giochi PS1: scelto il
+## 5 ottobre 2026. Il movimento della rana nel mondo resta fluido; a scatti
+## sono solo i pezzi del corpo.
 
-## Pose al secondo: 0 fluide, 12-15 a scatti come sulla PS1. Si prova dalla
-## modalità prova (F1).
-static var pose_fps := 0.0
+## Pose al secondo: 15 a scatti come sulla PS1, 0 fluide (si cambia dalla
+## modalità prova, F1).
+static var pose_fps := 15.0
 
-## Il fuoco sotto questa distanza fa girare la testa; sotto la metà, spesso.
-const FIRE_GLANCE := 22.0
-const GLANCE_YAW := 1.25
 const IDLE_BOXING := 4.0
 ## Punto attorno a cui si inclina tutto il corpo (in coordinate del modello).
 const TILT_PIVOT := Vector3(0.0, 0.35, 0.0)
@@ -44,10 +41,6 @@ var _pitch := 0.0
 var _bank := 0.0
 var _leg_swing := 0.0
 var _last_yaw := 0.0
-var _glance := 0.0
-var _glance_target := 0.0
-var _glance_left := 0.0
-var _next_glance := 0.0
 var _blink_left := 0.0
 var _next_blink := 2.0
 var _idle_time := 0.0
@@ -64,7 +57,7 @@ func _init(frog: Frog) -> void:
 		_eyes.append(_head.get_node("Eye" + side))
 		_legs.append(torso.get_node("Leg" + side))
 		_feet.append(torso.get_node("Leg%s/Foot%s" % [side, side]))
-	for node: Node3D in [_model, _head, _throat] + _eyes + _legs + _feet:
+	for node: Node3D in [_model, _throat] + _eyes + _legs + _feet:
 		_rest[node] = node.transform
 		# Si muovono a ogni fotogramma, non a ogni passo di fisica.
 		node.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
@@ -105,7 +98,6 @@ func update(delta: float) -> void:
 	_last_yaw = yaw
 	_bank = lerpf(_bank, clampf(-turn * 0.3, -0.6, 0.6) if gliding else 0.0, 1.0 - exp(-5.0 * delta))
 
-	_update_glance(delta)
 	_update_blink(delta)
 	var idle := on_floor and not swimming and horizontal < 0.5 and _frog.punch_power.cooldown_left == 0.0
 	_idle_time = _idle_time + delta if idle else 0.0
@@ -132,13 +124,12 @@ func _pose() -> void:
 	for i in _legs.size():
 		_legs[i].transform = _rest[_legs[i]] * Transform3D(Basis(Vector3.RIGHT, _leg_swing), Vector3.ZERO)
 		_feet[i].transform = _rest[_feet[i]] * Transform3D(Basis(Vector3.RIGHT, _leg_swing * 0.8), Vector3.ZERO)
-	_head.transform = _rest[_head] * Transform3D(Basis(Vector3.UP, _glance), Vector3.ZERO)
 	# La gola pulsa sempre, di più da ferma.
 	var beat := pow(maxf(sin(_time * TAU * 1.3), 0.0), 2.0) * (0.45 if _idle_time > 0.5 else 0.2)
 	_throat.transform = _rest[_throat] * Transform3D(Basis.from_scale(Vector3(1.0 + beat * 0.3, 1.0 + beat, 1.0 + beat * 0.2)), Vector3.ZERO)
-	var lid := 0.12 if _blink_left > 0.0 else (1.15 if absf(_glance) > 0.3 else 1.0)
+	var lid := 0.12 if _blink_left > 0.0 else 1.0
 	for eye in _eyes:
-		eye.transform = _rest[eye] * Transform3D(Basis.from_scale(Vector3(lid if lid > 1.0 else 1.0, lid, lid if lid > 1.0 else 1.0)), Vector3.ZERO)
+		eye.transform = _rest[eye] * Transform3D(Basis.from_scale(Vector3(1.0, lid, 1.0)), Vector3.ZERO)
 	_pose_gloves(boxing)
 
 
@@ -160,26 +151,6 @@ func _pose_gloves(boxing: bool) -> void:
 		var out := sin(phase / 0.18 * PI) * 0.45 if phase < 0.18 else 0.0
 		var guard := sin(_time * 4.0 + i * PI) * 0.03
 		gloves[i].position = rest + Vector3(-signf(rest.x) * 0.15 * out, 0.06 * out + guard, -out)
-
-
-## Quando l'incendio si avvicina, la rana si gira a guardarlo: un'occhiata ogni
-## tanto, sempre più spesso man mano che il fuoco arriva.
-func _update_glance(delta: float) -> void:
-	var fire := _frog.get_tree().get_first_node_in_group("wildfire") as Wildfire
-	var gap := fire.distance() if fire and not fire.stopped else INF
-	_next_glance -= delta
-	_glance_left -= delta
-	if _glance_left <= 0.0:
-		_glance_target = 0.0
-	if gap < FIRE_GLANCE and _next_glance <= 0.0:
-		# Il fuoco è dietro, verso +Z: si gira dalla parte più corta.
-		var behind := _frog.visual.global_basis.inverse() * Vector3.BACK
-		var side := signf(behind.x) if absf(behind.x) > 0.05 else (1.0 if _rng.randf() < 0.5 else -1.0)
-		_glance_target = side * GLANCE_YAW
-		_glance_left = 0.55
-		var closeness := clampf(gap / FIRE_GLANCE, 0.0, 1.0)
-		_next_glance = lerpf(0.9, 3.0, closeness) + _rng.randf_range(0.0, 0.6)
-	_glance = lerpf(_glance, _glance_target, 1.0 - exp(-14.0 * delta))
 
 
 func _update_blink(delta: float) -> void:

@@ -64,7 +64,7 @@ func _physics_process(_delta: float) -> bool:
 				var frog: Node3D = main.get_node("Frog")
 				t.check(frog.max_health == 120 and frog.health == 120, "Vita al livello 2: 120 di vita massima")
 				t.check(main.get_node("Upgrades").offer_size == 4, "Più scelta: quattro carte nelle tane")
-				t.check(main.get_node("Wildfire").max_gap == 55.0, "Vantaggio: l'incendio resta 5 m più lontano")
+				t.check(main.get_node("Wildfire").max_gap == 45.0, "Vantaggio: l'incendio resta 5 m più lontano")
 				frog.take_hit(1000, Vector3.ZERO)
 				t.check(not frog.is_dead and frog.health == 60, "Seconda vita: ci si rialza con metà vita (%d)" % frog.health)
 				# La schermata dello stagno.

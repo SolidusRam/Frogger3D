@@ -18,6 +18,8 @@ var frame := 0
 var start := 0
 var step := 0
 var m := {}
+## Il fiume svuotato per tuffo e ondata (m si azzera a ogni prova).
+var _river: Node3D
 
 
 func _initialize() -> void:
@@ -303,7 +305,9 @@ func _physics_process(_delta: float) -> bool:
 				Input.action_release("jump")
 				_next(14)
 		14: # pelle impermeabile: tuffo e prove
-			var river: Node3D = Lib.by_script(main, "river.gd")[0]
+			if f == 1:
+				_river = Lib.by_script(main, "river.gd")[0]
+			var river: Node3D = _river
 			if f == 1:
 				_equip("waterproof", true, false)
 				# Le correnti del fiume vuote: niente tronchi né coccodrilli addosso.
@@ -320,7 +324,9 @@ func _physics_process(_delta: float) -> bool:
 				Input.action_release("slam")
 				_next(15)
 		15: # ondata
-			var river: Node3D = Lib.by_script(main, "river.gd")[0]
+			# Lo stesso fiume del tuffo, senza tronchi: il percorso intanto può
+			# averne creati altri, e il primo trovato non sarebbe più vuoto.
+			var river: Node3D = _river
 			if f == 1:
 				_equip("waterproof", false, true)
 				Lib.place(frog, Vector3(10, river.surface_y() - 0.3, river.global_position.z))

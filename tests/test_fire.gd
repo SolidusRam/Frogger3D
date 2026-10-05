@@ -65,7 +65,14 @@ func _physics_process(_delta: float) -> bool:
 			if f == 600:
 				var fast: float = (m.z - fire.front_z) / 5.0
 				t.check(absf(fast - fire.max_speed) < 0.2, "al calore massimo corre (%.2f m/s)" % fast)
-				fire.max_gap = 50.0
+				# Accelera col tempo: dopo 10 minuti 2 m/s in più.
+				var base: float = fire.speed()
+				fire.elapsed += 600.0
+				t.check(absf(fire.speed() - base - 2.0) < 0.01, "dopo 10 minuti corre 2 m/s in più (%.2f m/s)" % fire.speed())
+				fire.elapsed += 6000.0
+				t.check(fire.speed() == fire.top_speed, "ma non oltre %.1f m/s" % fire.top_speed)
+				fire.elapsed = 0.0
+				fire.max_gap = 40.0
 				heat.set_value(0.0)
 				# La rana scappa avanti di 150 m.
 				frog.global_position.z -= 150.0
@@ -92,7 +99,7 @@ func _physics_process(_delta: float) -> bool:
 			if f == 121:
 				var on_water: float = (m.z - fire.front_z) / 2.0
 				t.check(absf(on_water - fire.min_speed * fire.water_factor) < 0.1, "sull'acqua rallenta (%.2f m/s)" % on_water)
-				fire.max_gap = 50.0
+				fire.max_gap = 40.0
 				fire.burn = 80.0
 				_next(4)
 		4: # brucia la rana che raggiunge; le auto raggiunte diventano rottami
