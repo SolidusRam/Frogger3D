@@ -31,6 +31,9 @@ const MENU_SCENE := "res://scenes/menu.tscn"
 ## (con la vita piena).
 @export var den_flies := 3
 @export var empty_den_flies := 8
+## L'arrivo in tana: secondi di festa (la rana alza i guantoni, i fiori si
+## aprono) prima delle carte. 0: le carte subito, senza festa (i test).
+@export var den_celebration_seconds := 0.9
 
 @export_group("Tempi speciali")
 ## Fermo-immagine quando il pugno colpisce un'auto.
@@ -206,8 +209,9 @@ func _on_wreck_created(car: Node3D) -> void:
 		frog.camera_rig.pull_back(4.0, slowmo_seconds + 0.6)
 
 
-## La tana salva i progressi: il record viene scritto subito su disco. Poi il
-## gioco si ferma e si sceglie un power-up, uno tra tre.
+## La tana salva i progressi: il record viene scritto subito su disco. La
+## rana fa festa per un attimo, poi il gioco si ferma e si sceglie un
+## power-up, uno tra tre.
 func _on_den_reached(_count: int, distance: float) -> void:
 	_save_record_if_better(distance)
 	if _over:
@@ -216,7 +220,30 @@ func _on_den_reached(_count: int, distance: float) -> void:
 	if den_regen > 0.0:
 		frog.health = mini(frog.health + roundi(frog.max_health * den_regen), frog.max_health)
 		frog.health_changed.emit(frog.health, frog.max_health)
+	if den_celebration_seconds <= 0.0:
+		offer_upgrade()
+		return
+	frog.cheer()
+	frog.camera_rig.pull_back(2.5, den_celebration_seconds + 0.6)
+	# Un timer figlio della partita: se la partita se ne va prima, sparisce
+	# con lei.
+	var timer := Timer.new()
+	timer.one_shot = true
+	timer.wait_time = den_celebration_seconds
+	timer.timeout.connect(_end_celebration)
+	timer.timeout.connect(timer.queue_free)
+	add_child(timer)
+	timer.start()
+
+
+## Finita la festa, le carte. Senza carte da scegliere la rana riparte
+## subito; altrimenti quando se ne sceglie una.
+func _end_celebration() -> void:
+	if _over:
+		return
 	offer_upgrade()
+	if not hud.is_offer_open():
+		frog.asleep = false
 
 
 ## Mosche raccolte (la statistica "Golosa" ne aggiunge, con l'arrotondamento
@@ -255,6 +282,7 @@ func offer_upgrade() -> void:
 
 
 func _on_equipped(id: String) -> void:
+	frog.asleep = false
 	hud.hide_offer()
 	hud.show_equipment(upgrades)
 	hud.announce("Equipaggiato: %s" % Upgrades.CATALOG[id].name)

@@ -332,6 +332,19 @@ func set_palette(key: String, value: String) -> void:
 	_apply_palette()
 
 
+## La festa in tana: la rana si ferma, si gira verso la telecamera, fa un
+## saltello e alza i guantoni (vedi FrogAnimator.cheer). La partita la
+## risveglia (asleep) quando si è scelta la carta.
+func cheer() -> void:
+	asleep = true
+	glider_power.close()
+	tongue_power.stop()
+	visual.rotation.y = camera_rig.rotation.y + PI
+	if is_on_floor():
+		launch(Vector3(0.0, 5.0, 0.0))
+	animator.cheer(1.6)
+
+
 ## A che punto è il saltello mentre cammina, da 0 a 1.
 func hop_phase() -> float:
 	return _hop_phase

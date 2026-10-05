@@ -10,6 +10,8 @@ extends RefCounted
 ##   piega in curva e le zampe penzolano; in acqua scalcia a rana.
 ## - Da ferma la gola pulsa e le palpebre sbattono; dopo qualche secondo fa a
 ##   pugni con l'aria.
+## - In tana fa festa: guantoni in alto che pompano, occhi socchiusi
+##   dalla contentezza (cheer).
 ##
 ## Le pose si aggiornano a scatti (pose_fps), come nei giochi PS1: scelto il
 ## 5 ottobre 2026. Il movimento della rana nel mondo resta fluido; a scatti
@@ -45,6 +47,7 @@ var _blink_left := 0.0
 var _next_blink := 2.0
 var _idle_time := 0.0
 var _boxing := false
+var _cheer_left := 0.0
 
 
 func _init(frog: Frog) -> void:
@@ -65,10 +68,16 @@ func _init(frog: Frog) -> void:
 	_rng.randomize()
 
 
+## La festa in tana, per seconds secondi.
+func cheer(seconds: float) -> void:
+	_cheer_left = seconds
+
+
 func update(delta: float) -> void:
 	if _frog.is_dead:
 		return
 	_time += delta
+	_cheer_left = maxf(_cheer_left - delta, 0.0)
 	var velocity := _frog.velocity
 	var horizontal := Vector2(velocity.x, velocity.z).length()
 	var on_floor := _frog.is_on_floor()
@@ -127,7 +136,8 @@ func _pose() -> void:
 	# La gola pulsa sempre, di più da ferma.
 	var beat := pow(maxf(sin(_time * TAU * 1.3), 0.0), 2.0) * (0.45 if _idle_time > 0.5 else 0.2)
 	_throat.transform = _rest[_throat] * Transform3D(Basis.from_scale(Vector3(1.0 + beat * 0.3, 1.0 + beat, 1.0 + beat * 0.2)), Vector3.ZERO)
-	var lid := 0.12 if _blink_left > 0.0 else 1.0
+	# Contenta: occhi socchiusi.
+	var lid := 0.12 if _blink_left > 0.0 else (0.45 if _cheer_left > 0.0 else 1.0)
 	for eye in _eyes:
 		eye.transform = _rest[eye] * Transform3D(Basis.from_scale(Vector3(1.0, lid, 1.0)), Vector3.ZERO)
 	_pose_gloves(boxing)
@@ -138,6 +148,14 @@ func _pose() -> void:
 ## muove da sé).
 func _pose_gloves(boxing: bool) -> void:
 	var gloves: Array[Node3D] = [_model.get_node("GloveL"), _model.get_node("GloveR")]
+	if _cheer_left > 0.0:
+		# In festa: i guantoni in alto sopra la testa, che pompano.
+		_boxing = true
+		for i in gloves.size():
+			var rest: Vector3 = gloves[i].get_meta("rest")
+			var pump := absf(sin(_time * 9.0 + i * 0.8)) * 0.18
+			gloves[i].position = rest + Vector3(-signf(rest.x) * 0.2, 0.75 + pump, 0.1)
+		return
 	if not boxing:
 		if _boxing and _frog.punch_power.cooldown_left == 0.0:
 			for glove in gloves:

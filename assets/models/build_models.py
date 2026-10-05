@@ -475,6 +475,7 @@ def build_den():
     Origine al centro della striscia, a terra. Solo forme: niente collisioni."""
     reset()
     parts = []
+    flowers = []
     for side in (1, -1):
         cx = side * 21.0
         # L'acqua bassa chiara sul bordo, quella profonda più scura al centro.
@@ -487,9 +488,12 @@ def build_den():
         for i, (dx, dy, r) in enumerate(pads):
             parts.append(lily_pad("pad_%d_%d" % (side, i), cx + side * dx, dy, r, i * 1.7))
             if i % 2 == 0:
+                # I fiori sono oggetti a sé (Flower_*), col perno alla base: in
+                # gioco restano boccioli finché la rana non arriva.
                 fx, fy = cx + side * dx + 0.2 * r, dy + 0.15 * r
-                parts.append(ico("flower_%d_%d" % (side, i), 0.18, (fx, fy, 0.16), "flower", scale=(1, 1, 0.8)))
-                parts.append(ico("heart_%d_%d" % (side, i), 0.07, (fx, fy, 0.28), "lamp_light"))
+                flowers.append(part("Flower_%d_%d" % (side, i),
+                                    [ico("petals", 0.18, (fx, fy, 0.16), "flower", scale=(1, 1, 0.8)),
+                                     ico("heart", 0.07, (fx, fy, 0.28), "lamp_light")], (fx, fy, 0.08)))
         # Le canne, a ciuffi sul bordo verso l'esterno.
         for c, (dx, dy) in enumerate([(8.5, 2.5), (9.5, -2.0), (-7.8, 3.3), (2.0, 4.6), (-3.0, -4.5)]):
             for k in range(5):

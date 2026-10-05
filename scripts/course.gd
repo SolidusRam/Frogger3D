@@ -288,6 +288,10 @@ func _prop(chunk: Node3D, scene: PackedScene, at: Vector3) -> Node3D:
 ## il checkpoint.
 func _add_den(chunk: Node3D, depth: float) -> void:
 	var den := _prop(chunk, DEN, Vector3.ZERO)
+	chunk.set_meta("den", den)
+	# I fiori sono boccioli chiusi finché la rana non arriva.
+	for flower: Node3D in den.find_children("Flower_*", "", false, false):
+		flower.scale = Vector3(0.35, 0.5, 0.35)
 	# Le increspature attorno alle ninfee si allargano piano, sfasate.
 	# (Sfasate a indice, non a caso: la sequenza casuale è del percorso.)
 	var ripples := den.find_children("Ripple_*", "", false, false)
@@ -316,6 +320,50 @@ func _on_den_entered(body: Node3D, chunk: Node3D) -> void:
 		dens_reached += 1
 		frog.set_respawn_point(Vector3(0.0, 0.1, chunk.global_position.z))
 		den_reached.emit(dens_reached, distance())
+		_celebrate(chunk)
+
+
+## L'arrivo in tana: i fiori si aprono uno dopo l'altro e dai laghetti si alza
+## uno sciame di lucciole. Va avanti anche a gioco fermo, mentre si sceglie
+## la carta.
+func _celebrate(chunk: Node3D) -> void:
+	var den: Node3D = chunk.get_meta("den", null)
+	if den == null:
+		return
+	var flowers := den.find_children("Flower_*", "", false, false)
+	for i in flowers.size():
+		var flower: Node3D = flowers[i]
+		flower.process_mode = Node.PROCESS_MODE_ALWAYS
+		var tween := flower.create_tween().set_ignore_time_scale(true)
+		tween.tween_interval(0.08 * i)
+		tween.tween_property(flower, "scale", Vector3(1.5, 1.5, 1.5), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(flower, "scale", Vector3.ONE, 0.25)
+	for side in [-1.0, 1.0]:
+		var fireflies := CPUParticles3D.new()
+		fireflies.process_mode = Node.PROCESS_MODE_ALWAYS
+		var dot := SphereMesh.new()
+		dot.radius = 0.07
+		dot.height = 0.14
+		dot.radial_segments = 4
+		dot.rings = 2
+		dot.material = Style.material("lamp_light")
+		fireflies.mesh = dot
+		fireflies.amount = 36
+		fireflies.lifetime = 2.6
+		fireflies.explosiveness = 0.6
+		fireflies.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+		fireflies.emission_box_extents = Vector3(7.0, 0.2, 3.0)
+		fireflies.direction = Vector3.UP
+		fireflies.spread = 35.0
+		fireflies.gravity = Vector3(0.0, 0.4, 0.0)
+		fireflies.initial_velocity_min = 0.8
+		fireflies.initial_velocity_max = 2.2
+		fireflies.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		fireflies.position = Vector3(side * 21.0, 0.3, 0.0)
+		den.add_child(fireflies)
+		fireflies.emitting = true
+		# Dopo qualche secondo lo sciame si dirada (il timer va anche in pausa).
+		get_tree().create_timer(4.0, true, false, true).timeout.connect(fireflies.set_emitting.bind(false))
 
 
 static func _box_mesh(size: Vector3, palette_key: String) -> BoxMesh:

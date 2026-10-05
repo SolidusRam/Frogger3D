@@ -34,6 +34,8 @@ static func load_main(tree: SceneTree) -> Node:
 	var main: Node = load("res://scenes/main.tscn").instantiate()
 	main.record_path = "user://record_test.cfg"
 	main.progress_path = "user://progressi_test.cfg"
+	# Le carte della tana subito, senza la festa (la prova test_den).
+	main.den_celebration_seconds = 0.0
 	tree.root.add_child(main)
 	tree.current_scene = main
 	# L'incendio insegue la rana: nei test che la spostano in giro va fermato

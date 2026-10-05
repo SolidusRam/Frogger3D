@@ -1,9 +1,9 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
 ## Un'inquadratura di tre quarti su un bioma, con la rana in primo piano.
-## SCENE: strada | fumo | bestiario (coccodrillo e tronco da vicino) | fiume | tana | tana_lontano | laghetto | ferrovia | aeroporto | porto.
+## SCENE: strada | fumo | bestiario (coccodrillo e tronco da vicino) | festa (l'arrivo in tana) | fiume | tana | tana_lontano | laghetto | ferrovia | aeroporto | porto.
 ## HEAT, SHOT.
-const BIOMES := {"strada": 2, "fiume": 3, "ferrovia": 4, "tana": 5, "tana_lontano": 5, "laghetto": 5, "fumo": 2, "bestiario": 1, "aeroporto": 6, "porto": 7}
+const BIOMES := {"strada": 2, "fiume": 3, "ferrovia": 4, "tana": 5, "tana_lontano": 5, "laghetto": 5, "fumo": 2, "bestiario": 1, "festa": 5, "aeroporto": 6, "porto": 7}
 var frame := 0
 var main: Node
 var scene := OS.get_environment("SCENE")
@@ -64,13 +64,23 @@ func _process(_d: float) -> bool:
 			cam.look_at_from_position(frog.global_position + Vector3(0, 3.0, 30.0), frog.global_position + Vector3(0, 1.5, -12.0))
 		else:
 			cam.look_at_from_position(frog.global_position + Vector3(-5.5, 3.2, 4.5), at)
+	if scene == "festa" and frame == 120:
+		# Nella tana, con la telecamera dove sarebbe quella del gioco.
+		main.den_celebration_seconds = 5.0
+		for chunk in main.get_node("Course").get_children():
+			if chunk.has_meta("den") and chunk.global_position.z < frog.global_position.z:
+				frog.global_position = Vector3(-2.0, 0.5, chunk.global_position.z + 1.0)
+				frog.velocity = Vector3.ZERO
+				var cam: Camera3D = root.get_viewport().get_camera_3d()
+				cam.look_at_from_position(frog.global_position + Vector3(1.5, 3.0, 7.0), frog.global_position + Vector3(4.0, 1.4, -4.0))
+				break
 	if scene == "fumo" and frame == 120:
 		# Rottami fumanti davanti alla rana, e il fuoco a 15 m dietro.
 		for car in main.find_children("*", "RigidBody3D", true, false):
 			if car.has_method("become_wreck") and car.global_position.distance_to(frog.global_position) < 30.0:
 				car.become_wreck()
 		main.get_node("Wildfire").front_z = frog.global_position.z + 15.0
-	if frame == 200:
+	if frame == (150 if scene == "festa" else 200):
 		get_root().get_texture().get_image().save_png(OS.get_environment("SHOT"))
 		print("salvato ", OS.get_environment("SHOT"))
 		quit()

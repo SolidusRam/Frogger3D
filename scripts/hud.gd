@@ -260,6 +260,10 @@ func hide_offer() -> void:
 	_offer.visible = false
 
 
+func is_offer_open() -> bool:
+	return _offer.visible
+
+
 ## L'equipaggiamento: il modificatore di ogni slot va sotto il suo potere
 ## (una fusione sotto entrambi); il corpo, che non ha un potere, e i
 ## potenziamenti numerici in basso a destra.
