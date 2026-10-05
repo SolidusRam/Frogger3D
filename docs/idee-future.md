@@ -67,7 +67,9 @@ Fusioni da cercare: molle-trampolino + ala a reazione, lingua-rampino + guantone
   - **Lingua-rampino**: agganci un veicolo, un tronco o una nave e ti fai trascinare, oppure tiri un rottame verso di te. Più ricco (si usa il traffico come mezzo, e il caos come attrezzo), ma più difficile da mirare e da rendere leggibile.
 - **Gracidio sonico**: le auto vicine sbandano. Un pugno ad area che fa salire molto il calore.
 
-## Il rework dell'aeroporto (proposta, 4 ottobre)
+## Il rework dell'aeroporto (proposta, 4 ottobre; superata il 5 ottobre)
+
+Il 5 ottobre l'utente ha scelto un'altra strada: gli aerei che atterrano, il cielo pericoloso e l'atterraggio di pancia (sta in regole-design.md). Qui sotto la proposta di allora, se servisse.
 
 Cosa non è in linea: i pilastri del gioco sono attraversare corsie a tempo, il traffico ibrido che si rompe e fa catene, e i poteri. L'aeroporto ne ha solo un pezzo: un gigante ogni 10 s su un raccordo quasi vuoto; il pugno non serve e il caos non nasce. Da tenere: l'aereo che passa e travolge, il getto dietro, la scena.
 

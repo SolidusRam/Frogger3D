@@ -1,12 +1,14 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
 ## Un'inquadratura di tre quarti su un bioma, con la rana in primo piano.
-## SCENE: strada | fumo | bestiario (coccodrillo e tronco da vicino) | festa (l'arrivo in tana) | fiume | tana | tana_lontano | laghetto | ferrovia | aeroporto | porto.
+## SCENE: strada | fumo | bestiario (coccodrillo e tronco da vicino) | festa (l'arrivo in tana) | atterraggio | pancia | fiume | tana | tana_lontano | laghetto | ferrovia | aeroporto | porto.
 ## HEAT, SHOT.
-const BIOMES := {"strada": 2, "fiume": 3, "ferrovia": 4, "tana": 5, "tana_lontano": 5, "laghetto": 5, "fumo": 2, "bestiario": 1, "festa": 5, "aeroporto": 6, "porto": 7}
+const BIOMES := {"strada": 2, "fiume": 3, "ferrovia": 4, "tana": 5, "tana_lontano": 5, "laghetto": 5, "fumo": 2, "bestiario": 1, "festa": 5, "atterraggio": 6, "pancia": 6, "aeroporto": 6, "porto": 7}
 var frame := 0
 var main: Node
 var scene := OS.get_environment("SCENE")
+var plane: Node3D
+var shot_at := -1
 
 
 func _initialize() -> void:
@@ -74,6 +76,32 @@ func _process(_d: float) -> bool:
 				var cam: Camera3D = root.get_viewport().get_camera_3d()
 				cam.look_at_from_position(frog.global_position + Vector3(1.5, 3.0, 7.0), frog.global_position + Vector3(4.0, 1.4, -4.0))
 				break
+	if scene in ["atterraggio", "pancia"] and frame == 60:
+		# Un aereo apposta sulla pista del bioma, appena fuori dalla zona.
+		for taxiway in main.find_children("*", "Node3D", true, false):
+			if taxiway.get_script() and taxiway.get_script().resource_path.ends_with("taxiway.gd"):
+				for child in taxiway.get_children():
+					if child is AnimatableBody3D:
+						child.queue_free()
+				plane = load("res://scripts/airplane.gd").create(taxiway.direction, 7.0)
+				var belly := scene == "pancia"
+				plane.land(-taxiway.direction * (37.0 - (2.0 if belly else 30.0)), 70.0, belly)
+				taxiway.add_child(plane)
+				taxiway.set_physics_process(false)
+				var cam: Camera3D = root.get_viewport().get_camera_3d()
+				var center: Vector3 = taxiway.global_position
+				cam.look_at_from_position(center + Vector3(-taxiway.direction * 10.0, 16.0, 34.0), center + Vector3(-taxiway.direction * 8.0, 2.0, 0.0))
+				break
+	if plane and shot_at < 0:
+		var ready: bool = plane.altitude() < 6.0 if scene == "atterraggio" else (not plane.is_flying() and absf(plane.position.x) < 15.0)
+		if ready:
+			shot_at = frame + 2
+	if frame == shot_at:
+		get_root().get_texture().get_image().save_png(OS.get_environment("SHOT"))
+		print("salvato ", OS.get_environment("SHOT"))
+		quit()
+	if plane:
+		return false
 	if scene == "fumo" and frame == 120:
 		# Rottami fumanti davanti alla rana, e il fuoco a 15 m dietro.
 		for car in main.find_children("*", "RigidBody3D", true, false):

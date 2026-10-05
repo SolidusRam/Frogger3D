@@ -14,6 +14,7 @@ var max_chunks := 0
 var order: Array[String] = []
 var seen := {}
 var dens := 0
+var lane_lengths: Array[float] = []
 
 
 func _initialize() -> void:
@@ -36,6 +37,10 @@ func _physics_process(_delta: float) -> bool:
 		if not seen.has(chunk.name):
 			seen[chunk.name] = true
 			order.append(String(chunk.name).get_slice("_", 0))
+			# Le corsie di ogni strada incontrata (alla fine, nel tratto rimasto,
+			# potrebbe non esserci nessuna strada).
+			for lane in Lib.by_script(chunk, "lane.gd"):
+				lane_lengths.append(lane.half_length)
 	max_chunks = maxi(max_chunks, course.get_child_count())
 	if z <= -2000.0 and not seen.has("_fallen"):
 		seen["_fallen"] = frame
@@ -52,8 +57,7 @@ func _physics_process(_delta: float) -> bool:
 			if chunk.has_meta("kind") and (not chunk.has_node("Edges") or chunk.get_node("Edges").get_child_count() == 0):
 				without_edges += 1
 		t.check(without_edges == 0, "ogni blocco ha il suo bordo visibile (%d senza)" % without_edges)
-		var lanes: Array = Lib.by_script(course, "lane.gd")
-		t.check(not lanes.is_empty() and lanes.all(func(l): return l.half_length > 40.0), "le auto nascono dentro le gallerie, oltre il bordo")
+		t.check(not lane_lengths.is_empty() and lane_lengths.all(func(l): return l > 40.0), "le auto nascono dentro le gallerie, oltre il bordo (%d corsie)" % lane_lengths.size())
 		# La prima sezione finisce con la prima tana.
 		var first_section := order.slice(0, order.find("DEN"))
 		t.check(order.count("RAIL") >= 1 and not first_section.has("RAIL"), "le ferrovie compaiono, ma non nella prima sezione (%d)" % order.count("RAIL"))

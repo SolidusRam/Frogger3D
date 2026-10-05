@@ -1,13 +1,12 @@
 class_name Taxiway
 extends Node3D
-## Un raccordo dell'aeroporto: asfalto con le linee gialle e gli aerei che
-## rullano lenti, uno dopo l'altro. Gli aerei sono enormi e si vedono
-## arrivare: non serve un avviso. Sotto le ali, accanto ai motori, corrono due
-## strade di servizio con i trenini bagagli: quando il getto li investe porta
-## via valigie e pacchi e li scaglia all'indietro, addosso a chi attraversa
-## dietro l'aereo. Dal livello Heat.STEP_LEVEL di calore metà degli aerei
-## decolla: si ferma sul raccordo e parte col getto lungo il doppio. Con la
-## distanza gli aerei arrivano più spesso. Corre lungo l'asse X locale.
+## La pista dell'aeroporto: asfalto con le linee gialle e gli aerei che
+## atterrano, uno dopo l'altro: scendono dal cielo, toccano terra in un punto
+## diverso ogni volta, frenano e rullano via (vedi Airplane). Accanto alla
+## pista corrono due strade di servizio con i trenini bagagli: il getto porta
+## via valigie e pacchi e li scaglia. Dal livello Heat.STEP_LEVEL di calore
+## metà degli aerei atterra di pancia. Con la distanza gli aerei arrivano più
+## spesso. Corre lungo l'asse X locale.
 
 var direction := 1.0
 var length := 400.0
@@ -17,8 +16,11 @@ var play_half_width := 37.0
 var min_interval := 9.0
 var max_interval := 15.0
 var difficulty := 0
-## Quanti aerei decollano dal livello dei gradini.
-var takeoff_chance := 0.5
+## Quanti aerei atterrano di pancia dal livello dei gradini.
+var belly_chance := 0.5
+## Metri di rampa prima del punto di contatto: l'aereo parte da lì, alto
+## APPROACH * Airplane.GLIDE_SLOPE (14 m).
+const APPROACH := 70.0
 ## Velocità base; il calore la alza fino al +30%.
 var base_speed := 7.0
 var max_heat_bonus := 0.3
@@ -27,8 +29,9 @@ var max_heat_bonus := 0.3
 const SERVICE_ROAD_Z := Airplane.ENGINE_X + 3.0
 var service_min_speed := 5.0
 var service_max_speed := 8.0
-var service_min_gap := 25.0
-var service_max_gap := 50.0
+## Trenini fitti (5 ottobre 2026): più carico da scagliare.
+var service_min_gap := 10.0
+var service_max_gap := 22.0
 
 var _timer := 0.0
 
@@ -39,15 +42,15 @@ func _ready() -> void:
 	_build_markings()
 	for side in [-1.0, 1.0]:
 		_add_service_road(side * SERVICE_ROAD_Z)
-	# All'inizio un aereo è già in arrivo, poco fuori dalla zona di gioco.
-	_send_plane(-direction * (play_half_width + Airplane.LENGTH))
+	# All'inizio un aereo è già in arrivo.
+	_send_plane()
 	_timer = randf_range(min_interval, max_interval)
 
 
 func _physics_process(delta: float) -> void:
 	_timer -= delta
 	if _timer <= 0.0:
-		_send_plane(-direction * (play_half_width + 60.0))
+		_send_plane()
 		_timer = randf_range(min_interval, max_interval)
 	for child in get_children():
 		var plane := child as Airplane
@@ -55,13 +58,14 @@ func _physics_process(delta: float) -> void:
 			plane.queue_free()
 
 
-func _send_plane(x: float) -> void:
+## Un aereo in arrivo dal cielo. Tocca terra fra 8 e 50 m dentro la zona di
+## gioco; di pancia appena entrato, così scivola su tutta la pista.
+func _send_plane() -> void:
 	var plane := Airplane.create(direction, base_speed * (1.0 + max_heat_bonus * Heat.ratio()))
-	plane.position.x = x
 	plane.play_half_width = play_half_width
-	plane.takeoff = Heat.level() >= Heat.STEP_LEVEL and randf() < takeoff_chance
-	# Si ferma con la coda nella zona di gioco: il getto lungo la copre tutta.
-	plane.hold_x = -direction * randf_range(0.0, 12.0)
+	var belly := Heat.level() >= Heat.STEP_LEVEL and randf() < belly_chance
+	var into := randf_range(0.0, 6.0) if belly else randf_range(8.0, 50.0)
+	plane.land(-direction * (play_half_width - into), APPROACH, belly)
 	add_child(plane)
 	# Una mosca su un aereo su 2, su un'ala; può essere d'oro.
 	Fly.maybe_add(plane, 0.5, Vector3(8.0 * (1.0 if Fly.rng().randf() < 0.5 else -1.0), 3.4, 0.5), true)

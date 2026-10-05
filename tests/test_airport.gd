@@ -1,7 +1,10 @@
 extends SceneTree
 ## Aeroporto: l'aereo travolge la rana, la fiamma dietro i motori brucia, il
 ## getto la spinge via e scaglia i rottami, col deltaplano nel getto si sale
-## in alto, sull'ala si sta sicuri, un'auto in pista diventa rottame. Sotto le
+## in alto, sull'ala si sta sicuri, un'auto in pista diventa rottame.
+## L'atterraggio: scende dal cielo con ombra e luci del punto di contatto, a
+## terra sotto di lui si passa e in volo no, frena coi motori al contrario;
+## dal livello 3 l'atterraggio di pancia, con l'ala bassa e il fuoco. Sotto le
 ## ali corrono le strade di servizio con i trenini bagagli: il getto porta via
 ## il carico e lo scaglia, un bagaglio che arriva veloce fa male, il pugno lo
 ## fa volare.
@@ -28,6 +31,16 @@ func _next(to_step: int) -> void:
 	step = to_step
 	start = frame
 	m = {}
+
+
+## Un aereo che atterra sulla pista dei test, con contatto in x = 0.
+func _landing_plane(belly: bool) -> void:
+	if plane:
+		plane.queue_free()
+	plane = load("res://scripts/airplane.gd").create(1.0, 7.0)
+	plane.position.z = LANE.z
+	plane.land(0.0, 70.0, belly)
+	main.add_child(plane)
 
 
 func _new_plane(x: float) -> void:
@@ -192,57 +205,120 @@ func _physics_process(_delta: float) -> bool:
 				t.check(m.train.cargo().size() < m.bags.size(), "il pugno porta via i bagagli dal carrello (%d su %d)" % [m.bags.size() - m.train.cargo().size(), m.bags.size()])
 				t.check(not flying.is_empty(), "il pugno li fa volare lontano (%d oltre 2,5 m)" % flying.size())
 				_next(8)
-		8: # il gradino: dal livello 3 metà degli aerei decolla
+		8: # l'atterraggio: scende, ombra e luci; a terra sotto di lui si passa
 			var heat: Node = root.get_node("Heat")
 			if f == 1:
 				heat.running = false
 				heat.value = 0.0
 				var taxiway: Node3D = load("res://scripts/taxiway.gd").new()
 				taxiway.difficulty = 4
-				taxiway.takeoff_chance = 1.0
+				taxiway.belly_chance = 1.0
 				taxiway.position = LANE + Vector3(0, 0, -60)
 				main.add_child(taxiway)
 				t.check(taxiway.min_interval == 6.0 and taxiway.max_interval == 10.0, "con la distanza gli aerei arrivano più spesso (%.0f-%.0f s)" % [taxiway.min_interval, taxiway.max_interval])
-				var takeoffs := 0
+				var bellies := 0
 				for i in 20:
-					taxiway._send_plane(-200.0)
+					taxiway._send_plane()
 				for child in taxiway.get_children():
-					if child.get_script() and child.get_script().resource_path.get_file() == "airplane.gd" and child.takeoff:
-						takeoffs += 1
-				t.check(takeoffs == 0, "a calore basso nessun aereo decolla")
+					if child.get_script() and child.get_script().resource_path.get_file() == "airplane.gd":
+						bellies += 1 if child.belly else 0
+				t.check(bellies == 0, "a calore basso nessun aereo atterra di pancia")
 				taxiway.queue_free()
-				heat.value = 61.0
+				_landing_plane(false)
 				frog.heal_full()
-				if plane:
-					plane.queue_free()
-				plane = load("res://scripts/airplane.gd").create(1.0, 7.0)
-				plane.takeoff = true
-				plane.hold_x = 0.0
-				plane.position = LANE + Vector3(-10, 0, 0)
-				main.add_child(plane)
-				Lib.place(frog, LANE + Vector3(0, 30, 30))
-			if plane.is_spooling() and not m.has("spool_at"):
-				m.spool_at = f
-				m.hold = plane.global_position.x
-			if m.has("spool_at"):
-				var g: int = f - m.spool_at
-				if g == 90:
-					# A 30 m dietro il motore: oltre il getto normale (22 m).
-					Lib.place(frog, plane.to_global(Vector3(6, 0, 30)) + Vector3(0, 0.1, 0))
-					m.x = frog.global_position.x
-				if g == 115:
-					t.check(absf(plane.global_position.x - m.hold) < 0.01, "per decollare l'aereo si ferma sul raccordo")
-					t.check(plane.power > 1.8, "fermo, i motori salgono di giri (%.2f)" % plane.power)
-					var pushed: float = m.x - frog.global_position.x
-					t.check(pushed > 1.5, "il getto del decollo arriva al doppio della distanza (%.1f m a 30 m)" % pushed)
-					Lib.place(frog, LANE + Vector3(0, 30, 30))
+				Lib.place(frog, LANE + Vector3(-30, 0.1, 0))
+				m.alt = plane.altitude()
+				m.descending = true
+			if f == 2:
+				t.check(plane.is_flying() and plane.altitude() > 10.0, "l'aereo arriva dal cielo (quota %.0f m)" % plane.altitude())
+				t.check(plane._shadow != null and plane._marker != null, "a terra la sua ombra, e le luci nel punto di contatto")
+			if plane.is_flying():
+				m.descending = m.descending and plane.altitude() <= m.alt
+				m.alt = plane.altitude()
+			if plane.position.x > -10.0 and not m.has("over"):
+				m.over = true
+				t.check(m.descending, "scende lungo la rampa")
+				t.check(frog.health == frog.max_health, "a terra, sotto l'aereo in volo, si passa")
+			if not plane.is_flying() and not m.has("down"):
+				m.down = f
+				t.check(absf(plane.position.y) < 0.01 and absf(plane.position.x) < 0.5, "tocca terra nel punto delle luci (x %.1f)" % plane.position.x)
+				t.check(plane._marker == null and plane._shadow == null, "toccata terra, ombra e luci spariscono")
+				# Davanti al motore destro, mentre frena coi motori al contrario.
+				Lib.place(frog, plane.to_global(Vector3(6, 0, -11)) * Vector3(1, 0, 1) + Vector3(0, LANE.y + 0.1, 0))
+				m.x = frog.global_position.x
+			if m.has("down"):
+				var g: int = f - m.down
+				if g == 20:
+					t.check(frog.global_position.x - m.x > 0.8, "i motori al contrario spingono in avanti (%.1f m)" % (frog.global_position.x - m.x))
+					Lib.place(frog, LANE + Vector3(0, 30, 40))
 				if g == 300:
-					t.check(plane.is_rolling() and plane.speed > 18.0, "poi corre lungo il raccordo (%.0f m/s)" % plane.speed)
-				if g == 500:
-					t.check(plane.global_position.x > 60.0 and plane.global_position.y > 1.0, "fuori dalla zona di gioco si alza in volo e va via (x %.0f, quota %.1f)" % [plane.global_position.x, plane.global_position.y])
-					t.finish(self)
+					t.check(plane.phase == 2 and is_equal_approx(plane.speed, plane.taxi_speed), "poi frena fino al rullaggio (%.0f m/s)" % plane.speed)
+					_next(9)
+			if f > 1200:
+				t.check(false, "l'aereo atterra entro 20 s")
+				t.finish(self)
+		9: # chi vola sulla sua rotta ci finisce contro
+			if f == 1:
+				_landing_plane(false)
+				frog.heal_full()
+				m.alt = 20.0 * 0.2 + 2.6
+			if plane.is_flying() and plane.position.x < -15.0:
+				# Sospesa in aria, dove l'aereo passerà a 4 m di quota (senza
+				# Lib.place, che rimetterebbe la vita piena).
+				frog.global_position = LANE + Vector3(-20, m.alt, 0)
+				frog.velocity = Vector3.ZERO
+			if plane.position.x > -10.0 and not m.has("checked"):
+				m.checked = true
+				t.check(frog.health < frog.max_health, "chi vola sulla rotta dell'aereo ci finisce contro (vita %d)" % frog.health)
+				_next(10)
 			if f > 900:
-				t.check(false, "l'aereo si ferma per decollare entro 15 s")
+				t.check(false, "l'aereo passa entro 15 s")
+				t.finish(self)
+		10: # il gradino: dal livello 3 l'atterraggio di pancia
+			var heat: Node = root.get_node("Heat")
+			if f == 1:
+				heat.value = 61.0
+				var taxiway: Node3D = load("res://scripts/taxiway.gd").new()
+				taxiway.belly_chance = 1.0
+				taxiway.position = LANE + Vector3(0, 0, -60)
+				main.add_child(taxiway)
+				var bellies := 0
+				var planes := 0
+				for i in 6:
+					taxiway._send_plane()
+				for child in taxiway.get_children():
+					if child.get_script() and child.get_script().resource_path.get_file() == "airplane.gd":
+						planes += 1
+						bellies += 1 if child.belly else 0
+				t.check(bellies == planes, "dal livello 3 gli aerei atterrano di pancia (%d su %d)" % [bellies, planes])
+				taxiway.queue_free()
+				_landing_plane(true)
+				Lib.place(frog, LANE + Vector3(0, 30, 40))
+				frog.heal_full()
+			if not plane.is_flying() and not m.has("down"):
+				m.down = f
+				t.check(plane.position.y < -0.5, "di pancia scivola basso (%.1f m)" % plane.position.y)
+			if m.has("down"):
+				var g: int = f - m.down
+				if g == 1:
+					# Sotto l'ala, davanti all'aereo: nella scivolata non si passa.
+					Lib.place(frog, plane.to_global(Vector3(10, 0, -14)) * Vector3(1, 0, 1) + Vector3(0, LANE.y + 0.1, 0))
+				if g == 90:
+					t.check(frog.health < frog.max_health, "sotto le ali non si passa più (vita %d)" % frog.health)
+					var patches: Array = Lib.by_script(main, "fire_patch.gd")
+					t.check(not patches.is_empty(), "lascia chiazze di fuoco (%d)" % patches.size())
+					frog.heal_full()
+					# La chiazza più nuova: le vecchie si stanno spegnendo.
+					patches.sort_custom(func(a, b): return a._left > b._left)
+					m.patch = patches[0]
+				if g > 90 and g < 120 and is_instance_valid(m.patch):
+					frog.global_position = m.patch.global_position + Vector3(0, 0.1, 0)
+					frog.velocity = Vector3.ZERO
+				if g == 120:
+					t.check(frog.health < frog.max_health - 10, "le chiazze di fuoco bruciano (vita %d)" % frog.health)
+					t.finish(self)
+			if f > 1200:
+				t.check(false, "l'aereo atterra di pancia entro 20 s")
 				t.finish(self)
 	return false
 
