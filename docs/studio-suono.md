@@ -113,6 +113,8 @@ Conseguenza per il §2a: la scelta non è più fra PS1, chiptune e moderno, ma u
 
 **5 ottobre 2026, gli effetti fatti**: tutti gli eventi dell'inventario (§3) hanno il loro suono, generato da codice (tools/suoni/genera.py) e suonato dall'autoload Sfx. Le regole sono nella riga "Suono" di regole-design.md. Per cambiare un suono si modifica la sua ricetta e si rigenera (`python3 tools/suoni/genera.py nome`); per cambiarne il volume nel gioco, la tabella VOLUME di scripts/sfx.gd.
 
+**5 ottobre 2026, la musica in parallelo**: il giocatore la produce da sé; le dritte (la sensazione del gioco, lo spazio lasciato dagli effetti, le specifiche tecniche) sono in docs/brief-musica.md.
+
 ## Ascolti dalla PS1
 
 Proposti il 5 ottobre 2026, per farsi l'orecchio. Si trovano su YouTube cercando "nome del gioco OST" (musica) o "sound effects" (effetti).
