@@ -122,6 +122,7 @@ func _hit_overlapping_frogs() -> void:
 		var closing_speed := (linear_velocity - frog.velocity).dot(toward_frog)
 		if own_speed >= min_harmful_speed and closing_speed >= min_harmful_speed:
 			var push := Vector3(linear_velocity.x, 0.0, linear_velocity.z).normalized() * knockback_speed + Vector3.UP * 4.0
+			Sfx.play_at(&"baggage_hit", global_position)
 			frog.take_hit(damage, push)
 			_hit_cooldown = 1.0
 

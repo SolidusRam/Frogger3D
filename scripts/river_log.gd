@@ -49,6 +49,11 @@ func _physics_process(delta: float) -> void:
 	global_position = global_position + drift_velocity * delta + Vector3.DOWN * (_sunk - before)
 	# L'avviso: trema appena la rana sale, fa bolle mentre affonda.
 	var trembling := loaded or _sunk > 0.0
+	# Scricchiola appena la rana sale, gorgoglia quando comincia ad affondare.
+	if loaded and _weighted == delta:
+		Sfx.play_at(&"log_creak", global_position)
+	if loaded and _weighted > sink_delay and _weighted - delta <= sink_delay:
+		Sfx.play_at(&"log_bubbles", global_position)
 	_bark.position = Vector3(randf_range(-0.04, 0.04), randf_range(-0.03, 0.03), 0.0) if trembling else Vector3.ZERO
 	_set_bubbling(loaded and _weighted > sink_delay * 0.5)
 

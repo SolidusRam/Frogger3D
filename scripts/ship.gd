@@ -68,6 +68,10 @@ func _ready() -> void:
 	var bow_collision := CollisionShape3D.new()
 	bow_collision.shape = bow
 	add_child(bow_collision)
+	Sfx.loop(self, &"ship_engine", 0.0, 1.0, 1.5)
+	# Una nave su due si annuncia con la sirena.
+	if randf() < 0.5:
+		Sfx.play_at(&"ship_horn", global_position, 0.0, 1.0, 4.0)
 
 
 func _physics_process(delta: float) -> void:

@@ -110,6 +110,7 @@ func _physics_process(delta: float) -> void:
 				if absf(position.x - target_x) <= chase_margin and absf(_trolley.position.z - target_z) <= 1.0:
 					phase = Phase.WARNING
 					_timer = _warning_time()
+					Sfx.loop(_trolley, &"crane_warning", 0.0, 1.0, 1.5)
 		Phase.WARNING:
 			if not is_locked():
 				if _update_target(_timer + fall_time(_target_level())):
@@ -270,6 +271,8 @@ func _place_shadow() -> void:
 
 
 func _drop() -> void:
+	Sfx.unloop(_trolley, &"crane_warning")
+	Sfx.play_at(&"crane_release", _hanging.global_position, 0.0, 1.0, 1.5)
 	var drop := ShippingContainer.new()
 	drop.color_index = _hanging_color
 	get_parent().add_child(drop)

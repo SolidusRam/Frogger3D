@@ -6,3 +6,6 @@ export_presets.cfg
 
 # Blender
 *.blend1
+
+# Python
+__pycache__/

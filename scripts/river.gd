@@ -36,8 +36,15 @@ var _streak_z := PackedFloat32Array()
 var _lane_shift: Array[float] = []
 
 
+## Da dove si sente l'acqua: lungo il fiume, all'altezza della rana.
+var _voice: Node3D
+
+
 func _ready() -> void:
 	_build_bed_and_water()
+	_voice = Node3D.new()
+	add_child(_voice)
+	Sfx.loop(_voice, &"harbor_loop" if still else &"river_loop", 0.0, 1.0, 1.5)
 	if still:
 		_build_streaks()
 		return
@@ -86,6 +93,9 @@ func _build_streaks() -> void:
 
 
 func _process(delta: float) -> void:
+	var frog := get_tree().get_first_node_in_group("frog") as Node3D
+	if frog:
+		_voice.position = Vector3(clampf(to_local(frog.global_position).x, -length / 2.0, length / 2.0), water_level, 0.0)
 	if _streaks == null:
 		return
 	for i in _lanes.size():

@@ -40,6 +40,7 @@ func tick(delta: float) -> void:
 		_second_wave_left -= delta
 		if _second_wave_left <= 0.0:
 			_wave(_second_wave_at, radius * 1.5)
+			Sfx.play_at(&"slam_impact", _second_wave_at, -4.0, 0.8)
 
 
 func is_ready() -> bool:
@@ -63,6 +64,7 @@ func can_start() -> bool:
 
 func use() -> void:
 	diving = true
+	Sfx.play(&"slam_dive")
 	_start_y = _frog.global_position.y
 	cooldown_left = cooldown
 	_frog.squash(Vector3(0.8, 1.3, 0.8), 0.2)
@@ -86,6 +88,7 @@ func stop() -> void:
 
 func _shock() -> void:
 	_frog.power_used.emit(&"slam")
+	Sfx.play(&"slam_impact")
 	_frog.squash(Vector3(1.5, 0.6, 1.5), 0.35)
 	_frog.camera_rig.shake(0.35, 0.3)
 	var size := radius

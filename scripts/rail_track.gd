@@ -33,9 +33,19 @@ var _lamps: Array[Node3D] = []
 var _blink := 0.0
 
 
+## Da dove si sentono la campanella (sui pali, davanti alla rana) e il treno
+## (il punto del treno più vicino alla rana: il muso quando arriva).
+var _bell: Node3D
+var _train_voice: Node3D
+
+
 func _ready() -> void:
 	_build_track()
 	_build_signals()
+	_bell = Node3D.new()
+	add_child(_bell)
+	_train_voice = Node3D.new()
+	add_child(_train_voice)
 	_timer = randf_range(1.0, max_wait)
 
 
@@ -53,9 +63,25 @@ func _physics_process(delta: float) -> void:
 			if train.tail_x() * direction > play_half_width + 10.0:
 				train.queue_free()
 				train = null
+				Sfx.unloop(_bell, &"rail_bell")
+				Sfx.unloop(_train_voice, &"train_loop")
 				phase = Phase.WAITING
 				_timer = randf_range(min_wait, max_wait)
 	_update_lamps(delta)
+	_update_voices()
+
+
+## La campanella e il treno seguono la rana lungo il binario: si sentono da
+## davanti, e il treno dal lato da cui arriva.
+func _update_voices() -> void:
+	var frog := get_tree().get_first_node_in_group("frog") as Node3D
+	if frog == null:
+		return
+	var frog_x := to_local(frog.global_position).x
+	_bell.position = Vector3(clampf(frog_x, -play_half_width, play_half_width), 2.0, 2.1)
+	if train:
+		var ends := [train.nose_x(), train.tail_x()]
+		_train_voice.position = Vector3(clampf(frog_x, ends.min(), ends.max()), 1.5, 0.0)
 
 
 ## Vero mentre le luci lampeggiano: dall'inizio dell'avviso al passaggio
@@ -78,6 +104,11 @@ func _send_train() -> void:
 	add_child(train)
 	phase = Phase.WARNING
 	_timer = warning_time
+	# La tromba suona dal lato da cui arriva il treno: dice anche da dove.
+	Sfx.play_at(&"train_horn", to_global(Vector3(-direction * (play_half_width + 4.0), 2.0, 0.0)), 0.0, 1.3 if train.express else 1.0, 3.0)
+	Sfx.loop(_bell, &"rail_bell", 0.0, 1.0, 1.5)
+	_update_voices()
+	Sfx.loop(_train_voice, &"train_loop", 0.0, 1.35 if train.express else 1.0, 3.0, true)
 
 
 func _update_lamps(delta: float) -> void:

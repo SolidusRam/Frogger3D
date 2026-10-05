@@ -101,6 +101,7 @@ func ready_ratio() -> float:
 ## scatta a vuoto e si ricarica in fretta.
 func use() -> bool:
 	var target := aimed if aimed else _find_target()
+	Sfx.play(&"tongue_shoot")
 	if target is Fly:
 		# Una mosca si mangia al volo: niente aggancio, niente calore.
 		_flick_to = target.global_position
@@ -116,6 +117,7 @@ func use() -> bool:
 	_frog.power_used.emit(&"tongue")
 	attached = true
 	_target = target
+	Sfx.play_at(&"tongue_stick", _top_of(target))
 	_anchor_local = target.to_local(_top_of(target))
 	_last_anchor = target.to_global(_anchor_local)
 	_length = _mouth().distance_to(_last_anchor)
@@ -185,6 +187,7 @@ func release() -> void:
 	if not attached:
 		return
 	attached = false
+	Sfx.play(&"tongue_reel")
 	if not _is_loose(_target):
 		Progress.trial_best("tongue", 1, _tow_distance)
 		if slingshot:

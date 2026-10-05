@@ -39,6 +39,7 @@ func build(dolly_count: int) -> void:
 	_solid(tug, Vector3(1.4, 0.8, TUG_LENGTH), Vector3(0.0, 0.65, 0.0))
 	_solid(tug, Vector3(1.4, 0.1, 1.4), Vector3(0.0, 1.74, 0.6))
 	_nose = _make_nose(tug)
+	Sfx.loop(tug, &"tug_loop", 0.0, 1.0, 0.8)
 	var offset := TUG_LENGTH + GAP
 	for i in dolly_count:
 		# Il timone sporge davanti: il centro del pianale è più indietro.

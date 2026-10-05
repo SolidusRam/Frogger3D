@@ -24,6 +24,9 @@ var _gone := false
 var _ship: Ship
 
 
+var _landed := false
+
+
 func _ready() -> void:
 	collision_layer = 4 # come i veicoli: la rana ci sbatte e ci sale sopra
 	collision_mask = 1 | 4 | 8
@@ -87,6 +90,10 @@ func _check_frog_hit() -> void:
 
 
 func _on_body_entered(body: Node) -> void:
+	# Il primo urto è il gong: la lamiera che cade sulla nave o sul molo.
+	if not _landed:
+		_landed = true
+		Sfx.play_at(&"container_land", global_position, 0.0, 1.0, 2.5)
 	if body is Ship:
 		_ship = body
 

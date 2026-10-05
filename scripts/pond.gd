@@ -232,11 +232,13 @@ func _update_refund_button() -> void:
 
 func _buy_stat(stat: String) -> void:
 	Progress.buy_stat(stat)
+	Sfx.play(&"ui_buy")
 	refresh()
 
 
 func _activate(card: String, index: int) -> void:
 	Progress.activate(card, index)
+	Sfx.play(&"ui_buy", 0.0, 1.2)
 	refresh()
 
 
@@ -248,6 +250,7 @@ func _refund() -> void:
 		get_tree().create_timer(3.0, true).timeout.connect(_disarm_refund)
 		return
 	Progress.refund()
+	Sfx.play(&"ui_refund")
 	refresh()
 
 

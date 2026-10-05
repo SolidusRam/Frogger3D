@@ -9,6 +9,9 @@ var _modifier: Label
 var _fill_ready: StyleBoxFlat
 var _fill_charging: StyleBoxFlat
 var _is_ready := true
+var _slot := ""
+## Il "ding" di ogni potere ha il suo tono.
+const READY_PITCH := {"gloves": 1.0, "springs": 1.12, "wing": 1.26, "tongue": 1.4, "body": 0.9}
 
 
 static func make(title: String, key: String, slot: String) -> PowerChip:
@@ -18,6 +21,7 @@ static func make(title: String, key: String, slot: String) -> PowerChip:
 
 
 func _build(title: String, key: String, slot: String) -> void:
+	_slot = slot
 	var color: Color = UiTheme.SLOT_COLORS[slot]
 	custom_minimum_size.x = 240
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -76,8 +80,9 @@ func set_ratio(ratio: float) -> void:
 	_is_ready = now_ready
 	_bar.add_theme_stylebox_override("fill", _fill_ready if now_ready else _fill_charging)
 	if now_ready:
-		# Di nuovo pronto: un lampo.
+		# Di nuovo pronto: un lampo e un "ding".
 		modulate = Color(1.8, 1.8, 1.8)
+		Sfx.play(&"power_ready", 0.0, READY_PITCH.get(_slot, 1.0))
 		create_tween().set_ignore_time_scale(true).tween_property(self, "modulate", Color.WHITE, 0.3)
 
 

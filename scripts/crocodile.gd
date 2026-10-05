@@ -41,6 +41,10 @@ func _set_mouth_open(open: bool) -> void:
 	if open == _mouth_open:
 		return
 	_mouth_open = open
+	# Si sente solo il coccodrillo vicino: un fiume pieno sarebbe un cantiere.
+	var frog := get_tree().get_first_node_in_group("frog") as Node3D
+	if frog and frog.global_position.distance_to(global_position) < 18.0:
+		Sfx.play_at(&"croc_open" if open else &"croc_snap", global_position)
 	var tween := create_tween()
 	tween.tween_property(_jaw, "rotation:x", deg_to_rad(40.0) if open else 0.0, 0.15)
 

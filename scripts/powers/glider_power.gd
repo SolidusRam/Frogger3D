@@ -120,6 +120,8 @@ func update(delta: float) -> void:
 		gliding = true
 		_flight = 0.0
 		_unfold()
+		Sfx.play(&"glider_open")
+		Sfx.loop(_frog, &"glide_wind")
 		# La pressione ha aperto il deltaplano: non va ricordata come salto.
 		_frog.forget_jump_press()
 		_frog.power_used.emit(&"glide")
@@ -235,8 +237,11 @@ func _smoke_below() -> Car:
 func close() -> void:
 	gliding = false
 	in_thermal = false
+	if Sfx.is_looping(_frog, &"glide_wind"):
+		Sfx.unloop(_frog, &"glide_wind")
 	if _wing and _wing.visible and not _folding:
 		_folding = true
+		Sfx.play(&"glider_close")
 		var tween := _new_tween()
 		tween.tween_property(_wing, "scale", Vector3(0.05, 1.0, 0.6), 0.12).set_ease(Tween.EASE_IN)
 		tween.tween_callback(_hide_wing)

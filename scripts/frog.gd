@@ -144,6 +144,16 @@ var base_swim_speed := 2.5
 var damage_factor := 1.0
 var extra_lives := 0
 
+## Suoni: da quanto la rana sta ferma (ogni tanto gracida), da quanto brucia
+## (lo sfrigolio dura finché qualcosa la scotta), ogni quanto guaisce
+## bruciando, ogni quanto fa una bracciata, e se nuotava al passo prima.
+var _idle_time := 0.0
+var _next_croak := 6.0
+var _burning_left := 0.0
+var _burn_yelp_wait := 0.0
+var _stroke_wait := 0.0
+var _was_swimming := false
+
 
 func _ready() -> void:
 	add_to_group("frog")
@@ -232,17 +242,20 @@ func _physics_process(delta: float) -> void:
 		# Senza Spazio premuto si sale con la gravità di discesa.
 		launch(Vector3(velocity.x, sqrt(2.0 * gravity_down * height), velocity.z))
 		squash(Vector3(1.3, 0.7, 1.3), 0.2)
+		Sfx.play(&"super_jump", -6.0, 1.3 + 0.05 * mini(bounce_streak - 1, 5))
 	elif is_on_floor() or is_swimming():
 		bounce_streak = 0
 	if is_on_floor() and not was_on_floor and fall_speed > 4.0:
 		# Si spiaccica all'atterraggio, tanto più quanto cadeva veloce.
 		var amount := clampf(fall_speed / 25.0, 0.1, 0.4)
 		squash(Vector3(1.0 + amount, 1.0 - amount, 1.0 + amount), 0.3)
+		Sfx.play(&"frog_land", linear_to_db(amount / 0.4), 1.15 - amount * 0.5)
 
 	if can_act() and Input.is_action_just_pressed("punch") and punch_power.is_ready():
 		punch()
 
 	_update_visual(direction, delta)
+	_update_sounds(direction, delta)
 	# Il vento lo rimettono ogni passo gli aerei: se ci si allontana, cessa.
 	_wind_push = Vector3.ZERO
 	_wind_lift = 0.0
@@ -268,6 +281,7 @@ func apply_wind(push: Vector3, lift: float) -> void:
 ## Danno continuo, come la fiamma dei motori: non stordisce e non dà
 ## invulnerabilità, toglie vita a ogni passo finché la rana ci resta dentro.
 func burn(damage_per_second: float, delta: float) -> void:
+	_burning_left = 0.15
 	_burn_owed += damage_per_second * delta
 	if _burn_owed >= 1.0:
 		var damage := floori(_burn_owed)
@@ -349,6 +363,7 @@ func cheer() -> void:
 	if is_on_floor():
 		launch(Vector3(0.0, 5.0, 0.0))
 	animator.cheer(1.6)
+	Sfx.play(&"frog_cheer", 0.0, 1.0, true)
 
 
 ## A che punto è il saltello mentre cammina, da 0 a 1.
@@ -452,6 +467,8 @@ func take_hit(damage: int, knockback: Vector3) -> void:
 	glider_power.close()
 	tongue_power.stop()
 	slam_power.stop()
+	if not invincible:
+		Sfx.play(&"frog_hurt")
 	_lose_health(damage)
 
 
@@ -464,6 +481,7 @@ func _lose_health(amount: int) -> void:
 		extra_lives -= 1
 		health = max_health / 2
 		_invulnerable_time = 2.0
+		Sfx.play(&"frog_revive")
 		revived.emit()
 	health_changed.emit(health, max_health)
 	if health == 0:
@@ -477,6 +495,8 @@ func _die() -> void:
 	super_jump_power.active = false
 	var tween := create_tween()
 	tween.tween_property(visual, "rotation:z", PI, 0.4)
+	Sfx.unloop(self, &"sizzle")
+	Sfx.play(&"frog_die")
 	died.emit()
 
 
@@ -529,6 +549,7 @@ func _free_spot(from: Vector3, away: float) -> Vector3:
 ## L'ondata: saltando fuori dall'acqua, auto e rottami vicini vengono spinti
 ## via (le auto in marcia diventano rottami).
 func _splash() -> void:
+	Sfx.play(&"frog_splash", 4.0, 0.8)
 	var query := PhysicsShapeQueryParameters3D.new()
 	var sphere := SphereShape3D.new()
 	sphere.radius = splash_radius
@@ -583,6 +604,7 @@ func _swim(direction: Vector3, delta: float) -> void:
 	if Input.is_action_just_pressed("jump") and can_act():
 		velocity.y = jump_velocity * water_jump_factor
 		squash(Vector3(0.8, 1.3, 0.8), 0.25)
+		Sfx.play(&"frog_water_jump")
 		if splash_wave:
 			_splash()
 
@@ -621,6 +643,7 @@ func _apply_gravity_and_jump(delta: float) -> void:
 	if _time_since_jump_pressed <= jump_buffer_time and _time_since_floor <= coyote_time:
 		velocity.y = jump_velocity
 		squash(Vector3(0.8, 1.3, 0.8), 0.25)
+		Sfx.play(&"frog_jump")
 		_time_since_jump_pressed = INF
 		_time_since_floor = INF
 
@@ -662,8 +685,47 @@ func _update_visual(direction: Vector3, delta: float) -> void:
 
 	var moving_on_floor := is_on_floor() and not is_swimming() and direction.length_squared() > 0.01
 	if moving_on_floor:
+		var before := _hop_phase
 		_hop_phase = fmod(_hop_phase + hops_per_second * delta, 1.0)
+		if _hop_phase < before:
+			Sfx.play(&"frog_hop")
 		visual.position.y = sin(_hop_phase * PI) * hop_height
 	else:
 		_hop_phase = 0.0
 		visual.position.y = move_toward(visual.position.y, 0.0, 2.0 * delta)
+
+
+## I suoni che dipendono dallo stato: il tuffo quando la rana finisce in
+## acqua, le bracciate mentre nuota, lo sfrigolio mentre brucia (con un
+## guaito ogni tanto), un gracidio quando sta ferma a lungo.
+func _update_sounds(direction: Vector3, delta: float) -> void:
+	var swimming := is_swimming()
+	if swimming and not _was_swimming:
+		Sfx.play(&"frog_splash", 0.0 if absf(velocity.y) > 3.0 else -6.0)
+		_stroke_wait = 0.4
+	_was_swimming = swimming
+	if swimming and direction.length_squared() > 0.01:
+		_stroke_wait -= delta
+		if _stroke_wait <= 0.0:
+			_stroke_wait = 0.5
+			Sfx.play(&"frog_swim")
+
+	_burn_yelp_wait = maxf(_burn_yelp_wait - delta, 0.0)
+	if _burning_left > 0.0:
+		_burning_left -= delta
+		if not Sfx.is_looping(self, &"sizzle"):
+			Sfx.loop(self, &"sizzle")
+		if _burn_yelp_wait == 0.0 and not invincible:
+			_burn_yelp_wait = 0.8
+			Sfx.play(&"frog_burn")
+	elif Sfx.is_looping(self, &"sizzle"):
+		Sfx.unloop(self, &"sizzle")
+
+	if direction.length_squared() > 0.01 or not is_on_floor() or asleep:
+		_idle_time = 0.0
+		_next_croak = randf_range(5.0, 9.0)
+	else:
+		_idle_time += delta
+		if _idle_time > _next_croak:
+			_next_croak = _idle_time + randf_range(5.0, 9.0)
+			Sfx.play(&"frog_croak")

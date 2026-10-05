@@ -44,6 +44,7 @@ static func maybe_add(carrier: Node3D, chance: float, at: Vector3, can_be_golden
 
 func _ready() -> void:
 	add_to_group("flies")
+	Sfx.loop(self, &"fly_buzz", 0.0, 1.25 if golden else 1.0, 0.35)
 	_time = _rng.randf() * TAU
 	var body := MeshInstance3D.new()
 	var sphere := SphereMesh.new()
@@ -103,6 +104,8 @@ func collect() -> void:
 	if _taken:
 		return
 	_taken = true
+	Sfx.unloop(self, &"fly_buzz")
+	Sfx.play(&"fly_golden" if golden else &"fly_collect")
 	var game := get_tree().get_first_node_in_group("game")
 	if game:
 		if golden:

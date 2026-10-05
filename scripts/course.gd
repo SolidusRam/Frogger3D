@@ -340,12 +340,14 @@ func _celebrate(chunk: Node3D) -> void:
 	var den: Node3D = chunk.get_meta("den", null)
 	if den == null:
 		return
+	Sfx.play(&"den_arrive", 0.0, 1.0, true)
 	var flowers := den.find_children("Flower_*", "", false, false)
 	for i in flowers.size():
 		var flower: Node3D = flowers[i]
 		flower.process_mode = Node.PROCESS_MODE_ALWAYS
 		var tween := flower.create_tween().set_ignore_time_scale(true)
 		tween.tween_interval(0.08 * i)
+		tween.tween_callback(Sfx.play.bind(&"flower_pop", 0.0, 1.0 + 0.05 * i, true))
 		tween.tween_property(flower, "scale", Vector3(1.5, 1.5, 1.5), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		tween.tween_property(flower, "scale", Vector3.ONE, 0.25)
 	for side in [-1.0, 1.0]:

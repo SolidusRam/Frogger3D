@@ -65,3 +65,4 @@ func use(direction: Vector3) -> void:
 		spring_tween.tween_property(spring, "scale", Vector3(1.0, 2.2, 1.0), 0.08)
 		spring_tween.tween_property(spring, "scale", Vector3.ONE, 0.4)
 	_frog.power_used.emit(&"super_jump")
+	Sfx.play(&"super_jump")

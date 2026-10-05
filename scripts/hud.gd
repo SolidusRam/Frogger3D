@@ -169,6 +169,7 @@ func _on_heat_changed(value: float, level: int) -> void:
 	_heat_meter.value = value
 	if level > _last_heat_level:
 		_show_message("Calore: livello %d" % level)
+		Sfx.play(&"heat_up", 0.0, 1.0 + 0.05 * level)
 		# Un nuovo gradino: il calore lampeggia.
 		_heat_meter.modulate = Color(2.0, 2.0, 2.0)
 		create_tween().set_ignore_time_scale(true).tween_property(_heat_meter, "modulate", Color.WHITE, 0.5)
@@ -186,6 +187,7 @@ func _on_style_changed(style_name: String) -> void:
 
 ## "CATENA ×N" sotto il centro, che pulsa a ogni rottame in più.
 func show_chain(count: int) -> void:
+	Sfx.play(&"chain_ding", 0.0, minf(1.0 + 0.08 * (count - 4), 2.0))
 	_chain_label.text = "CATENA ×%d" % count
 	_chain_label.modulate.a = 1.0
 	_chain_label.scale = Vector2(1.4, 1.4)
@@ -237,6 +239,7 @@ func show_offer(options: Array[String], upgrades: Upgrades) -> void:
 		button.scale = Vector2(0.85, 0.85)
 		var tween := create_tween().set_ignore_time_scale(true).set_parallel()
 		tween.tween_property(button, "modulate:a", 1.0, 0.18).set_delay(i * 0.07)
+		tween.tween_callback(Sfx.play.bind(&"ui_card_in", 0.0, 1.0 + 0.06 * i)).set_delay(i * 0.07)
 		tween.tween_property(button, "scale", Vector2.ONE, 0.28).set_delay(i * 0.07).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_offer.visible = true
 	_offer_buttons[0].grab_focus()
@@ -311,6 +314,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## La pausa: il gioco si ferma, il mouse si libera.
 func pause() -> void:
+	Sfx.play(&"ui_pause")
 	get_tree().paused = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	_pause.visible = true
@@ -318,6 +322,7 @@ func pause() -> void:
 
 
 func resume() -> void:
+	Sfx.play(&"ui_resume")
 	_pause.visible = false
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -495,6 +500,8 @@ func _build_offer() -> void:
 		var button := Button.new()
 		button.custom_minimum_size = Vector2(264, 330)
 		button.pressed.connect(_on_card_pressed.bind(i))
+		# La scelta suona in Game (anche coi tasti numerici): niente clic.
+		button.set_meta("sfx", "")
 		cards.add_child(button)
 		_offer_buttons.append(button)
 		_card_parts.append(_build_card(button, i))

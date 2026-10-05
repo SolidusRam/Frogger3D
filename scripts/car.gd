@@ -79,6 +79,15 @@ const TYPES := {
 
 static var _wrecks: Array[Car] = []
 
+## Il tono del motore per tipo: la utilitaria ronza, il camion brontola.
+const ENGINE_PITCH := {"compact": 1.3, "sedan": 1.0, "van": 0.85, "truck": 0.62}
+## Sotto questa velocità d'urto un rottame che sbatte non fa rumore.
+const BUMP_SOUND_SPEED := 3.0
+## Il pugno suona da sé (la lamiera è dentro il colpo): l'auto colpita non
+## aggiunge il suo schianto.
+var _quiet_wreck := false
+var _bump_wait := 0.0
+
 
 ## I rottami che fumano ancora: le correnti calde del deltaplano.
 static func smoking_wrecks() -> Array[Car]:
@@ -179,6 +188,7 @@ func _ready() -> void:
 	_build_visual()
 	_build_hitbox()
 	_build_look_ahead()
+	Sfx.loop(self, &"car_engine", 0.0, ENGINE_PITCH[model_type])
 
 
 func _physics_process(delta: float) -> void:
@@ -189,6 +199,7 @@ func _physics_process(delta: float) -> void:
 				_animate_driving(delta)
 		State.WRECK:
 			_frog_grace = maxf(_frog_grace - delta, 0.0)
+			_bump_wait -= delta
 			_wreck_age += delta
 			if _armed and _wreck_age > EXPLOSION_FUSE:
 				explode()
@@ -223,6 +234,11 @@ func become_wreck() -> void:
 		(surface[0] as MeshInstance3D).set_surface_override_material(surface[1], Style.material("wreck_%d" % _color_index))
 	_visual.rotation = Vector3.ZERO
 	_visual.position = Vector3.ZERO
+	Sfx.unloop(self, &"car_engine")
+	if has_meta("burnt"):
+		Sfx.play_at(&"fire_ignite", global_position)
+	elif not _quiet_wreck:
+		Sfx.play_at(&"car_crash", global_position, 0.0, 1.0 / sqrt(ENGINE_PITCH[model_type]), 1.5)
 	_emit_sparks()
 	_emit_smoke()
 	_wrecks.append(self)
@@ -236,6 +252,7 @@ func become_wreck() -> void:
 ## Con il calore alto il veicolo può perdere il controllo da solo: diventa un
 ## rottame e sbanda di lato, e da lì partono le catene.
 func lose_control() -> void:
+	Sfx.play_at(&"car_skid", global_position, 0.0, 1.0, 1.5)
 	become_wreck()
 	var side := drive_direction.cross(Vector3.UP) * (1.0 if randf() < 0.5 else -1.0)
 	apply_central_impulse(side * mass * randf_range(3.0, 6.0))
@@ -244,6 +261,7 @@ func lose_control() -> void:
 
 ## Il pugno della rana: il veicolo diventa un rottame e vola via.
 func receive_punch(impulse: Vector3, explosive := false) -> void:
+	_quiet_wreck = true
 	become_wreck()
 	_frog_grace = 0.5
 	_armed = explosive
@@ -293,6 +311,7 @@ func explode() -> void:
 		if to_frog.length() < 30.0:
 			_frog.camera_rig.shake(0.4, 0.35)
 	_emit_explosion()
+	Sfx.play_at(&"car_explode", center, 0.0, 1.0, 2.0)
 	# Maestria dei guantoni esplosivi.
 	Progress.trial_add("explosive_gloves", 0, wrecked)
 	Progress.trial_best("explosive_gloves", 1, wrecked)
@@ -330,6 +349,9 @@ func _drive(delta: float) -> void:
 
 
 func _on_wreck_body_entered(body: Node) -> void:
+	if _bump_wait <= 0.0 and linear_velocity.length() > BUMP_SOUND_SPEED:
+		_bump_wait = 0.35
+		Sfx.play_at(&"wreck_hit", global_position, linear_to_db(clampf(linear_velocity.length() / 12.0, 0.2, 1.0)))
 	var other := body as Car
 	if _armed and other and _wreck_age > EXPLOSION_ARMING:
 		explode()
@@ -464,6 +486,7 @@ func _animate_driving(delta: float) -> void:
 	_pitch = lerpf(_pitch, target_pitch, 1.0 - exp(-10.0 * delta))
 	_visual.rotation.x = _pitch
 
+	Sfx.set_loop(self, &"car_engine", linear_to_db(0.4 + 0.6 * clampf(_speed / 14.0, 0.0, 1.0)), ENGINE_PITCH[model_type] * (0.75 + 0.5 * clampf(_speed / 16.0, 0.0, 1.0)))
 	var spin: float = -_speed / TYPES[model_type].wheel_radius * delta
 	for wheel: Node3D in _wheels:
 		wheel.rotate_x(spin)
@@ -481,6 +504,7 @@ func _animate_driving(delta: float) -> void:
 		var sideways := (to_frog - drive_direction * ahead - Vector3.UP * to_frog.y).length()
 		if ahead > 0.0 and ahead < size.z / 2.0 + 6.0 and sideways < size.x:
 			_scare_cooldown = 2.0
+			Sfx.play_at(&"car_horn", global_position, 0.0, ENGINE_PITCH[model_type] * 0.4 + 0.6)
 			var tween := create_tween()
 			tween.tween_property(self, "_hop_offset", 0.45, 0.1).set_ease(Tween.EASE_OUT)
 			tween.tween_property(self, "_hop_offset", 0.0, 0.25).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)

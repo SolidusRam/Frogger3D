@@ -108,7 +108,14 @@ func use() -> void:
 				car.receive_punch(blow, explosive)
 		elif result.collider is Baggage:
 			result.collider.receive_punch(blow)
+			Sfx.play_at(&"baggage_hit", result.collider.global_position)
 	_frog.power_used.emit(&"punch")
+	# Il colpo che va a segno suona da sé (la lamiera è dentro): le auto
+	# colpite non aggiungono il loro schianto.
+	if hits.is_empty():
+		Sfx.play(&"punch_swing")
+	else:
+		Sfx.play(&"punch_hit", 0.0, 1.0 - 0.04 * mini(hits.size() - 1, 4))
 	# Maestria di montante e guantone a molla.
 	if uppercut:
 		Progress.trial_add("uppercut", 0, hits.size())

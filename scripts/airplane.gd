@@ -156,6 +156,7 @@ func _ready() -> void:
 		_engine_smoke = _smoke_trail(Vector3(-ENGINE_X, 1.75, 0.5))
 		add_child(_engine_smoke)
 	_set_engines()
+	Sfx.loop(self, &"jet_loop", 0.0, 0.9 if belly else 1.0, 3.5, true)
 
 
 func _physics_process(delta: float) -> void:
@@ -300,9 +301,13 @@ func _touch_down() -> void:
 		_marker.queue_free()
 		_marker = null
 	phase = Phase.BELLY if belly else Phase.ROLLOUT
+	Sfx.play_at(&"plane_touchdown", global_position, 0.0, 0.85 if belly else 1.0, 3.0)
 	if belly:
 		speed = BELLY_SPEED * taxi_speed / 7.0
 		_fire_left = 0.0
+		Sfx.loop(self, &"scrape_loop", 0.0, 1.0, 3.0)
+	else:
+		Sfx.play_at(&"plane_reverse", global_position, 0.0, 1.0, 3.0)
 	_sparks.emitting = true
 	if not belly:
 		get_tree().create_timer(0.5).timeout.connect(_sparks.set_emitting.bind(false))
@@ -328,6 +333,7 @@ func _set_engines() -> void:
 
 
 func _drop_fire(at: Vector3) -> void:
+	Sfx.play_at(&"fire_ignite", global_position, -6.0)
 	var patch := FirePatch.new()
 	patch.position = Vector3(at.x, 0.0, at.z + (1.5 if fmod(_time, 0.6) < 0.3 else -1.5))
 	get_parent().add_child(patch)

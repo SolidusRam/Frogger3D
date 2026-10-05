@@ -51,6 +51,9 @@ var _reach: Area3D
 ## Un generatore tutto suo per il tremolio delle fiamme: la grafica non deve
 ## cambiare la sequenza casuale del gioco (percorso, traffico).
 var _rng := RandomNumberGenerator.new()
+## Da dove si sente il fuoco: sul fronte, proprio dietro la rana. Il
+## crepitio c'è sempre; il ruggito cresce quando il fuoco si avvicina.
+var _voice: Node3D
 
 
 func _ready() -> void:
@@ -58,6 +61,10 @@ func _ready() -> void:
 	front_z = frog.global_position.z + max_gap
 	course.den_reached.connect(_on_den_reached)
 	_build()
+	_voice = Node3D.new()
+	add_child(_voice)
+	Sfx.loop(_voice, &"fire_loop", 0.0, 1.0, 2.5)
+	Sfx.loop(_voice, &"fire_roar", -60.0, 1.0, 2.5)
 
 
 func _physics_process(delta: float) -> void:
@@ -94,6 +101,9 @@ func _process(_delta: float) -> void:
 	# sopra la rana senza coprire la vista.
 	_frog_smoke.global_position = frog.global_position + Vector3(0.0, 7.0, 2.0)
 	_frog_smoke.emitting = gap < 35.0
+	_voice.global_position = Vector3(frog.global_position.x, 2.0, front_z)
+	var near := clampf(1.0 - (gap - 6.0) / (danger_distance - 6.0), 0.0, 1.0)
+	Sfx.set_loop(_voice, &"fire_roar", linear_to_db(maxf(near, 0.001)), 0.9 + 0.2 * near)
 	for i in FLAMES:
 		var x := -WIDTH / 2.0 + (i + 0.5) * WIDTH / FLAMES
 		var height := _heights[i] * _rng.randf_range(0.85, 1.15)

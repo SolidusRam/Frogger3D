@@ -136,6 +136,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func restart() -> void:
 	Engine.time_scale = 1.0
+	AudioServer.playback_speed_scale = 1.0
 	Heat.reset()
 	# Una run nuova parte subito, senza menu.
 	get_tree().change_scene_to_file(GAME_SCENE)
@@ -143,6 +144,7 @@ func restart() -> void:
 
 func to_menu() -> void:
 	Engine.time_scale = 1.0
+	AudioServer.playback_speed_scale = 1.0
 	Heat.reset()
 	# Nel menu il calore non sale: la run nuova lo fa ripartire.
 	Heat.running = false
@@ -160,6 +162,9 @@ func _update_time_scale() -> void:
 	if now < _hitstop_until:
 		time_scale = hitstop_time_scale
 	Engine.time_scale = time_scale
+	# Nel rallentatore anche il suono si allunga e scende di tono; il
+	# fermo-immagine no: il colpo del pugno deve arrivare secco.
+	AudioServer.playback_speed_scale = 0.7 if now < _slowmo_until else 1.0
 
 
 func _on_punched(cars: Array[Car]) -> void:
@@ -282,6 +287,7 @@ func offer_upgrade() -> void:
 
 
 func _on_equipped(id: String) -> void:
+	Sfx.play(&"ui_card_pick")
 	frog.asleep = false
 	hud.hide_offer()
 	hud.show_equipment(upgrades)
@@ -292,6 +298,8 @@ func _on_equipped(id: String) -> void:
 
 func _on_frog_died() -> void:
 	var stats := _finish_run()
+	if stats.new_record:
+		get_tree().create_timer(1.6, true, false, true).timeout.connect(Sfx.play.bind(&"ui_record"))
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	hud.show_game_over(stats)
 

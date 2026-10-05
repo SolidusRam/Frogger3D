@@ -107,6 +107,12 @@ Domanda a parte: **la musica la compri, la prendi o la fai?** È la cosa che pi�
 
 Conseguenza per il §2a: la scelta non è più fra PS1, chiptune e moderno, ma un **miscuglio di epoche**: suoni chiptune e chitarre rock dentro una produzione di oggi, piena e potente. Per gli effetti, la stessa idea: suoni carichi ed esagerati, che premiano ogni colpo. Il filtro PS1 diventa un colore sul bus (F2), non un vincolo sui file.
 
+**5 ottobre 2026, gli effetti** (dopo gli ascolti qui sotto): piacciono. **La rana è buffa; il resto è semi-realistico, ma sempre caricaturale**: auto, treni, aerei e fuoco suonano come cose vere, solo esagerate, da cartone animato (lo schianto più grosso del vero, la frenata più lunga). Risponde al §2c: il contrasto fra la rana ridicola e un mondo quasi serio, con un tocco di caricatura su tutto.
+
+**5 ottobre 2026, la musica**: Claude può aiutare a produrla (parti generate da codice, poi rifinite), ma il tema principale per ora non si scrive: si parte dagli effetti di tutti gli eventi.
+
+**5 ottobre 2026, gli effetti fatti**: tutti gli eventi dell'inventario (§3) hanno il loro suono, generato da codice (tools/suoni/genera.py) e suonato dall'autoload Sfx. Le regole sono nella riga "Suono" di regole-design.md. Per cambiare un suono si modifica la sua ricetta e si rigenera (`python3 tools/suoni/genera.py nome`); per cambiarne il volume nel gioco, la tabella VOLUME di scripts/sfx.gd.
+
 ## Ascolti dalla PS1
 
 Proposti il 5 ottobre 2026, per farsi l'orecchio. Si trovano su YouTube cercando "nome del gioco OST" (musica) o "sound effects" (effetti).
@@ -132,6 +138,6 @@ Proposti il 5 ottobre 2026, per farsi l'orecchio. Si trovano su YouTube cercando
 
 1. ~~Quale strada per l'epoca del suono~~: riferimenti scelti, Megabonk e Castlevania (sopra). Resta da dire quale Castlevania: quello del NES (chiptune) o Symphony of the Night (PS1, gotico e orchestrale)?
 2. La musica (§2b): segue il calore, respira nelle tane, reagisce alle azioni, oppure non c'è?
-3. Il mondo (§2c): auto pesanti e serie o giocattolo? La rana ha una voce?
-4. La musica la si fa, la si prende o la si commissiona?
+3. ~~Il mondo (§2c)~~: deciso, rana buffa e mondo semi-realistico ma caricaturale (sopra). Resta: la rana ha una voce (gracidii, versi)?
+4. ~~La musica la si fa, la si prende o la si commissiona?~~ La si fa, insieme, ma il tema principale non ora (sopra).
 5. I tre riferimenti, e che cosa rubare a ognuno.
