@@ -132,6 +132,12 @@ func _build_general(page: VBoxContainer) -> void:
 	_choice(page, "Lingua · Language", "language", Settings.LANGUAGE_NAMES, func() -> int: return Settings.LANGUAGES.find(Settings.language))
 	_slider(page, "Scossa della telecamera", "shake", 0.0, 1.0, 0.05, _percent)
 	_toggle(page, "Lampo a ogni livello di calore", "flashes")
+	_toggle(page, "Suggerimenti", "hints")
+	var again := _button("Rivedi i suggerimenti", _reset_hints, "FlatButton")
+	again.name = "hints_again"
+	again.size_flags_horizontal = Control.SIZE_SHRINK_END
+	page.add_child(again)
+	page.add_child(_note("I suggerimenti del primo minuto spariscono dopo che li hai eseguiti in due corse. Rivederli li rimette tutti."))
 
 
 func _build_audio(page: VBoxContainer) -> void:
@@ -286,6 +292,11 @@ func _update_key(action: String) -> void:
 	for pad in [false, true]:
 		if action != _waiting or pad != _waiting_pad:
 			(_key_buttons[action][1 if pad else 0] as Button).text = Settings.key_name(action, pad)
+
+
+func _reset_hints() -> void:
+	Progress.reset_hints()
+	Sfx.play(&"ui_refund")
 
 
 func _reset_keys() -> void:

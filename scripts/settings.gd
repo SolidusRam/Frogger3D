@@ -109,6 +109,8 @@ var mouse_sensitivity := 1.0
 var stick_sensitivity := 1.0
 var invert_y := false
 var vibration := true
+## I suggerimenti del primo minuto (vedi Hints).
+var hints := true
 
 ## L'ultimo dispositivo usato è il controller (e quale).
 var using_pad := false
@@ -483,4 +485,4 @@ func _decode(text: String) -> InputEvent:
 func _options() -> Array[String]:
 	return ["language", "master_volume", "effects_volume", "music_volume", "window_mode", "vsync",
 		"fps_limit", "render_scale", "shake", "flashes", "mouse_sensitivity",
-		"stick_sensitivity", "invert_y", "vibration"]
+		"stick_sensitivity", "invert_y", "vibration", "hints"]

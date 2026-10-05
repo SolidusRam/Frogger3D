@@ -39,6 +39,8 @@ const FLAMES := 70
 var front_z := 0.0
 ## Modalità prova: l'incendio si ferma.
 var stopped := false
+## Le prime run: l'incendio aspetta che la rana si muova (vedi Hints).
+var waiting := false
 ## Secondi di inseguimento (fermo non conta): fanno accelerare il fuoco.
 var elapsed := 0.0
 
@@ -68,7 +70,7 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if not stopped:
+	if not stopped and not waiting:
 		elapsed += delta
 		var speed := speed()
 		var kind := course.kind_at(front_z)

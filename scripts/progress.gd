@@ -87,6 +87,9 @@ static var trials := {}
 ## Le prove di questa run: si aggiungono a trials a fine run (una run di
 ## prova no).
 static var run_trials := {}
+## I suggerimenti del primo minuto: in quante run ognuno è stato eseguito
+## (vedi Hints). Dopo due, non compare più.
+static var hints := {}
 
 
 static func load_from(file_path: String) -> void:
@@ -98,6 +101,7 @@ static func load_from(file_path: String) -> void:
 	stat_levels = config.get_value("stagno", "statistiche", {}) if ok else {}
 	card_active = config.get_value("stagno", "carte_attive", {}) if ok else {}
 	trials = config.get_value("stagno", "prove", {}) if ok else {}
+	hints = config.get_value("suggerimenti", "fatti", {}) if ok else {}
 	run_trials = {}
 
 
@@ -108,6 +112,7 @@ static func save() -> void:
 	config.set_value("stagno", "statistiche", stat_levels)
 	config.set_value("stagno", "carte_attive", card_active)
 	config.set_value("stagno", "prove", trials)
+	config.set_value("suggerimenti", "fatti", hints)
 	config.save(path)
 
 
@@ -219,4 +224,22 @@ static func refund() -> void:
 static func add_flies(amount: int, golden_amount := 0) -> void:
 	flies += amount
 	golden += golden_amount
+	save()
+
+
+# --- I suggerimenti -----------------------------------------------------------
+
+static func hint_count(id: String) -> int:
+	return hints.get(id, 0)
+
+
+## Un suggerimento eseguito in questa run (una volta per run).
+static func hint_done(id: String) -> void:
+	hints[id] = hint_count(id) + 1
+	save()
+
+
+## "Rivedi i suggerimenti", dalle opzioni.
+static func reset_hints() -> void:
+	hints = {}
 	save()

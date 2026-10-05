@@ -7,6 +7,8 @@ extends CanvasLayer
 ## corpo) e i potenziamenti numerici in basso a destra. Poi messaggi, catene,
 ## carte della tana, pausa (Esc) e la schermata di fine run.
 
+## Lo stagno aperto dalla fine della corsa (per i suggerimenti).
+signal pond_opened
 signal restart_requested
 signal menu_requested
 ## Dalla pausa: la run finisce qui (le mosche raccolte restano) e si torna al
@@ -71,6 +73,14 @@ var _root: Control
 var _resume_button: Button
 var _restart_button: Button
 var _record_distance := 0.0
+## Il suggerimento del primo minuto (vedi Hints), in basso al centro.
+var _hint: PanelContainer
+var _hint_text: RichTextLabel
+var _hint_tween: Tween
+## Alla fine della corsa: lo stagno messo in evidenza.
+var _pond_button: Button
+var _pond_note: Label
+var _pond_tween: Tween
 var _last_heat_level := 0
 
 
@@ -88,6 +98,7 @@ func _ready() -> void:
 	_build_message()
 	_build_fire()
 	_build_chain_label()
+	_build_hint()
 	_build_offer()
 	_build_equipment()
 	_build_game_over()
@@ -643,7 +654,12 @@ func _build_game_over() -> void:
 	box.add_child(gap)
 	_restart_button = _button("", restart_requested.emit, "PrimaryButton")
 	box.add_child(_restart_button)
-	box.add_child(_button("Lo stagno", _open_pond))
+	_pond_note = _text("Note")
+	_pond_note.add_theme_color_override("font_color", UiTheme.GOLD)
+	_pond_note.visible = false
+	box.add_child(_pond_note)
+	_pond_button = _button("Lo stagno", _open_pond)
+	box.add_child(_pond_button)
 	box.add_child(_button("Menu", menu_requested.emit, "FlatButton"))
 	_pond = Pond.new()
 	_pond.visible = false
@@ -682,9 +698,111 @@ func _open_options() -> void:
 	_options.open()
 
 
+## Il suggerimento: un riquadro in basso al centro, sopra l'incendio, coi
+## comandi in oro (BBCode). Entra dal basso.
+func show_hint(text: String) -> void:
+	_set_hint_text(text)
+	if _hint_tween:
+		_hint_tween.kill()
+	_hint.visible = true
+	_hint.modulate = Color.WHITE
+	_hint.modulate.a = 0.0
+	_hint.position.y = _hint_rest_y() + 16.0
+	_hint_tween = create_tween().set_ignore_time_scale(true).set_parallel()
+	_hint_tween.tween_property(_hint, "modulate:a", 1.0, 0.25)
+	_hint_tween.tween_property(_hint, "position:y", _hint_rest_y(), 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	Sfx.play(&"ui_card_in", -4.0, 1.3)
+
+
+## Il suggerimento se ne va: eseguito (un lampo verde) o scaduto.
+func clear_hint(done: bool) -> void:
+	if not _hint.visible:
+		return
+	if _hint_tween:
+		_hint_tween.kill()
+	_hint_tween = create_tween().set_ignore_time_scale(true)
+	if done:
+		_hint.modulate = Color(UiTheme.DONE, 1.0) * 1.4
+		Sfx.play(&"power_ready", -2.0, 1.5)
+	_hint_tween.tween_property(_hint, "modulate:a", 0.0, 0.5 if done else 0.35)
+	_hint_tween.tween_callback(func() -> void: _hint.visible = false)
+
+
+## Lo stesso suggerimento, riscritto (comandi o lingua cambiati).
+func update_hint(text: String) -> void:
+	_set_hint_text(text)
+	_place_hint()
+
+
+## Il testo nuovo, e il riquadro che si stringe attorno (non si restringe da
+## solo: un testo lungo prima di uno corto lo lascerebbe alto).
+func _set_hint_text(text: String) -> void:
+	_hint_text.text = "[center]%s[/center]" % text
+	_hint.reset_size()
+
+
+func hint_text() -> String:
+	return _hint_text.get_parsed_text() if _hint.visible else ""
+
+
+## Alla fine della corsa, con le mosche in tasca: lo stagno pulsa d'oro e una
+## riga dice perché ("" per spegnerlo).
+func highlight_pond(note: String) -> void:
+	_pond_note.text = note
+	_pond_note.visible = note != ""
+	if _pond_tween:
+		_pond_tween.kill()
+	_pond_button.modulate = Color.WHITE
+	if note == "":
+		return
+	_pond_tween = create_tween().set_ignore_time_scale(true).set_loops()
+	_pond_tween.tween_property(_pond_button, "modulate", Color(1.5, 1.25, 0.6), 0.5)
+	_pond_tween.tween_property(_pond_button, "modulate", Color.WHITE, 0.5)
+
+
+func _hint_rest_y() -> float:
+	return _root.size.y - 84.0 - _hint.size.y
+
+
+func _build_hint() -> void:
+	_hint = PanelContainer.new()
+	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var box := UiTheme.box(Color(UiTheme.INK, 0.88), UiTheme.GOLD, 0, 10)
+	box.border_width_left = 4
+	box.content_margin_left = 18
+	box.content_margin_right = 18
+	box.content_margin_top = 10
+	box.content_margin_bottom = 12
+	_hint.add_theme_stylebox_override("panel", box)
+	_hint.visible = false
+	_root.add_child(_hint)
+	_hint_text = RichTextLabel.new()
+	_hint_text.bbcode_enabled = true
+	_hint_text.fit_content = true
+	_hint_text.scroll_active = false
+	_hint_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	# La larghezza fissa dice dove andare a capo; l'altezza segue il testo.
+	_hint_text.custom_minimum_size.x = 680
+	_hint_text.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hint_text.add_theme_font_override("normal_font", UiTheme.bold_font())
+	_hint_text.add_theme_font_size_override("normal_font_size", 20)
+	_hint_text.add_theme_color_override("default_color", UiTheme.TEXT)
+	_hint.add_child(_hint_text)
+	# Centrato in orizzontale, appoggiato sopra l'incendio.
+	_hint.resized.connect(_place_hint)
+	_root.resized.connect(_place_hint)
+
+
+func _place_hint() -> void:
+	_hint.position.x = (_root.size.x - _hint.size.x) / 2.0
+	if not (_hint_tween and _hint_tween.is_running()):
+		_hint.position.y = _hint_rest_y()
+
+
 func _open_pond() -> void:
 	_pond.refresh()
 	_pond.visible = true
+	pond_opened.emit()
 
 
 ## Una scritta sopra il mondo, col bordo scuro (grande da 36 in su).

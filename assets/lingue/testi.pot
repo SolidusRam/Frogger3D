@@ -14,6 +14,50 @@ msgstr ""
 msgid "Equipaggiato: %s"
 msgstr ""
 
+#: scripts/hints.gd
+msgid "Spendi le mosche allo stagno: diventi più forte per la prossima corsa"
+msgstr ""
+
+#: scripts/hints.gd
+msgid "{moves}: muoviti   ·   {jump}: salta   ·   {look}: guarda intorno"
+msgstr ""
+
+#: scripts/hints.gd
+msgid "{punch}: pugno! L'auto colpita vola e si schianta contro le altre"
+msgstr ""
+
+#: scripts/hints.gd
+msgid "Ogni potere scalda il mondo, e il calore non scende mai: traffico più veloce, incendio più rapido"
+msgstr ""
+
+#: scripts/hints.gd
+msgid "In aria, tieni premuto {jump}: deltaplano, per planare sopra l'acqua"
+msgstr ""
+
+#: scripts/hints.gd
+msgid "{super_jump}: super salto, per scavalcare quello che non puoi attraversare"
+msgstr ""
+
+#: scripts/hints.gd
+msgid "L'incendio ti insegue! Raggiungi la tana: lo respinge"
+msgstr ""
+
+#: scripts/hints.gd
+msgid "Prendi le mosche: dopo la corsa si spendono allo stagno"
+msgstr ""
+
+#: scripts/hints.gd
+msgid "Levetta destra"
+msgstr ""
+
+#: scripts/hints.gd
+msgid "Mouse"
+msgstr ""
+
+#: scripts/hints.gd
+msgid "Levetta sinistra"
+msgstr ""
+
 #: scripts/hud.gd
 msgid "CALORE  %d / %d"
 msgstr ""
@@ -199,6 +243,14 @@ msgid "Chiudi"
 msgstr ""
 
 #: scripts/options_panel.gd
+msgid "Rivedi i suggerimenti"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "I suggerimenti del primo minuto spariscono dopo che li hai eseguiti in due corse. Rivederli li rimette tutti."
+msgstr ""
+
+#: scripts/options_panel.gd
 msgid "La musica arriverà più avanti."
 msgstr ""
 
@@ -252,6 +304,10 @@ msgstr ""
 
 #: scripts/options_panel.gd
 msgid "Lampo a ogni livello di calore"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Suggerimenti"
 msgstr ""
 
 #: scripts/options_panel.gd
@@ -696,10 +752,6 @@ msgstr ""
 
 #: scripts/progress.gd
 msgid "Fatti trascinare per 50 m in un solo traino"
-msgstr ""
-
-#: scripts/settings.gd
-msgid "Levetta sinistra"
 msgstr ""
 
 #: scripts/settings.gd

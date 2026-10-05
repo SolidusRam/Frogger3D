@@ -34,6 +34,8 @@ static func load_main(tree: SceneTree) -> Node:
 	var main: Node = load("res://scenes/main.tscn").instantiate()
 	main.record_path = "user://record_test.cfg"
 	main.progress_path = "user://progressi_test.cfg"
+	# Niente suggerimenti (né incendio che aspetta): li prova test_hints.
+	main.tutorial = false
 	# Le carte della tana subito, senza la festa (la prova test_den).
 	main.den_celebration_seconds = 0.0
 	# Molti test cercano un fiume o una strada nel percorso del seme 1234 con

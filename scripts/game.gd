@@ -25,6 +25,8 @@ const MENU_SCENE := "res://scenes/menu.tscn"
 @export var attract := false
 ## Secondi in cui la telecamera torna dietro la rana quando parte la run.
 @export var start_seconds := 0.9
+## I suggerimenti del primo minuto (vedi Hints); i test li spengono.
+@export var tutorial := true
 
 @export_group("Mosche")
 ## Mosche date da ogni tana, e in più quando la tana non ha carte da offrire
@@ -94,6 +96,7 @@ func _ready() -> void:
 		_enter_attract()
 	else:
 		add_child(TestMode.new())
+		start_hints()
 
 
 ## Lo sfondo del menu: il traffico passa, la telecamera gira attorno alla
@@ -122,6 +125,18 @@ func start_run() -> void:
 	fire.front_z = frog.global_position.z + fire.max_gap
 	frog.camera_rig.end_orbit(start_seconds)
 	add_child(TestMode.new())
+	start_hints()
+
+
+## I suggerimenti, se le opzioni li vogliono. Una run di prova avviata da
+## tools/prova.sh non li mostra.
+func start_hints() -> void:
+	if not tutorial or not Settings.hints or has_node("Hints") or not OS.get_cmdline_user_args().is_empty():
+		return
+	var hints := Hints.new()
+	hints.name = "Hints"
+	add_child(hints)
+	hints.setup(self)
 
 
 func _process(delta: float) -> void:

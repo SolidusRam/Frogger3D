@@ -742,3 +742,42 @@ msgstr "Springs"
 
 msgid "Corpo"
 msgstr "Body"
+
+msgid "Spendi le mosche allo stagno: diventi più forte per la prossima corsa"
+msgstr "Spend your flies at the pond: get stronger for the next run"
+
+msgid "{moves}: muoviti   ·   {jump}: salta   ·   {look}: guarda intorno"
+msgstr "{moves}: move   ·   {jump}: jump   ·   {look}: look around"
+
+msgid "{punch}: pugno! L'auto colpita vola e si schianta contro le altre"
+msgstr "{punch}: punch! A punched car flies off and crashes into the others"
+
+msgid "Ogni potere scalda il mondo, e il calore non scende mai: traffico più veloce, incendio più rapido"
+msgstr "Every power heats up the world, and heat never goes down: faster traffic, faster fire"
+
+msgid "In aria, tieni premuto {jump}: deltaplano, per planare sopra l'acqua"
+msgstr "In the air, hold {jump}: glider, to glide over water"
+
+msgid "{super_jump}: super salto, per scavalcare quello che non puoi attraversare"
+msgstr "{super_jump}: super jump, to clear what you can't cross"
+
+msgid "L'incendio ti insegue! Raggiungi la tana: lo respinge"
+msgstr "The wildfire is chasing you! Reach the den: it pushes the fire back"
+
+msgid "Prendi le mosche: dopo la corsa si spendono allo stagno"
+msgstr "Catch flies: after the run, spend them at the pond"
+
+msgid "Levetta destra"
+msgstr "Right stick"
+
+msgid "Mouse"
+msgstr "Mouse"
+
+msgid "Suggerimenti"
+msgstr "Hints"
+
+msgid "Rivedi i suggerimenti"
+msgstr "Show hints again"
+
+msgid "I suggerimenti del primo minuto spariscono dopo che li hai eseguiti in due corse. Rivederli li rimette tutti."
+msgstr "First-minute hints go away once you've done them in two runs. Showing them again brings them all back."
