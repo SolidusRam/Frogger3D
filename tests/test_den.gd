@@ -37,7 +37,7 @@ func _physics_process(_delta: float) -> bool:
 			# Lanciata in avanti a 20 m/s, appena prima della tana.
 			Lib.place(frog, Vector3(0, 1.5, m.chunk.get_meta("near_z") + 0.5))
 			frog.velocity = Vector3(0, 6, -20)
-		20:
+		32:
 			t.check(frog.asleep and not main.get_node("Hud").is_offer_open(), "in tana la rana si ferma a fare festa, le carte non ancora")
 			var glove: Node3D = frog.model.get_node("GloveL")
 			t.check(glove.position.y > glove.get_meta("rest").y + 0.5, "e alza i guantoni")

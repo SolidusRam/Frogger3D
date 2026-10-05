@@ -65,7 +65,8 @@ func _physics_process(_delta: float) -> bool:
 		var first_section := order.slice(0, order.find("DEN"))
 		t.check(order.count("RAIL") >= 1 and not first_section.has("RAIL"), "le ferrovie compaiono, ma non nella prima sezione (%d)" % order.count("RAIL"))
 		t.check(dens >= 6 and dens <= 12, "in 2 km si raggiungono fra 6 e 12 tane (%d)" % dens)
-		t.check(absf(frog.global_position.z - z) < 200.0 and frog.global_position.y > -1.0, "dopo la caduta ricompare nell'ultima tana (z=%.0f)" % frog.global_position.z)
+		# Una sezione avanzata è lunga circa 270 m: l'ultima tana può essere lontana.
+		t.check(absf(frog.global_position.z - z) < 350.0 and frog.global_position.y > -1.0, "dopo la caduta ricompare nell'ultima tana (z=%.0f)" % frog.global_position.z)
 		t.check(course.distance() > 1990.0, "la distanza percorsa è registrata (%.0f m)" % course.distance())
 		t.finish(self)
 	return false

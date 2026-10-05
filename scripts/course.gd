@@ -28,6 +28,9 @@ const DEN := preload("res://assets/models/den.glb")
 @export var start_depth := 30.0
 @export var safe_depth := 6.0
 @export var den_depth := 12.0
+## Il traguardo della tana comincia qualche metro dentro lo stagno, poco prima
+## dell'arco delle tife: la rana ci entra prima di fermarsi.
+@export var den_trigger_inset := 4.0
 @export var road_lane_width := 4.0
 @export var river_lane_width := 3.5
 @export var rail_track_spacing := 4.5
@@ -313,10 +316,10 @@ func _add_den(chunk: Node3D, depth: float) -> void:
 	trigger.collision_layer = 0
 	trigger.collision_mask = 2 # rana
 	var shape := BoxShape3D.new()
-	shape.size = Vector3(play_half_width * 2.0, 20.0, depth)
+	shape.size = Vector3(play_half_width * 2.0, 20.0, depth - den_trigger_inset)
 	var collision := CollisionShape3D.new()
 	collision.shape = shape
-	collision.position.y = 10.0
+	collision.position = Vector3(0.0, 10.0, -den_trigger_inset / 2.0)
 	trigger.add_child(collision)
 	trigger.body_entered.connect(_on_den_entered.bind(chunk), CONNECT_ONE_SHOT)
 	chunk.add_child(trigger)
