@@ -335,10 +335,16 @@ func set_palette(key: String, value: String) -> void:
 ## La festa in tana: la rana si ferma, si gira verso la telecamera, fa un
 ## saltello e alza i guantoni (vedi FrogAnimator.cheer). La partita la
 ## risveglia (asleep) quando si è scelta la carta.
+## La tana ferma la rana subito: senza slancio in avanti e quasi senza
+## salire, ricade nello stagno invece di attraversarlo (con un super salto o
+## un volo finiva nella corsia dopo).
 func cheer() -> void:
 	asleep = true
 	glider_power.close()
 	tongue_power.stop()
+	slam_power.stop()
+	super_jump_power.active = false
+	velocity = Vector3(0.0, minf(velocity.y, 2.0), 0.0)
 	visual.rotation.y = camera_rig.rotation.y + PI
 	if is_on_floor():
 		launch(Vector3(0.0, 5.0, 0.0))

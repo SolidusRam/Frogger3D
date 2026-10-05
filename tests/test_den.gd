@@ -1,7 +1,8 @@
 extends SceneTree
 ## L'arrivo in tana: i fiori sono boccioli finché la rana non arriva; poi si
-## aprono, si alzano le lucciole, la rana si ferma e alza i guantoni; dopo la
-## festa arrivano le carte, e scelta la carta la rana riparte.
+## aprono, si alzano le lucciole, la rana si ferma e alza i guantoni (anche
+## arrivando lanciata: non attraversa la tana); dopo la festa arrivano le
+## carte, e scelta la carta la rana riparte.
 
 const Lib := preload("res://tests/lib.gd")
 
@@ -33,7 +34,9 @@ func _physics_process(_delta: float) -> bool:
 			var flowers: Array = m.chunk.get_meta("den").find_children("Flower_*", "", false, false)
 			m.flower = flowers[0]
 			t.check(flowers.size() > 0 and m.flower.scale.x < 0.5, "prima di arrivare i fiori sono boccioli (%d fiori)" % flowers.size())
-			Lib.place(frog, Vector3(0, 0.5, m.chunk.global_position.z + 0.1))
+			# Lanciata in avanti a 20 m/s, appena prima della tana.
+			Lib.place(frog, Vector3(0, 1.5, m.chunk.get_meta("near_z") + 0.5))
+			frog.velocity = Vector3(0, 6, -20)
 		20:
 			t.check(frog.asleep and not main.get_node("Hud").is_offer_open(), "in tana la rana si ferma a fare festa, le carte non ancora")
 			var glove: Node3D = frog.model.get_node("GloveL")
@@ -41,6 +44,10 @@ func _physics_process(_delta: float) -> bool:
 			t.check(m.flower.scale.x > 0.9, "i fiori si aprono")
 			var fireflies: Array = m.chunk.get_meta("den").find_children("*", "CPUParticles3D", false, false)
 			t.check(fireflies.size() == 2, "dai laghetti si alzano le lucciole")
+		80:
+			var near: float = m.chunk.get_meta("near_z")
+			var inside: bool = frog.global_position.z < near and frog.global_position.z > near - m.chunk.get_meta("depth") + 2.0
+			t.check(inside and frog.is_on_floor(), "arrivando lanciata la rana si ferma dentro la tana (z %.1f)" % (frog.global_position.z - near))
 		90:
 			t.check(paused and main.get_node("Hud").is_offer_open(), "dopo la festa arrivano le carte, a gioco fermo")
 			main.get_node("Upgrades").choose(0)
