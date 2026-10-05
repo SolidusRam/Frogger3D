@@ -34,6 +34,13 @@ const DEN := preload("res://assets/models/den.glb")
 ## Massicciata e binari arrivano fino all'orizzonte: il treno si vede arrivare.
 @export var rail_ground_width := 400.0
 
+@export_group("Sezioni")
+## Ostacoli fra una tana e l'altra: si parte da qui (più 0 o 1 a caso)...
+@export var section_obstacles := 4
+## ...e se ne aggiunge uno a sezione, fino a questo massimo di aggiunte.
+## Con 4 e 4: circa 75 m alla prima tana, 100 alla seconda, 270 dalla quinta.
+@export var section_growth_cap := 4
+
 var dens_reached := 0
 var best_distance := 0.0
 
@@ -97,7 +104,7 @@ func distance() -> float:
 
 
 func _plan_section() -> void:
-	var obstacles := 2 + mini(_planning_section, 3) + randi_range(0, 1)
+	var obstacles := section_obstacles + mini(_planning_section, section_growth_cap) + randi_range(0, 1)
 	for i in obstacles:
 		_plan.append(_random_obstacle())
 		_plan.append(Kind.SAFE)

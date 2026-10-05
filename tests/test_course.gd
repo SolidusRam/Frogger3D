@@ -21,6 +21,9 @@ func _initialize() -> void:
 	main = Lib.load_main(self)
 	frog = main.get_node("Frog")
 	course = main.get_node("Course")
+	# Le sezioni vere, non quelle corte che gli altri test tengono fisse.
+	for property in ["section_obstacles", "section_growth_cap"]:
+		course.set(property, course.get_script().get_property_default_value(property))
 	course.den_reached.connect(func(count, _distance): dens = count)
 
 
@@ -61,7 +64,7 @@ func _physics_process(_delta: float) -> bool:
 		# La prima sezione finisce con la prima tana.
 		var first_section := order.slice(0, order.find("DEN"))
 		t.check(order.count("RAIL") >= 1 and not first_section.has("RAIL"), "le ferrovie compaiono, ma non nella prima sezione (%d)" % order.count("RAIL"))
-		t.check(dens >= 10, "in 2 km si raggiungono almeno 10 tane (%d)" % dens)
+		t.check(dens >= 6 and dens <= 12, "in 2 km si raggiungono fra 6 e 12 tane (%d)" % dens)
 		t.check(absf(frog.global_position.z - z) < 200.0 and frog.global_position.y > -1.0, "dopo la caduta ricompare nell'ultima tana (z=%.0f)" % frog.global_position.z)
 		t.check(course.distance() > 1990.0, "la distanza percorsa è registrata (%.0f m)" % course.distance())
 		t.finish(self)

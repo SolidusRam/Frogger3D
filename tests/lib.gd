@@ -36,6 +36,12 @@ static func load_main(tree: SceneTree) -> Node:
 	main.progress_path = "user://progressi_test.cfg"
 	# Le carte della tana subito, senza la festa (la prova test_den).
 	main.den_celebration_seconds = 0.0
+	# Molti test cercano un fiume o una strada nel percorso del seme 1234 con
+	# le sezioni corte di prima (2 ostacoli, +1 a sezione fino a 3): lo teniamo
+	# fisso. test_course rimette le sezioni vere.
+	var course: Node = main.get_node("Course")
+	course.section_obstacles = 2
+	course.section_growth_cap = 3
 	tree.root.add_child(main)
 	tree.current_scene = main
 	# L'incendio insegue la rana: nei test che la spostano in giro va fermato
