@@ -178,7 +178,7 @@ func _upgrade(card: String, index: int, color: Color) -> VBoxContainer:
 		activate.add_theme_font_size_override("font_size", 18)
 		activate.disabled = info.cost > Progress.golden
 		head.add_child(activate)
-	var effect := _label(info.text)
+	var effect := _label(Settings.with_keys(info.text))
 	effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	effect.add_theme_font_size_override("font_size", 16)
 	box.add_child(effect)

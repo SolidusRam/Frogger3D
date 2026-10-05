@@ -135,7 +135,7 @@ Godot 4.7 sa sovrapporre più tracce perfettamente allineate e cambiarne il volu
 
 ### Nel gioco
 
-- Il bus **Musica** esiste già. Non si attutisce dietro i menu (gli effetti sì) e non ha gli effetti degli stili grafici: se si vuole il "colore PS1" anche sulla musica, si decide.
+- Il bus **Musica** esiste già, e nelle opzioni ha il suo cursore del volume (5 ottobre 2026). Non si attutisce dietro i menu (gli effetti sì) e non ha gli effetti degli stili grafici: se si vuole il "colore PS1" anche sulla musica, si decide.
 - Lì dove il gioco è fermo (le carte in tana, lo stagno, la pausa) la musica può continuare: va deciso stato per stato.
 - **Nomi dei file**: in assets/audio/musica/, con nomi che dicono stato e strato, per esempio `corsa_strato1.ogg`, `corsa_strato2.ogg`, `tana.ogg`, `fine.ogg`, `menu.ogg`. E un file di testo accanto con BPM, battute e loop_offset.
 - **Licenze**: se ci sono campioni o strumenti di terzi, segnarli con la loro licenza. Per Steam serve sapere da dove viene tutto.

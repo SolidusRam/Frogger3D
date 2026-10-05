@@ -36,6 +36,7 @@ const STATS := {
 ## all'uso della carta; superata la prova, il miglioramento si attiva allo
 ## stagno con le mosche d'oro. Prove "total": si sommano fra le run; "best":
 ## il migliore risultato in un colpo solo (o di fila).
+## Nei testi, i tasti fra graffe come nel catalogo delle carte.
 const CARD_UPGRADES := {
 	"explosive_gloves": [
 		{"name": "Reazione a catena", "text": "Le auto distrutte da un'esplosione esplodono a loro volta.", "trial": "Fai esplodere 30 auto", "goal": 30, "kind": "total", "cost": 2},
@@ -66,7 +67,7 @@ const CARD_UPGRADES := {
 		{"name": "Raffreddata", "text": "In volo il calore non sale più.", "trial": "Vola 60 m in un solo volo", "goal": 60, "kind": "best", "cost": 4},
 	],
 	"waterproof": [
-		{"name": "Tuffo", "text": "In acqua, Ctrl: ti immergi e passi sotto tronchi e coccodrilli.", "trial": "Nuota per 300 m", "goal": 300, "kind": "total", "cost": 2},
+		{"name": "Tuffo", "text": "In acqua, {slam}: ti immergi e passi sotto tronchi e coccodrilli.", "trial": "Nuota per 300 m", "goal": 300, "kind": "total", "cost": 2},
 		{"name": "Ondata", "text": "Saltando fuori dall'acqua sollevi un'onda che spinge via auto e rottami.", "trial": "Resta 15 s di fila in acqua", "goal": 15, "kind": "best", "cost": 4},
 	],
 	"tongue": [

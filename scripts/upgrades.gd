@@ -19,6 +19,8 @@ const SLOT_NAMES := {
 	"gloves": "Guantoni", "springs": "Molle", "wing": "Ala", "body": "Corpo", "tongue": "Lingua",
 }
 
+## Nei testi i tasti si scrivono col nome dell'azione fra graffe ("{slam}"):
+## le carte li mostrano come sono assegnati nelle opzioni (Settings.with_keys).
 const CATALOG := {
 	"explosive_gloves": {
 		"name": "Guantoni esplosivi", "slot": "gloves",
@@ -38,7 +40,7 @@ const CATALOG := {
 	},
 	"slam": {
 		"name": "Schianto sismico", "slot": "springs",
-		"text": "In aria, Ctrl: piombi giù e all'atterraggio un'onda ribalta le auto intorno.",
+		"text": "In aria, {slam}: piombi giù e all'atterraggio un'onda ribalta le auto intorno.",
 	},
 	"thermals": {
 		"name": "Correnti calde", "slot": "wing",
@@ -54,7 +56,7 @@ const CATALOG := {
 	},
 	"tongue": {
 		"name": "Lingua-rampino", "slot": "tongue",
-		"text": "E: la lingua aggancia da sola la cosa più vicina dove guardi. Ti tira su auto, tronchi e navi; un rottame lo tira verso di te.",
+		"text": "{tongue}: la lingua aggancia da sola la cosa più vicina dove guardi. Ti tira su auto, tronchi e navi; un rottame lo tira verso di te.",
 	},
 	"punch_power": {"name": "Pugno più forte", "slot": "", "max": 3, "text": "+30% di spinta del pugno."},
 	"quick_springs": {"name": "Molle rapide", "slot": "", "max": 3, "text": "Il super salto si ricarica il 25% più in fretta."},

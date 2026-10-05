@@ -10,17 +10,20 @@ var _fill_ready: StyleBoxFlat
 var _fill_charging: StyleBoxFlat
 var _is_ready := true
 var _slot := ""
+var _action := ""
+var _key_label: Label
 ## Il "ding" di ogni potere ha il suo tono.
 const READY_PITCH := {"gloves": 1.0, "springs": 1.12, "wing": 1.26, "tongue": 1.4, "body": 0.9}
 
 
-static func make(title: String, key: String, slot: String) -> PowerChip:
+## action: l'azione del potere, per mostrarne il tasto come è assegnato.
+static func make(title: String, action: String, slot: String) -> PowerChip:
 	var chip := PowerChip.new()
-	chip._build(title, key, slot)
+	chip._build(title, action, slot)
 	return chip
 
 
-func _build(title: String, key: String, slot: String) -> void:
+func _build(title: String, action: String, slot: String) -> void:
 	_slot = slot
 	var color: Color = UiTheme.SLOT_COLORS[slot]
 	custom_minimum_size.x = 240
@@ -54,11 +57,14 @@ func _build(title: String, key: String, slot: String) -> void:
 	_modifier.add_theme_color_override("font_color", color)
 	_modifier.visible = false
 	names.add_child(_modifier)
-	var key_label := Label.new()
-	key_label.text = key
-	key_label.theme_type_variation = "Note"
-	key_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	row.add_child(key_label)
+	_action = action
+	_key_label = Label.new()
+	_key_label.theme_type_variation = "Note"
+	_key_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(_key_label)
+	_update_key()
+	# Riassegnato nelle opzioni (anche dalla pausa), il tasto si aggiorna.
+	Settings.changed.connect(_update_key)
 	_bar = ProgressBar.new()
 	_bar.show_percentage = false
 	_bar.max_value = 1.0
@@ -90,3 +96,7 @@ func set_ratio(ratio: float) -> void:
 func set_modifier(text: String) -> void:
 	_modifier.text = text
 	_modifier.visible = text != ""
+
+
+func _update_key() -> void:
+	_key_label.text = Settings.key_name(_action)

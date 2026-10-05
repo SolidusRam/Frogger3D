@@ -199,7 +199,38 @@ static func _build() -> Theme:
 	theme.set_stylebox("grabber", "VScrollBar", box(LINE, Color(0, 0, 0, 0), 0, 4))
 	theme.set_stylebox("grabber_highlight", "VScrollBar", box(GOLD, Color(0, 0, 0, 0), 0, 4))
 	theme.set_stylebox("grabber_pressed", "VScrollBar", box(GOLD, Color(0, 0, 0, 0), 0, 4))
+
+	# I cursori (le opzioni): la corsa scura, la parte piena d'oro e una
+	# maniglia crema sfaccettata, d'oro quando la si tocca.
+	var track := box(Color(0, 0, 0, 0.55), Color(0, 0, 0, 0), 0, 4)
+	track.content_margin_top = 5
+	track.content_margin_bottom = 5
+	theme.set_stylebox("slider", "HSlider", track)
+	theme.set_stylebox("grabber_area", "HSlider", box(Color(GOLD, 0.8), Color(0, 0, 0, 0), 0, 4))
+	theme.set_stylebox("grabber_area_highlight", "HSlider", box(GOLD, Color(0, 0, 0, 0), 0, 4))
+	theme.set_icon("grabber", "HSlider", _grabber(TEXT))
+	theme.set_icon("grabber_highlight", "HSlider", _grabber(GOLD))
+	theme.set_stylebox("focus", "HSlider", focus)
 	return theme
+
+
+## La maniglia di un cursore: un rettangolo con gli angoli smussati a 45°,
+## come i riquadri, e il bordo scuro.
+static func _grabber(color: Color) -> ImageTexture:
+	var width := 18
+	var height := 28
+	var cut := 4
+	var image := Image.create_empty(width, height, false, Image.FORMAT_RGBA8)
+	for y in height:
+		for x in width:
+			# Distanza dall'angolo più vicino, misurata in diagonale.
+			var dx := mini(x, width - 1 - x)
+			var dy := mini(y, height - 1 - y)
+			if dx + dy < cut:
+				continue
+			var edge := dx < 2 or dy < 2 or dx + dy < cut + 2
+			image.set_pixel(x, y, INK if edge else color)
+	return ImageTexture.create_from_image(image)
 
 
 static func _label_variation(theme: Theme, name: String, font: Font, size: int, color: Color, outline := 0) -> void:

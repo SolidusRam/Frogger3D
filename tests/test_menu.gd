@@ -67,7 +67,9 @@ func _physics_process(_delta: float) -> bool:
 			main.add_flies(7)
 			_press("pause")
 		44:
-			hud._pause.find_children("*", "Button", true, false)[1].pressed.emit()
+			for button: Button in hud._pause.find_children("*", "Button", true, false):
+				if button.text == "Abbandona la run":
+					button.pressed.emit()
 			m.at = frame
 		60:
 			t.check(current_scene.name == "Menu", "abbandonare la run porta al menu")

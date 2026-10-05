@@ -240,6 +240,8 @@ func _process(delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("style_next"):
 		set_style((current + 1) % styles.size())
+		# Lo stile scelto con F2 resta anche alla prossima partita.
+		Settings.save()
 
 
 ## Collega la scena: ambiente, sole e rettangolo del post-processing.
@@ -404,9 +406,10 @@ func _apply_post() -> void:
 
 
 ## A ogni nuovo livello di calore lo schermo si inverte per un istante, come
-## il dinosauro di Google quando passa dal giorno alla notte.
+## il dinosauro di Google quando passa dal giorno alla notte. Le opzioni
+## possono toglierlo.
 func _on_heat_changed(_value: float, level: int) -> void:
-	if level > _last_level and _post != null:
+	if level > _last_level and _post != null and Settings.flashes:
 		_post.visible = true
 		var tween := create_tween()
 		tween.tween_method(_set_flash, 1.0, 0.0, 0.35)

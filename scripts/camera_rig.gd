@@ -58,9 +58,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
-		rotation.y -= event.relative.x * mouse_sensitivity
+		# Sensibilità e asse verticale invertito dalle opzioni.
+		var sensitivity := mouse_sensitivity * Settings.mouse_sensitivity
+		var vertical := -1.0 if Settings.invert_y else 1.0
+		rotation.y -= event.relative.x * sensitivity
 		pitch.rotation.x = clampf(
-			pitch.rotation.x - event.relative.y * mouse_sensitivity,
+			pitch.rotation.x - event.relative.y * sensitivity * vertical,
 			deg_to_rad(min_pitch_degrees),
 			deg_to_rad(max_pitch_degrees)
 		)
@@ -91,9 +94,10 @@ func end_orbit(duration: float) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
-## Scossa: sposta la telecamera a caso per un attimo, in tempo reale.
+## Scossa: sposta la telecamera a caso per un attimo, in tempo reale. Le
+## opzioni la attenuano o la tolgono.
 func shake(strength: float, duration: float) -> void:
-	_shake_strength = strength
+	_shake_strength = strength * Settings.shake
 	_shake_left = duration
 	_shake_duration = duration
 

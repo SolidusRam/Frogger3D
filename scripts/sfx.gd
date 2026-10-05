@@ -89,6 +89,8 @@ var _last_tick := 0
 ## Quanto il mondo è attutito, da 0 a 1 (vedi muffle_world).
 var _muffle := 0.0
 var _muffle_target := 0.0
+## Il volume degli effetti scelto nelle opzioni, in dB (vedi set_volumes).
+var _effects_db := 0.0
 
 
 func _ready() -> void:
@@ -457,6 +459,31 @@ func _setup_buses() -> void:
 			AudioServer.add_bus_effect(index, muffler)
 
 
+## I volumi delle opzioni, da 0 a 1: generale (Master), effetti (il mondo,
+## i loop e l'interfaccia) e musica. A zero il bus tace del tutto. Il
+## cursore va al quadrato: a metà corsa il suono è a metà per l'orecchio
+## (-12 dB), non quasi pieno.
+func set_volumes(master: float, effects: float, music: float) -> void:
+	_set_bus_volume(&"Master", master)
+	_set_bus_volume(&"Interfaccia", effects)
+	_set_bus_volume(&"Musica", music)
+	_effects_db = _to_db(effects)
+	for bus_name in ["Effetti", "Ambiente"]:
+		var index := AudioServer.get_bus_index(bus_name)
+		AudioServer.set_bus_mute(index, effects <= 0.0)
+		AudioServer.set_bus_volume_db(index, _effects_db + lerpf(0.0, MUFFLED_DB, _muffle))
+
+
+func _set_bus_volume(bus_name: StringName, volume: float) -> void:
+	var index := AudioServer.get_bus_index(bus_name)
+	AudioServer.set_bus_mute(index, volume <= 0.0)
+	AudioServer.set_bus_volume_db(index, _to_db(volume))
+
+
+func _to_db(volume: float) -> float:
+	return linear_to_db(maxf(volume * volume, 0.0001))
+
+
 func _update_muffle(real_delta: float) -> void:
 	if _muffle == _muffle_target:
 		return
@@ -464,7 +491,7 @@ func _update_muffle(real_delta: float) -> void:
 	_muffle = move_toward(_muffle, _muffle_target, real_delta / (0.8 if _muffle_target > _muffle else 0.4))
 	for bus_name in ["Effetti", "Ambiente"]:
 		var index := AudioServer.get_bus_index(bus_name)
-		AudioServer.set_bus_volume_db(index, lerpf(0.0, MUFFLED_DB, _muffle))
+		AudioServer.set_bus_volume_db(index, _effects_db + lerpf(0.0, MUFFLED_DB, _muffle))
 		var muffler := AudioServer.get_bus_effect(index, 3) as AudioEffectLowPassFilter
 		muffler.cutoff_hz = lerpf(20000.0, MUFFLED_CUTOFF, pow(_muffle, 0.3))
 

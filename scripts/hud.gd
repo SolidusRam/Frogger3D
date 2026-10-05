@@ -20,13 +20,14 @@ const HEALTH_COLOR := Color(0.4, 0.8, 0.3)
 const HEALTH_LOW_COLOR := Color(0.9, 0.25, 0.2)
 ## Sotto questa frazione la barra della vita diventa rossa e pulsa.
 const HEALTH_LOW := 0.3
-## I poteri: nome, tasto, attrezzo. L'ordine è quello dall'alto in basso.
+## I poteri: nome, azione (il tasto lo dicono le opzioni), attrezzo. L'ordine
+## è quello dall'alto in basso.
 const POWERS := {
-	"punch": ["Pugno", "Clic", "gloves"],
-	"super_jump": ["Super salto", "Clic dx", "springs"],
-	"glide": ["Deltaplano", "Spazio", "wing"],
-	"tongue": ["Lingua", "E", "tongue"],
-	"slam": ["Schianto", "Ctrl", "springs"],
+	"punch": ["Pugno", "punch", "gloves"],
+	"super_jump": ["Super salto", "super_jump", "springs"],
+	"glide": ["Deltaplano", "jump", "wing"],
+	"tongue": ["Lingua", "tongue", "tongue"],
+	"slam": ["Schianto", "slam", "springs"],
 }
 
 @export var frog: Frog
@@ -64,6 +65,7 @@ var _upgrades: Upgrades
 ## In basso a destra: il corpo e i potenziamenti numerici.
 var _extras: VBoxContainer
 var _pause: Control
+var _options: OptionsPanel
 ## Radice di tutti i controlli: porta il tema.
 var _root: Control
 var _resume_button: Button
@@ -221,7 +223,7 @@ func show_offer(options: Array[String], upgrades: Upgrades) -> void:
 		var slot_label: Label = parts.slot
 		slot_label.add_theme_color_override("font_color", color)
 		(parts.name as Label).text = item.name
-		(parts.text as Label).text = item.text
+		(parts.text as Label).text = Settings.with_keys(item.text)
 		var tag: Label = parts.tag
 		if slot == "fusion":
 			slot_label.text = "FUSIONE"
@@ -296,6 +298,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	# Esc mette in pausa solo durante il gioco: non con le carte della tana, la
 	# modalità prova aperta (il gioco è già fermo) o a run finita.
 	if event.is_action_pressed("pause"):
+		# Le opzioni aperte si chiudono da sé con Esc.
+		if _options.visible:
+			return
 		if _pause.visible:
 			get_viewport().set_input_as_handled()
 			resume()
@@ -626,8 +631,18 @@ func _build_pause() -> void:
 	box.add_child(_text("Title", "Pausa"))
 	_resume_button = _button("Riprendi (Esc)", resume, "PrimaryButton")
 	box.add_child(_resume_button)
+	box.add_child(_button("Opzioni", _open_options))
 	box.add_child(_button("Abbandona la run", abandon_requested.emit))
 	box.add_child(_text("Note", "Abbandonando, le mosche raccolte restano."))
+	# Le opzioni coprono la pausa; chiuse, si torna a Riprendi.
+	_options = OptionsPanel.new()
+	_options.visible = false
+	_options.closed.connect(_resume_button.grab_focus)
+	_pause.add_child(_options)
+
+
+func _open_options() -> void:
+	_options.open()
 
 
 func _open_pond() -> void:

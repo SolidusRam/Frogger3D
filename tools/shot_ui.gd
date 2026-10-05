@@ -1,6 +1,6 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
-## Screenshot delle schermate: menu | partenza | stagno | maestria | hud | carte | pausa | fine | prova.
+## Screenshot delle schermate: menu | partenza | stagno | maestria | opzioni | grafica | tasti | hud | carte | pausa | fine | prova.
 ## HEAT, SHOT.
 var frame := 0
 var main: Node
@@ -20,7 +20,7 @@ func _initialize() -> void:
 	progress.stat_levels = {"health": 2, "speed": 1, "choice": 1}
 	progress.trials = {"explosive_gloves:0": 30.0, "uppercut:0": 12.0, "slam:1": 3.0}
 	progress.save()
-	if scene in ["menu", "stagno", "maestria", "partenza"]:
+	if scene in ["menu", "stagno", "maestria", "partenza", "opzioni", "grafica", "tasti"]:
 		var menu: Node = load("res://scenes/menu.tscn").instantiate()
 		menu.progress_path = PROGRESS
 		menu.record_path = "user://record_shot.cfg"
@@ -48,6 +48,10 @@ func _process(_d: float) -> bool:
 				if scene == "maestria":
 					var tabs: TabContainer = current_scene._pond.find_children("*", "TabContainer", true, false)[0]
 					tabs.current_tab = 1
+			"opzioni", "grafica", "tasti":
+				current_scene._open_options()
+				var tabs: TabContainer = current_scene._options.find_children("*", "TabContainer", true, false)[0]
+				tabs.current_tab = ["opzioni", "grafica", "tasti"].find(scene)
 			"carte":
 				main.offer_upgrade()
 			"pausa":
