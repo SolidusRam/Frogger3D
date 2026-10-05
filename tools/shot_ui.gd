@@ -1,7 +1,7 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
-## Screenshot delle schermate: menu | partenza | stagno | maestria | opzioni | grafica | tasti | hud | carte | pausa | fine | prova.
-## HEAT, SHOT.
+## Screenshot delle schermate: menu | partenza | stagno | maestria | opzioni | audio | grafica | tasti | hud | carte | pausa | fine | prova.
+## HEAT, SHOT; LINGUA=en per le schermate in inglese.
 var frame := 0
 var main: Node
 var scene := OS.get_environment("SCENE")
@@ -20,7 +20,7 @@ func _initialize() -> void:
 	progress.stat_levels = {"health": 2, "speed": 1, "choice": 1}
 	progress.trials = {"explosive_gloves:0": 30.0, "uppercut:0": 12.0, "slam:1": 3.0}
 	progress.save()
-	if scene in ["menu", "stagno", "maestria", "partenza", "opzioni", "grafica", "tasti"]:
+	if scene in ["menu", "stagno", "maestria", "partenza", "opzioni", "audio", "grafica", "tasti"]:
 		var menu: Node = load("res://scenes/menu.tscn").instantiate()
 		menu.progress_path = PROGRESS
 		menu.record_path = "user://record_shot.cfg"
@@ -36,6 +36,11 @@ func _initialize() -> void:
 
 func _process(_d: float) -> bool:
 	frame += 1
+	# La lingua dopo che Settings ha letto le opzioni, senza salvarla.
+	if frame == 1 and OS.get_environment("LINGUA") != "":
+		var settings: Node = root.get_node("Settings")
+		settings.language = OS.get_environment("LINGUA")
+		settings.apply()
 	if frame == 2 and main:
 		var heat = root.get_node("Heat")
 		heat.value = float(OS.get_environment("HEAT"))
@@ -48,10 +53,10 @@ func _process(_d: float) -> bool:
 				if scene == "maestria":
 					var tabs: TabContainer = current_scene._pond.find_children("*", "TabContainer", true, false)[0]
 					tabs.current_tab = 1
-			"opzioni", "grafica", "tasti":
+			"opzioni", "audio", "grafica", "tasti":
 				current_scene._open_options()
 				var tabs: TabContainer = current_scene._options.find_children("*", "TabContainer", true, false)[0]
-				tabs.current_tab = ["opzioni", "grafica", "tasti"].find(scene)
+				tabs.current_tab = ["opzioni", "audio", "grafica", "tasti"].find(scene)
 			"carte":
 				main.offer_upgrade()
 			"pausa":

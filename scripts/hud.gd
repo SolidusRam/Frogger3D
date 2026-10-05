@@ -70,6 +70,7 @@ var _options: OptionsPanel
 var _root: Control
 var _resume_button: Button
 var _restart_button: Button
+var _record_distance := 0.0
 var _last_heat_level := 0
 
 
@@ -102,9 +103,22 @@ func _ready() -> void:
 	_last_heat_level = Heat.level()
 
 
+## Cambiata la lingua (dalle opzioni in pausa), si riscrivono le scritte che
+## non si aggiornano da sole.
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and is_node_ready():
+		_on_health_changed(frog.health, frog.max_health)
+		_heat_label.text = tr("CALORE  %d / %d") % [Heat.level(), Heat.LEVELS]
+		_update_prompts()
+		if _record_label.text != "":
+			set_record(_record_distance)
+		if _upgrades != null:
+			show_equipment(_upgrades)
+
+
 func _process(_delta: float) -> void:
 	_distance_label.text = "%d m" % roundi(course.distance())
-	_dens_label.text = "Tana %d" % course.dens_reached
+	_dens_label.text = tr("Tana %d") % course.dens_reached
 	var punch := frog.punch_power
 	_chips.punch.set_ratio(1.0 - punch.cooldown_left / maxf(punch.cooldown, 0.001))
 	_chips.super_jump.set_ratio(frog.super_jump_power.ready_ratio())
@@ -137,23 +151,24 @@ func set_flies(count: int, golden := 0) -> void:
 
 
 func set_record(distance: float) -> void:
+	_record_distance = distance
 	if _record_label:
-		_record_label.text = "Record %d m" % roundi(distance)
+		_record_label.text = tr("Record %d m") % roundi(distance)
 
 
 func show_game_over(stats: Dictionary) -> void:
 	_game_over_distance.text = "%d m" % roundi(stats.distance)
 	if stats.new_record:
-		_game_over_record.text = "Nuovo record!"
+		_game_over_record.text = tr("Nuovo record!")
 		_game_over_record.add_theme_color_override("font_color", UiTheme.GOLD)
 	else:
-		_game_over_record.text = "Record: %d m" % roundi(stats.record)
-	_game_over_text.text = "Tane %d   ·   Tempo %d:%02d   ·   Calore massimo %d" % [
+		_game_over_record.text = tr("Record: %d m") % roundi(stats.record)
+	_game_over_text.text = tr("Tane %d   ·   Tempo %d:%02d   ·   Calore massimo %d") % [
 		stats.dens, floori(stats.time / 60.0), floori(stats.time) % 60, stats.heat_level]
 	if stats.get("test_run", false):
-		_game_over_flies.text = "Run di prova: le mosche non contano"
+		_game_over_flies.text = tr("Run di prova: le mosche non contano")
 	else:
-		_game_over_flies.text = "+%d mosche, +%d d'oro   (in tutto %d e %d)" % [
+		_game_over_flies.text = tr("+%d mosche, +%d d'oro   (in tutto %d e %d)") % [
 			stats.flies, stats.golden, stats.total_flies, stats.total_golden]
 	_game_over.visible = true
 	# Selezionato, così col controller ci si sposta su Stagno e Menu.
@@ -168,34 +183,34 @@ func game_over_text() -> String:
 func _on_health_changed(health: int, max_health: int) -> void:
 	_health_bar.max_value = max_health
 	_health_bar.value = health
-	_health_label.text = "VITA  %d / %d" % [health, max_health]
+	_health_label.text = tr("VITA  %d / %d") % [health, max_health]
 	_set_fill(_health_bar, HEALTH_LOW_COLOR if float(health) / max_health < HEALTH_LOW else HEALTH_COLOR)
 
 
 func _on_heat_changed(value: float, level: int) -> void:
 	_heat_meter.value = value
 	if level > _last_heat_level:
-		_show_message("Calore: livello %d" % level)
+		_show_message(tr("Calore: livello %d") % level)
 		Sfx.play(&"heat_up", 0.0, 1.0 + 0.05 * level)
 		# Un nuovo gradino: il calore lampeggia.
 		_heat_meter.modulate = Color(2.0, 2.0, 2.0)
 		create_tween().set_ignore_time_scale(true).tween_property(_heat_meter, "modulate", Color.WHITE, 0.5)
 	_last_heat_level = level
-	_heat_label.text = "CALORE  %d / %d" % [level, Heat.LEVELS]
+	_heat_label.text = tr("CALORE  %d / %d") % [level, Heat.LEVELS]
 
 
 func _on_den_reached(count: int, distance: float) -> void:
-	_show_message("Tana %d raggiunta! %d m" % [count, roundi(distance)])
+	_show_message(tr("Tana %d raggiunta! %d m") % [count, roundi(distance)])
 
 
 func _on_style_changed(style_name: String) -> void:
-	_show_message("Stile: %s" % style_name)
+	_show_message(tr("Stile: %s") % tr(style_name))
 
 
 ## "CATENA ×N" sotto il centro, che pulsa a ogni rottame in più.
 func show_chain(count: int) -> void:
 	Sfx.play(&"chain_ding", 0.0, minf(1.0 + 0.08 * (count - 4), 2.0))
-	_chain_label.text = "CATENA ×%d" % count
+	_chain_label.text = tr("CATENA ×%d") % count
 	_chain_label.modulate.a = 1.0
 	_chain_label.scale = Vector2(1.4, 1.4)
 	var tween := create_tween().set_ignore_time_scale(true)
@@ -213,7 +228,7 @@ func announce(text: String) -> void:
 ## attrezzo; le carte entrano una dopo l'altra.
 func show_offer(options: Array[String], upgrades: Upgrades) -> void:
 	_upgrades = upgrades
-	_offer_title.text = "Tana %d" % course.dens_reached
+	_offer_title.text = tr("Tana %d") % course.dens_reached
 	for i in _offer_buttons.size():
 		var button := _offer_buttons[i]
 		button.visible = i < options.size()
@@ -227,18 +242,18 @@ func show_offer(options: Array[String], upgrades: Upgrades) -> void:
 		(parts.icon as SlotIcon).kind = slot
 		var slot_label: Label = parts.slot
 		slot_label.add_theme_color_override("font_color", color)
-		(parts.name as Label).text = item.name
-		(parts.text as Label).text = Settings.with_keys(item.text)
+		(parts.name as Label).text = tr(item.name)
+		(parts.text as Label).text = Settings.with_keys(tr(item.text))
 		var tag: Label = parts.tag
 		if slot == "fusion":
-			slot_label.text = "FUSIONE"
-			tag.text = "Unisce %s" % " e ".join(item.parts.map(func(part): return Upgrades.CATALOG[part].name))
+			slot_label.text = tr("FUSIONE")
+			tag.text = tr("Unisce %s e %s") % item.parts.map(func(part): return tr(Upgrades.CATALOG[part].name))
 		elif slot != "":
-			slot_label.text = Upgrades.SLOT_NAMES[slot].to_upper()
-			tag.text = "Occupa lo slot fino a fine run"
+			slot_label.text = tr(Upgrades.SLOT_NAMES[slot]).to_upper()
+			tag.text = tr("Occupa lo slot fino a fine run")
 		else:
-			slot_label.text = "POTENZIAMENTO"
-			tag.text = "Si somma: %d di %d" % [upgrades.stacks.get(id, 0) + 1, item.max]
+			slot_label.text = tr("POTENZIAMENTO")
+			tag.text = tr("Si somma: %d di %d") % [upgrades.stacks.get(id, 0) + 1, item.max]
 		_style_card(button, color)
 		# L'entrata: dal basso, una dopo l'altra.
 		button.pivot_offset = button.custom_minimum_size / 2.0
@@ -274,19 +289,20 @@ func is_offer_open() -> bool:
 ## (una fusione sotto entrambi); il corpo, che non ha un potere, e i
 ## potenziamenti numerici in basso a destra.
 func show_equipment(upgrades: Upgrades) -> void:
+	_upgrades = upgrades
 	for power: String in POWERS:
 		var slot: String = POWERS[power][2]
 		var id: String = upgrades.slots[slot]
 		# Lingua e schianto sono loro stessi il modificatore.
 		var shown := id != "" and id != power and not (power == "super_jump" and id == "slam")
-		_chips[power].set_modifier(Upgrades.CATALOG[id].name if shown else "")
+		_chips[power].set_modifier(tr(Upgrades.CATALOG[id].name) if shown else "")
 	for child in _extras.get_children():
 		child.queue_free()
 	var body: String = upgrades.slots["body"]
 	if body != "":
-		_extras.add_child(_extra("body", Upgrades.CATALOG[body].name))
+		_extras.add_child(_extra("body", tr(Upgrades.CATALOG[body].name)))
 	for id: String in upgrades.stacks:
-		_extras.add_child(_extra("", "%s ×%d" % [Upgrades.CATALOG[id].name, upgrades.stacks[id]]))
+		_extras.add_child(_extra("", "%s ×%d" % [tr(Upgrades.CATALOG[id].name), upgrades.stacks[id]]))
 
 
 func _extra(slot: String, text: String) -> HBoxContainer:
@@ -333,8 +349,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 ## I comandi scritti sui pulsanti seguono il dispositivo usato per ultimo.
 func _update_prompts() -> void:
-	_resume_button.text = "Riprendi (%s)" % Settings.ui_name("pause")
-	_restart_button.text = "Ricomincia (%s)" % Settings.ui_name("ui_accept")
+	_resume_button.text = tr("Riprendi (%s)") % Settings.ui_name("pause")
+	_restart_button.text = tr("Ricomincia (%s)") % Settings.ui_name("ui_accept")
 
 
 ## La pausa: il gioco si ferma, il mouse si libera.
@@ -516,7 +532,7 @@ func _build_offer() -> void:
 	_offer.add_child(box)
 	_offer_title = _text("Title")
 	box.add_child(_offer_title)
-	var hint := _text("Note", "Scegli un potenziamento: tasti 1-%d o clic" % MAX_CARDS)
+	var hint := _text("Note", tr("Scegli un potenziamento: tasti 1-%d o clic") % MAX_CARDS)
 	box.add_child(hint)
 	var cards := HBoxContainer.new()
 	cards.add_theme_constant_override("separation", 16)

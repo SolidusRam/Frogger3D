@@ -128,6 +128,13 @@ func _restore_focus(place: Array) -> void:
 		return
 
 
+## Cambiata la lingua, le tessere si rifanno (le scritte fisse si traducono
+## da sole).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and _stats_box != null:
+		refresh()
+
+
 func _update_esc() -> void:
 	_esc_label.text = Settings.ui_name("ui_cancel")
 
@@ -168,18 +175,18 @@ func _stat_tile(stat: String) -> PanelContainer:
 	top.add_theme_constant_override("separation", 10)
 	box.add_child(top)
 	top.add_child(SlotIcon.make(group, 30.0))
-	var name_label := _label(info.name, "Strong")
+	var name_label := _label(tr(info.name), "Strong")
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	top.add_child(name_label)
 	top.add_child(UiPips.make(Progress.level(stat), info.max, color))
-	var effect := _label(info.text)
+	var effect := _label(tr(info.text))
 	effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	effect.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	effect.add_theme_font_size_override("font_size", 16)
 	effect.add_theme_color_override("font_color", UiTheme.TEXT_MUTED)
 	box.add_child(effect)
 	var cost := Progress.stat_cost(stat)
-	var buy := _button("Al massimo" if cost < 0 else "%d mosche" % cost, _buy_stat.bind(stat))
+	var buy := _button(tr("Al massimo") if cost < 0 else tr("%d mosche") % cost, _buy_stat.bind(stat))
 	buy.disabled = cost < 0 or cost > Progress.flies
 	buy.add_theme_font_size_override("font_size", 20)
 	box.add_child(buy)
@@ -200,7 +207,7 @@ func _card_tile(card: String) -> PanelContainer:
 	top.add_theme_constant_override("separation", 10)
 	box.add_child(top)
 	top.add_child(SlotIcon.make(slot, 34.0))
-	var title := _label(Upgrades.CATALOG[card].name, "Header")
+	var title := _label(tr(Upgrades.CATALOG[card].name), "Header")
 	title.add_theme_font_size_override("font_size", 24)
 	title.add_theme_color_override("font_color", color)
 	top.add_child(title)
@@ -218,24 +225,24 @@ func _upgrade(card: String, index: int, color: Color) -> VBoxContainer:
 	box.add_theme_constant_override("separation", 4)
 	var head := HBoxContainer.new()
 	box.add_child(head)
-	var name_label := _label(info.name, "Strong")
+	var name_label := _label(tr(info.name), "Strong")
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(name_label)
 	if active:
-		var on := _label("Attivo", "Strong")
+		var on := _label(tr("Attivo"), "Strong")
 		on.add_theme_color_override("font_color", UiTheme.DONE)
 		head.add_child(on)
 	elif done:
-		var activate := _button("Attiva: %d d'oro" % info.cost, _activate.bind(card, index), "PrimaryButton")
+		var activate := _button(tr("Attiva: %d d'oro") % info.cost, _activate.bind(card, index), "PrimaryButton")
 		activate.add_theme_font_size_override("font_size", 18)
 		activate.disabled = info.cost > Progress.golden
 		head.add_child(activate)
-	var effect := _label(Settings.with_keys(info.text))
+	var effect := _label(Settings.with_keys(tr(info.text)))
 	effect.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	effect.add_theme_font_size_override("font_size", 16)
 	box.add_child(effect)
 	var value: float = minf(Progress.trial_value(card, index), info.goal)
-	var trial := _label("Prova: %s" % info.trial, "Note")
+	var trial := _label(tr("Prova: %s") % tr(info.trial), "Note")
 	trial.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(trial)
 	var progress := HBoxContainer.new()
@@ -276,9 +283,9 @@ func _tile(color: Color, top: bool) -> PanelContainer:
 func _update_refund_button() -> void:
 	var spent := Progress.spent()
 	var spent_golden := Progress.spent_golden()
-	_refund_button.text = "Rimborsa tutto (+%d, +%d d'oro)" % [spent, spent_golden]
+	_refund_button.text = tr("Rimborsa tutto (+%d, +%d d'oro)") % [spent, spent_golden]
 	if _refund_armed:
-		_refund_button.text = "Sicura? Premi di nuovo: si azzera tutto"
+		_refund_button.text = tr("Sicura? Premi di nuovo: si azzera tutto")
 	_refund_button.disabled = spent == 0 and spent_golden == 0
 
 

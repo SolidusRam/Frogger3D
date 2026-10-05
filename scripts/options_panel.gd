@@ -1,7 +1,7 @@
 class_name OptionsPanel
 extends PanelContainer
-## Le opzioni, a tutto schermo come lo stagno: tre schede (audio, grafica,
-## controlli). Ogni modifica si applica subito; i cursori salvano quando si
+## Le opzioni, a tutto schermo come lo stagno: quattro schede (generale,
+## audio, grafica, controlli). Ogni modifica si applica subito; i cursori salvano quando si
 ## chiude. I tasti si riassegnano cliccando e premendo il tasto nuovo (o un
 ## pulsante del mouse, o un pulsante del controller nella sua colonna); Esc
 ## o Start annullano. Col controller LB e RB cambiano scheda. Lo usano il
@@ -39,6 +39,7 @@ func _ready() -> void:
 	_tabs = TabContainer.new()
 	_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	box.add_child(_tabs)
+	_build_general(_page("Generale"))
 	_build_audio(_page("Audio"))
 	_build_graphics(_page("Grafica"))
 	_build_controls(_page("Controlli"))
@@ -112,9 +113,26 @@ func _refresh_names() -> void:
 	for updater in _updaters:
 		updater.call()
 	_esc_label.text = Settings.ui_name("ui_cancel")
+	_update_reset_button()
+
+
+## Cambiata la lingua, si riscrivono i valori (le scritte fisse si traducono
+## da sole).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and _esc_label != null:
+		_refresh_names()
 
 
 # --- Le schede -----------------------------------------------------------------
+
+func _build_general(page: VBoxContainer) -> void:
+	# I nomi delle lingue non si traducono: ognuna si chiama come si chiama.
+	# Scritta in tutte e due le lingue: la trova anche chi non legge quella
+	# attuale.
+	_choice(page, "Lingua · Language", "language", Settings.LANGUAGE_NAMES, func() -> int: return Settings.LANGUAGES.find(Settings.language))
+	_slider(page, "Scossa della telecamera", "shake", 0.0, 1.0, 0.05, _percent)
+	_toggle(page, "Lampo a ogni livello di calore", "flashes")
+
 
 func _build_audio(page: VBoxContainer) -> void:
 	_slider(page, "Volume generale", "master_volume", 0.0, 1.0, 0.05, _percent)
@@ -131,12 +149,10 @@ func _build_graphics(page: VBoxContainer) -> void:
 	page.add_child(_note("Si cambia anche in gioco, con F2."))
 	_choice(page, "Schermo", "window_mode", Settings.WINDOW_MODES)
 	_toggle(page, "Sincronia verticale (V-Sync)", "vsync")
-	var limits: Array = Settings.FPS_LIMITS.map(func(fps: int) -> String: return "Nessuno" if fps == 0 else "%d al secondo" % fps)
+	var limits: Array = Settings.FPS_LIMITS.map(func(fps: int) -> String: return "Nessuno" if fps == 0 else "%d fps" % fps)
 	_choice(page, "Limite dei fotogrammi", "fps_limit", limits)
 	_slider(page, "Risoluzione del mondo", "render_scale", 0.5, 1.0, 0.05, _percent)
 	page.add_child(_note("Più bassa, il gioco va più veloce sui computer lenti; l'interfaccia resta nitida."))
-	_slider(page, "Scossa della telecamera", "shake", 0.0, 1.0, 0.05, _percent)
-	_toggle(page, "Lampo a ogni livello di calore", "flashes")
 
 
 func _build_controls(page: VBoxContainer) -> void:
@@ -153,8 +169,7 @@ func _build_controls(page: VBoxContainer) -> void:
 	var title := _label("Comandi", "Header")
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(title)
-	for column in ["Tastiera e mouse", "Controller"]:
-		var name_label := _label(column, "Note")
+	for name_label in [_label("Tastiera e mouse", "Note"), _label("Controller", "Note")]:
 		name_label.custom_minimum_size.x = KEY_WIDTH
 		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		name_label.size_flags_vertical = Control.SIZE_SHRINK_END
@@ -212,13 +227,13 @@ func _slider(page: VBoxContainer, title: String, option: String, low: float, hig
 
 
 ## Un pulsante che passa al valore successivo a ogni clic. current dice il
-## valore attuale (di norma l'opzione stessa).
+## valore attuale (di norma l'opzione stessa). I valori si traducono.
 func _choice(page: VBoxContainer, title: String, option: String, values: Array, current := Callable()) -> Button:
 	var read := current if current.is_valid() else func() -> int: return Settings.get(option)
 	var button := _button("", func() -> void: Settings.set_option(option, (read.call() + 1) % values.size()))
 	button.name = option
 	button.custom_minimum_size.x = CONTROL_WIDTH
-	_updaters.append(func() -> void: button.text = values[read.call()])
+	_updaters.append(func() -> void: button.text = tr(values[read.call()]))
 	button.pressed.connect(refresh)
 	_row(page, title, button)
 	return button
@@ -228,7 +243,7 @@ func _toggle(page: VBoxContainer, title: String, option: String) -> Button:
 	var button := _button("", func() -> void: Settings.set_option(option, not Settings.get(option)))
 	button.name = option
 	button.custom_minimum_size.x = CONTROL_WIDTH
-	_updaters.append(func() -> void: button.text = "Sì" if Settings.get(option) else "No")
+	_updaters.append(func() -> void: button.text = tr("Sì") if Settings.get(option) else tr("No"))
 	button.pressed.connect(refresh)
 	_row(page, title, button)
 	return button
@@ -252,7 +267,7 @@ func _start_waiting(action: String, pad: bool) -> void:
 	_waiting = action
 	_waiting_pad = pad
 	var button: Button = _key_buttons[action][1 if pad else 0]
-	button.text = "Premi un pulsante…" if pad else "Premi un tasto…"
+	button.text = tr("Premi un pulsante…") if pad else tr("Premi un tasto…")
 	button.add_theme_color_override("font_color", UiTheme.GOLD)
 	button.add_theme_color_override("font_focus_color", UiTheme.GOLD)
 
@@ -299,7 +314,7 @@ func _disarm_reset() -> void:
 
 
 func _update_reset_button() -> void:
-	_reset_button.text = "Sicura? Premi di nuovo" if _reset_armed else "Valori predefiniti"
+	_reset_button.text = tr("Sicura? Premi di nuovo") if _reset_armed else tr("Valori predefiniti")
 
 
 func _close() -> void:

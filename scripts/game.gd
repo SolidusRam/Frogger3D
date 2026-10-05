@@ -87,7 +87,7 @@ func _ready() -> void:
 	hud.menu_requested.connect(to_menu)
 	hud.abandon_requested.connect(abandon)
 	upgrades.equipped.connect(_on_equipped)
-	frog.revived.connect(hud.announce.bind("Seconda vita!"))
+	frog.revived.connect(func() -> void: hud.announce(tr("Seconda vita!")))
 	hud.set_record(record_distance)
 	add_child(PerfOverlay.new())
 	if attract:
@@ -281,7 +281,7 @@ func offer_upgrade() -> void:
 	if options.is_empty():
 		frog.heal_full()
 		add_flies(empty_den_flies)
-		hud.announce("Niente da scegliere: vita piena e %d mosche" % empty_den_flies)
+		hud.announce(tr("Niente da scegliere: vita piena e %d mosche") % empty_den_flies)
 		return
 	get_tree().paused = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -293,7 +293,7 @@ func _on_equipped(id: String) -> void:
 	frog.asleep = false
 	hud.hide_offer()
 	hud.show_equipment(upgrades)
-	hud.announce("Equipaggiato: %s" % Upgrades.CATALOG[id].name)
+	hud.announce(tr("Equipaggiato: %s") % tr(Upgrades.CATALOG[id].name))
 	get_tree().paused = false
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 

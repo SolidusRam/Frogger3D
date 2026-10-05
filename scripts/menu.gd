@@ -18,6 +18,7 @@ var _ui: Control
 var _flies_label: Label
 var _golden_label: Label
 var _play_button: Button
+var _record_label: Label
 var _pond: Pond
 var _options: OptionsPanel
 
@@ -102,8 +103,8 @@ func _build() -> void:
 	stats.add_child(_flies_label)
 	_golden_label = _label("", "Money")
 	stats.add_child(_golden_label)
-	var record: float = _game.record_distance
-	stats.add_child(_label("Record: %d m" % roundi(record) if record > 0.0 else "Nessun record", "Strong"))
+	_record_label = _label("", "Strong")
+	stats.add_child(_record_label)
 
 	var hint := _label("F2: cambia stile grafico", "Note")
 	hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
@@ -125,9 +126,18 @@ func _build() -> void:
 	_ui.add_child(_options)
 
 
+## Cambiata la lingua nelle opzioni, si riscrivono le scritte coi numeri (le
+## altre si traducono da sole).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and _flies_label != null:
+		_refresh()
+
+
 func _refresh() -> void:
-	_flies_label.text = "Mosche: %d" % Progress.flies
-	_golden_label.text = "Mosche d'oro: %d" % Progress.golden
+	_flies_label.text = tr("Mosche: %d") % Progress.flies
+	_golden_label.text = tr("Mosche d'oro: %d") % Progress.golden
+	var record: float = _game.record_distance
+	_record_label.text = tr("Record: %d m") % roundi(record) if record > 0.0 else tr("Nessun record")
 	_golden_label.visible = Progress.golden > 0
 
 

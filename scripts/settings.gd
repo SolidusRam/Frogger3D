@@ -44,6 +44,9 @@ const PAD_DEFAULTS := {
 	"tongue": "lt",
 }
 const WINDOW_MODES := ["Finestra", "Schermo intero"]
+## Le lingue: il codice e il nome, scritto nella lingua stessa.
+const LANGUAGES := ["it", "en"]
+const LANGUAGE_NAMES := ["Italiano", "English"]
 ## Limiti ai fotogrammi al secondo (0: nessuno).
 const FPS_LIMITS := [0, 30, 60, 120, 144, 240]
 ## Il nome italiano dei tasti che non sono una lettera.
@@ -84,6 +87,9 @@ const MOUSE_THRESHOLD := 6.0
 
 var path := "user://opzioni.cfg"
 
+## La lingua ("it" o "en"). Al primo avvio quella del sistema: italiano se il
+## sistema è in italiano, altrimenti inglese.
+var language := "it" if OS.get_locale_language() == "it" else "en"
 ## Volumi da 0 a 1.
 var master_volume := 1.0
 var effects_volume := 1.0
@@ -121,6 +127,8 @@ func _ready() -> void:
 	_default_style = Style.current
 	if DisplayServer.get_name() == "headless":
 		path = "user://opzioni_test.cfg"
+		# I test leggono le scritte in italiano.
+		language = "it"
 	else:
 		load_from(path)
 	apply()
@@ -157,6 +165,9 @@ func apply() -> void:
 		if DisplayServer.window_get_vsync_mode() != sync:
 			DisplayServer.window_set_vsync_mode(sync)
 	Engine.max_fps = FPS_LIMITS[fps_limit]
+	# Solo se cambia: tutte le scritte si riscrivono.
+	if TranslationServer.get_locale() != language:
+		TranslationServer.set_locale(language)
 	get_tree().root.scaling_3d_scale = render_scale
 	changed.emit()
 
@@ -166,6 +177,8 @@ func apply() -> void:
 func set_option(option: String, value: Variant, save_now := true) -> void:
 	if option == "style":
 		Style.set_style(value)
+	elif option == "language":
+		language = LANGUAGES[value]
 	else:
 		set(option, value)
 	apply()
@@ -189,11 +202,16 @@ func load_from(file_path: String) -> void:
 	var file := ConfigFile.new()
 	if file.load(file_path) != OK:
 		return
+	# Opzioni salvate prima che ci fossero le lingue: si giocava in italiano.
+	if not file.has_section_key("opzioni", "language"):
+		language = "it"
 	for option in _options():
 		var value: Variant = file.get_value("opzioni", option, get(option))
 		if typeof(value) == typeof(get(option)):
 			set(option, value)
 	fps_limit = clampi(fps_limit, 0, FPS_LIMITS.size() - 1)
+	if not language in LANGUAGES:
+		language = LANGUAGES[0]
 	window_mode = clampi(window_mode, 0, WINDOW_MODES.size() - 1)
 	var style: int = file.get_value("opzioni", "style", Style.current)
 	if style >= 0 and style < Style.styles.size():
@@ -212,8 +230,10 @@ func reset(only_keys := false) -> void:
 			_bind(action, event)
 	if not only_keys:
 		var fresh: Node = get_script().new()
+		# La lingua resta quella scelta.
 		for option in _options():
-			set(option, fresh.get(option))
+			if option != "language":
+				set(option, fresh.get(option))
 		fresh.free()
 		Style.set_style(_default_style)
 	apply()
@@ -258,29 +278,29 @@ func rebind(action: String, event: InputEvent) -> void:
 func key_name(action: String, pad: Variant = null) -> String:
 	var on_pad: bool = using_pad if pad == null else pad
 	if on_pad and action in MOVES:
-		return "Levetta sinistra"
+		return tr("Levetta sinistra")
 	return event_name(binding(action, on_pad))
 
 
 ## Il nome di un comando fisso dei menu (Invio/A, Esc/B, Esc/Start).
 func ui_name(action: String) -> String:
-	return UI_NAMES[action][1 if using_pad else 0]
+	return tr(UI_NAMES[action][1 if using_pad else 0])
 
 
 func event_name(event: InputEvent) -> String:
 	if event is InputEventMouseButton:
-		return MOUSE_NAMES.get(event.button_index, "Mouse %d" % event.button_index)
+		return tr(MOUSE_NAMES[event.button_index]) if MOUSE_NAMES.has(event.button_index) else tr("Mouse %d") % event.button_index
 	if event is InputEventKey:
 		var code: Key = event.physical_keycode if event.physical_keycode != KEY_NONE else event.keycode
 		if KEY_NAMES.has(code):
-			return KEY_NAMES[code]
+			return tr(KEY_NAMES[code])
 		# La lettera che quel tasto ha sulla tastiera del giocatore (senza
 		# schermo non si sa: quella americana).
 		var label := KEY_NONE if DisplayServer.get_name() == "headless" else DisplayServer.keyboard_get_keycode_from_physical(code)
 		return OS.get_keycode_string(label if label != KEY_NONE else code)
 	var family := 1 if _playstation() else 0
 	if event is InputEventJoypadButton:
-		return PAD_NAMES[event.button_index][family] if PAD_NAMES.has(event.button_index) else "Pulsante %d" % event.button_index
+		return tr(PAD_NAMES[event.button_index][family]) if PAD_NAMES.has(event.button_index) else tr("Pulsante %d") % event.button_index
 	if event is InputEventJoypadMotion and TRIGGER_NAMES.has(event.axis):
 		return TRIGGER_NAMES[event.axis][family]
 	return "—"
@@ -461,6 +481,6 @@ func _decode(text: String) -> InputEvent:
 
 
 func _options() -> Array[String]:
-	return ["master_volume", "effects_volume", "music_volume", "window_mode", "vsync",
+	return ["language", "master_volume", "effects_volume", "music_volume", "window_mode", "vsync",
 		"fps_limit", "render_scale", "shake", "flashes", "mouse_sensitivity",
 		"stick_sensitivity", "invert_y", "vibration"]

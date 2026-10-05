@@ -1,0 +1,988 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+
+#: scripts/game.gd
+msgid "Seconda vita!"
+msgstr ""
+
+#: scripts/game.gd
+msgid "Niente da scegliere: vita piena e %d mosche"
+msgstr ""
+
+#: scripts/game.gd
+msgid "Equipaggiato: %s"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "CALORE  %d / %d"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Tana %d"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Record %d m"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Nuovo record!"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Record: %d m"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Tane %d   ·   Tempo %d:%02d   ·   Calore massimo %d"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Run di prova: le mosche non contano"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "+%d mosche, +%d d'oro   (in tutto %d e %d)"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "VITA  %d / %d"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Calore: livello %d"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Tana %d raggiunta! %d m"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Stile: %s"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "CATENA ×%d"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "FUSIONE"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Unisce %s e %s"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Occupa lo slot fino a fine run"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "POTENZIAMENTO"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Si somma: %d di %d"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Riprendi (%s)"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Ricomincia (%s)"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Scegli un potenziamento: tasti 1-%d o clic"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Lo stagno"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Opzioni"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Abbandona la run"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Fine della corsa"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Pausa"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Abbandonando, le mosche raccolte restano."
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Pugno"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Super salto"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Deltaplano"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Lingua"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Schianto"
+msgstr ""
+
+#: scripts/menu.gd
+msgid "Mosche: %d"
+msgstr ""
+
+#: scripts/menu.gd
+msgid "Mosche d'oro: %d"
+msgstr ""
+
+#: scripts/menu.gd
+msgid "Nessun record"
+msgstr ""
+
+#: scripts/menu.gd
+msgid "La rana scappa dall'incendio"
+msgstr ""
+
+#: scripts/menu.gd
+msgid "Gioca"
+msgstr ""
+
+#: scripts/menu.gd
+msgid "Esci"
+msgstr ""
+
+#: scripts/menu.gd
+msgid "F2: cambia stile grafico"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Sì"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "No"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Premi un pulsante…"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Premi un tasto…"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Sicura? Premi di nuovo"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Valori predefiniti"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Chiudi"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "La musica arriverà più avanti."
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Si cambia anche in gioco, con F2."
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Più bassa, il gioco va più veloce sui computer lenti; l'interfaccia resta nitida."
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Comandi"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Tastiera e mouse"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Scegli un comando e premi il tasto nuovo (nella colonna del controller, un pulsante o un grilletto); Esc o Start annullano. Se era già di un'altra azione, le due si scambiano."
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Rimetti i comandi predefiniti"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Fissi: Esc (pausa), 1-4 (carte della tana), F1 (modalità prova), F2 (stile grafico). Sul controller: la levetta destra guarda intorno, Start è la pausa, A conferma e B torna indietro nei menu, LB e RB cambiano scheda."
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Generale"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Audio"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Grafica"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Controlli"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Scossa della telecamera"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Lampo a ogni livello di calore"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Volume generale"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Effetti"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Musica"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Stile grafico"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Schermo"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Sincronia verticale (V-Sync)"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Limite dei fotogrammi"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Risoluzione del mondo"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Sensibilità del mouse"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Sensibilità della levetta"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Inverti l'asse verticale"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Vibrazione del controller"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Al massimo"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "%d mosche"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Attivo"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Attiva: %d d'oro"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Prova: %s"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Rimborsa tutto (+%d, +%d d'oro)"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Sicura? Premi di nuovo: si azzera tutto"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Le mosche comprano statistiche; le mosche d'oro attivano i miglioramenti delle carte, una volta superata la loro prova."
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Statistiche"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Maestria delle carte"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Vita"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "+10 di vita massima"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Corazza"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "-5% di danno subito"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Riposo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "In tana recuperi il 15% della vita"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Riflessi"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "+0,25 s di invulnerabilità dopo un colpo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Zampe veloci"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "+4% di velocità a terra"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Zampe forti"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "+8% di altezza del salto"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Nuotatrice"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "+15% di velocità in acqua, -15% di danno dall'acqua"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Molle tese"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "+0,5 m di super salto"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Ricarica"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "-6% di ricarica dei poteri"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "+10% di spinta del pugno"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Ala"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "+0,3 s di volo col deltaplano"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Vantaggio"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "L'incendio resta 5 m più lontano"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Sangue freddo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "-6% di calore dai poteri"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Lingua lunga"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "+0,7 m di raggio per prendere le mosche"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Golosa"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "+10% di mosche raccolte"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Fortuna"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "+50% di mosche d'oro"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Più scelta"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Una carta in più nelle tane"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Seconda vita"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Una volta per run ti rialzi con metà vita"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Reazione a catena"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Le auto distrutte da un'esplosione esplodono a loro volta."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Fai esplodere 30 auto"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Razzo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Un'esplosione vicina non ti ferisce: ti lancia in alto."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Distruggi 4 auto con una sola esplosione"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Meteora"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "L'auto lanciata ricade con un'onda che ribalta le auto intorno."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Lancia 30 auto col montante"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Doppio montante"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Il pugno arriva anche in alto: un'auto ancora in aria la rilanci."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Un'auto lanciata col montante ne ribalta un'altra ricadendo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Perforante"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Il pugno colpisce tutte le auto sulla sua linea."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Colpisci 25 auto da più di 3 m"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Tira e molla"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Il guantone afferra l'auto, la tira a sé e la scaglia via più forte."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Colpisci 2 auto con un solo pugno"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Crescendo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Ogni rimbalzo di fila è più alto del precedente."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Rimbalza 50 volte sui tetti"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Bombardiera"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Ogni rimbalzo ribalta l'auto sotto di te."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Rimbalza 6 volte di fila"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Doppia onda"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Mezzo secondo dopo, una seconda onda più larga."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Ribalta 40 auto con lo schianto"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Dal cielo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Più cadi dall'alto, più l'onda è grande (fino al doppio)."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Ribalta 5 auto con un solo schianto"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Fenice"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Nella colonna di fumo recuperi vita."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Sali per 100 m nel fumo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Camino"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Anche il fumo davanti all'incendio ti solleva come una corrente calda."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Resta 6 s di fila in una colonna di fumo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Postbruciatore"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Dietro l'ala una scia di fuoco ribalta le auto sotto di te."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Vola 800 m con l'ala a reazione"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Raffreddata"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "In volo il calore non sale più."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Vola 60 m in un solo volo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Tuffo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "In acqua, {slam}: ti immergi e passi sotto tronchi e coccodrilli."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Nuota per 300 m"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Ondata"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Saltando fuori dall'acqua sollevi un'onda che spinge via auto e rottami."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Resta 15 s di fila in acqua"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Fionda"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Lasciando dopo un traino parti a velocità doppia."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Fatti trascinare 20 volte"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Lingua doppia"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Mentre una lingua ti trascina, l'altra mangia le mosche vicine."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Fatti trascinare per 50 m in un solo traino"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Levetta sinistra"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Mouse %d"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Pulsante %d"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Avanti"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Indietro"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Sinistra"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Destra"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Salto e deltaplano"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Schianto e tuffo"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Spazio"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Maiusc"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Invio"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Bloc Maiusc"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Freccia su"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Freccia giù"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Freccia sinistra"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Freccia destra"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Canc"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Ins"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Fine"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Pag su"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Pag giù"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Clic"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Clic dx"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Clic centrale"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Rotella su"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Rotella giù"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Croce"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Cerchio"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Quadrato"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Triangolo"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Croce su"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Croce giù"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Croce sinistra"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Croce destra"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Finestra"
+msgstr ""
+
+#: scripts/settings.gd
+msgid "Schermo intero"
+msgstr ""
+
+#: scripts/style.gd
+msgid "Base"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Guantoni esplosivi"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "L'auto colpita esplode quando urta un altro veicolo: le auto intorno diventano rottami. Attento a non starle vicino."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Montante"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Il pugno solleva le auto: volano in alto e ricadono su altre auto."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Guantone a molla"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Il pugno arriva a 4 m invece che a 1,3."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Molle-trampolino"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Sui tetti delle auto rimbalzi da sola: il traffico diventa una strada."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Schianto sismico"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "In aria, {slam}: piombi giù e all'atterraggio un'onda ribalta le auto intorno."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Correnti calde"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Col deltaplano aperto, il fumo dei rottami ti solleva e la carica non si consuma."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Ala a reazione"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Il deltaplano va molto più veloce, ma finché voli il calore sale."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Pelle impermeabile"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "L'acqua non toglie più vita."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Lingua-rampino"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "{tongue}: la lingua aggancia da sola la cosa più vicina dove guardi. Ti tira su auto, tronchi e navi; un rottame lo tira verso di te."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Pugno più forte"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "+30% di spinta del pugno."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Molle rapide"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Il super salto si ricarica il 25% più in fretta."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Ala più grande"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "+1 secondo di volo col deltaplano."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Pelle dura"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "+25 di vita massima, e vita piena subito."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Napalm"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Guantoni esplosivi + Correnti calde. I rottami fumano 15 s invece di 6, e le colonne di fumo sono più larghe."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Terremoto"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Montante + Schianto sismico. L'onda arriva a 10 m e scaglia le auto molto più in alto."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Guantoni"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Molle"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Corpo"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Nessuno"
+msgstr ""
+

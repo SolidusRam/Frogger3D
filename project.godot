@@ -113,3 +113,8 @@ common/physics_interpolation=true
 [filesystem]
 
 import/blender/enabled=false
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://assets/lingue/en.po")
+locale/fallback="it"
