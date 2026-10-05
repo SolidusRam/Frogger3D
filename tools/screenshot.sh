@@ -7,7 +7,7 @@
 #   tools/screenshot.sh shot_rail passaggio 0 /tmp/treno.png
 # Scene: shot_biome = aereo | getto | dietro;  shot_port = panorama | nave | caccia;
 #        shot_rail  = arrivo | passaggio | tetto;
-#        shot_tour  = strada | fumo | fiume | ferrovia | tana | tana_lontano | laghetto | aeroporto | porto (la rana davanti al bioma);
+#        shot_tour  = strada | fumo | bestiario | fiume | ferrovia | tana | tana_lontano | laghetto | aeroporto | porto (la rana davanti al bioma);
 #        shot_frog  = fronte | lato | dietro | pugno | salto | caduta | boxe (la rana da vicino);
 #        shot_ui    = menu | partenza | stagno | maestria | hud | carte | pausa | fine | prova.
 # WAYLAND_DISPLAY va tolto: se il display virtuale fallisse, Godot aprirebbe

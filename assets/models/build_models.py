@@ -53,6 +53,8 @@ PREVIEW = {
     "water": (0.15, 0.4, 0.7, 1), "pad": (0.3, 0.7, 0.3, 1), "stone": (0.58, 0.55, 0.5, 1),
     "reed": (0.42, 0.55, 0.22, 1), "cattail": (0.42, 0.25, 0.12, 1), "flower": (0.95, 0.55, 0.7, 1),
     "water_shallow": (0.35, 0.62, 0.75, 1), "ripple": (0.85, 0.93, 0.97, 1),
+    "log": (0.45, 0.3, 0.15, 1), "log_end": (0.78, 0.62, 0.4, 1),
+    "croc": (0.2, 0.4, 0.2, 1), "croc_dark": (0.16, 0.32, 0.16, 1), "croc_eye": (0.95, 0.85, 0.2, 1),
 }
 
 
@@ -537,6 +539,105 @@ def build_den():
     save("den")
 
 
+# --- Il fiume ---------------------------------------------------------------
+
+def build_log():
+    """Il tronco, lungo 1 m: Godot allunga la corteccia (Bark) fino alla
+    lunghezza del tronco e mette le teste (EndA, EndB) e il moncone (Stub) al
+    loro posto. Sette facce, una piatta in cima: ci si sta in piedi. Raggio
+    0,8, origine al centro."""
+    reset()
+    bark = cylinder("Bark", 0.78, 1.0, (0, 0, 0), "log", sides=7, axis="Y")
+    # Una faccia piatta in cima.
+    bark.rotation_euler = (0, math.pi / 7 + math.pi / 2, 0)
+    part("Bark", [bark], (0, 0, 0))
+    for label, y in (("A", 0.5), ("B", -0.5)):
+        sign = 1 if y > 0 else -1
+        end = [cylinder("rim", 0.8, 0.06, (0, y, 0), "log", sides=7, axis="Y"),
+               cylinder("wood", 0.58, 0.07, (0, y, 0), "log_end", sides=7, axis="Y"),
+               cylinder("ring", 0.36, 0.08, (0, y, 0), "log", sides=7, axis="Y"),
+               cylinder("core", 0.22, 0.09, (0, y, 0), "log_end", sides=7, axis="Y")]
+        for obj in end:
+            obj.rotation_euler = (0, math.pi / 7 + math.pi / 2, 0)
+        part("End" + label, end, (0, y, 0))
+    stub = [tube("branch", (0.45, 0, 0.45), (0.95, 0.15, 0.85), 0.13, "log"),
+            cylinder("cut", 0.14, 0.04, (0.95, 0.15, 0.85), "log_end", sides=6, axis="Z"),
+            box("moss", -0.35, 0.25, -0.2, 0.45, 0.72, 0.8, "pad")]
+    part("Stub", stub, (0, 0, 0))
+    save("log")
+
+
+def build_crocodile():
+    """Il coccodrillo, 1,4 x 0,8 x 6 m come la sua collisione: corpo e coda
+    rastremati con le creste, zampe di lato, occhi gialli sul collo, narici,
+    denti; la mascella superiore (Jaw) ruota sul suo attacco posteriore e
+    Godot la apre per mordere. Davanti +Y, origine al centro."""
+    reset()
+    parts = []
+    # Il corpo: dal collo a metà, poi la coda che si stringe.
+    sections = [(1.4, 0.62, -0.38, 0.22), (0.4, 0.7, -0.4, 0.3), (-0.6, 0.66, -0.38, 0.26),
+                (-1.6, 0.45, -0.32, 0.18), (-2.4, 0.25, -0.26, 0.1), (-3.0, 0.08, -0.2, 0.0)]
+    for i in range(len(sections) - 1):
+        y0, w0, b0, t0 = sections[i]
+        y1, w1, b1, t1 = sections[i + 1]
+        parts.append(block("body_%d" % i,
+                           [(-w0, y0, b0), (w0, y0, b0), (w1, y1, b1), (-w1, y1, b1)],
+                           [(-w0 * 0.75, y0, t0), (w0 * 0.75, y0, t0), (w1 * 0.75, y1, t1), (-w1 * 0.75, y1, t1)],
+                           "croc"))
+    # Le creste: due file sulla schiena, una sola sulla coda.
+    for i in range(9):
+        y = 1.1 - i * 0.42
+        top = 0.3 - max(0.0, -y - 0.6) * 0.12
+        xs = (-0.25, 0.25) if y > -1.2 else (0.0,)
+        for x in xs:
+            parts.append(block("scute_%d_%d" % (i, int(x * 10)),
+                               [(x - 0.09, y - 0.12, top - 0.02), (x + 0.09, y - 0.12, top - 0.02), (x + 0.09, y + 0.12, top - 0.02), (x - 0.09, y + 0.12, top - 0.02)],
+                               [(x - 0.02, y - 0.03, top + 0.12), (x + 0.02, y - 0.03, top + 0.12), (x + 0.02, y + 0.03, top + 0.12), (x - 0.02, y + 0.03, top + 0.12)],
+                               "croc_dark"))
+    # Le zampe, corte e storte, ai lati.
+    for y in (0.9, -0.5):
+        for side in (1, -1):
+            parts.append(block("leg_%d_%d" % (int(y * 10), side),
+                               [(side * 0.55, y - 0.15, -0.3), (side * 0.95, y - 0.05, -0.4), (side * 0.95, y + 0.25, -0.4), (side * 0.55, y + 0.2, -0.3)],
+                               [(side * 0.5, y - 0.12, -0.05), (side * 0.75, y - 0.05, -0.15), (side * 0.75, y + 0.15, -0.15), (side * 0.5, y + 0.15, -0.05)],
+                               "croc_dark"))
+    # La mascella inferiore e i suoi denti.
+    parts.append(block("lower_jaw",
+                       [(-0.45, 1.4, -0.36), (0.45, 1.4, -0.36), (0.28, 3.0, -0.3), (-0.28, 3.0, -0.3)],
+                       [(-0.45, 1.4, -0.08), (0.45, 1.4, -0.08), (0.28, 3.0, -0.12), (-0.28, 3.0, -0.12)],
+                       "croc_dark"))
+    for i in range(5):
+        y = 1.7 + i * 0.3
+        w = 0.42 - (y - 1.4) / 1.6 * 0.16
+        for side in (1, -1):
+            parts.append(cone("tooth_low_%d_%d" % (i, side), 0.045, 0.12, (side * (w - 0.04), y, -0.03), "sign_white", sides=4))
+    # Gli occhi sporgenti sul collo, con la fessura scura, e le narici.
+    for side in (1, -1):
+        parts.append(block("brow_%d" % side,
+                           [(side * 0.12, 1.0, 0.18), (side * 0.42, 1.0, 0.18), (side * 0.42, 1.4, 0.15), (side * 0.12, 1.4, 0.15)],
+                           [(side * 0.17, 1.08, 0.38), (side * 0.37, 1.08, 0.38), (side * 0.37, 1.32, 0.36), (side * 0.17, 1.32, 0.36)],
+                           "croc"))
+        parts.append(ico("eye_%d" % side, 0.1, (side * 0.27, 1.3, 0.36), "croc_eye"))
+        parts.append(box("slit_%d" % side, side * 0.27 - 0.015, side * 0.27 + 0.015, 1.36, 1.41, 0.3, 0.43, "pupil"))
+    join("Body", parts)
+
+    # La mascella superiore: il perno al suo attacco, dietro.
+    jaw = [block("upper_jaw",
+                 [(-0.48, 1.4, -0.1), (0.48, 1.4, -0.1), (0.3, 3.0, -0.1), (-0.3, 3.0, -0.1)],
+                 [(-0.38, 1.4, 0.2), (0.38, 1.4, 0.2), (0.22, 3.0, 0.06), (-0.22, 3.0, 0.06)],
+                 "croc")]
+    for side in (1, -1):
+        jaw.append(box("nostril_%d" % side, side * 0.08 - 0.03, side * 0.08 + 0.03, 2.75, 2.85, 0.06, 0.1, "pupil"))
+        for i in range(5):
+            y = 1.65 + i * 0.3
+            w = 0.46 - (y - 1.4) / 1.6 * 0.17
+            tooth = cone("tooth_up_%d_%d" % (i, side), 0.045, 0.12, (side * (w - 0.04), y, -0.14), "sign_white", sides=4)
+            tooth.rotation_euler = (math.pi, 0, 0)
+            jaw.append(tooth)
+    part("Jaw", jaw, (0, 1.4, -0.08))
+    save("crocodile")
+
+
 # --- Deltaplano ------------------------------------------------------------
 
 def build_glider():
@@ -892,7 +993,7 @@ def build_mountain():
 
 BUILDERS = {
     "compact": build_compact, "sedan": build_sedan, "van": build_van, "truck": build_truck,
-    "frog": build_frog, "den": build_den, "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
+    "frog": build_frog, "den": build_den, "log": build_log, "crocodile": build_crocodile, "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
     "mountain": build_mountain, "locomotive": build_locomotive, "boxcar": build_boxcar,
     "flatcar": build_flatcar, "signal": build_signal, "airplane": build_airplane,
     "crane": build_crane, "crane_trolley": build_crane_trolley, "ship": build_ship,

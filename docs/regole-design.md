@@ -72,7 +72,8 @@ Il caos serve a passare: auto ribaltate che bloccano una corsia, rottami che fan
 | Sbalzo | Un veicolo che colpisce la rana la butta di lato, fuori dalla corsia, anche nella corsia accanto |
 | Acqua | Chi cade in acqua galleggia, nuota lento, segue la corrente e perde 20 di vita al secondo. Per uscire serve un salto tenuto premuto |
 | Rottami nel fiume | Galleggiano e seguono la corrente: un'auto lanciata nel fiume diventa una zattera |
-| Coccodrilli | La schiena è sicura; la bocca si apre a intervalli e morde |
+| Coccodrilli | La schiena è sicura; la bocca si apre a intervalli e morde. Modello di Blender (build_crocodile): corpo e coda rastremati con le creste, zampe di lato, occhi gialli sul collo, narici e denti; la mascella superiore ruota sul suo attacco |
+| Tronchi | Modello di Blender (build_log): sette facce con una piatta in cima, teste chiare ad anelli, un moncone col muschio; la corteccia si allunga da codice fino alla lunghezza del tronco (6-11 m) |
 | Urti | Fa male solo un veicolo che ti viene addosso: chi viaggia insieme a un veicolo, sopra o accanto, non si fa male, e nemmeno chi sbatte contro un veicolo fermo. I rottami che galleggiano sono zattere e non fanno mai male |
 | Caos | Deve essere emergente: nasce da regole semplici che si incrociano, non da eventi scritti a mano |
 

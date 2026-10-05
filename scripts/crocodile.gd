@@ -4,6 +4,7 @@ extends Floater
 ## intervalli e morde la rana che ci si trova davanti.
 
 const HEAD_LENGTH := 1.6
+const MODEL := preload("res://assets/models/crocodile.glb")
 
 var bite_damage := 35
 var open_duration := 1.2
@@ -54,32 +55,13 @@ func _build() -> void:
 	collision.position.z = HEAD_LENGTH / 2.0
 	add_child(collision)
 
-	var back := MeshInstance3D.new()
-	back.mesh = _box_mesh(Vector3(size.x, size.y, body_length), "croc")
-	back.position.z = HEAD_LENGTH / 2.0
-	add_child(back)
+	# Il modello (build_crocodile): la mascella superiore è il nodo Jaw.
+	var model: Node3D = MODEL.instantiate()
+	add_child(model)
+	Style.apply_palette(model)
+	_jaw = model.get_node("Jaw")
 
 	var head_z := -size.z / 2.0 + HEAD_LENGTH / 2.0
-	var lower_jaw := MeshInstance3D.new()
-	lower_jaw.mesh = _box_mesh(Vector3(size.x * 0.7, size.y * 0.35, HEAD_LENGTH), "croc_dark")
-	lower_jaw.position = Vector3(0.0, -size.y * 0.1, head_z)
-	add_child(lower_jaw)
-
-	# La mascella superiore ruota attorno al suo attacco posteriore.
-	_jaw = Node3D.new()
-	_jaw.position = Vector3(0.0, size.y * 0.1, head_z + HEAD_LENGTH / 2.0)
-	add_child(_jaw)
-	var upper_jaw := MeshInstance3D.new()
-	upper_jaw.mesh = _box_mesh(Vector3(size.x * 0.7, size.y * 0.35, HEAD_LENGTH), "croc")
-	upper_jaw.position.z = -HEAD_LENGTH / 2.0
-	_jaw.add_child(upper_jaw)
-
-	for side in [-1.0, 1.0]:
-		var eye := MeshInstance3D.new()
-		eye.mesh = _box_mesh(Vector3(0.2, 0.2, 0.2), "croc_eye")
-		eye.position = Vector3(side * size.x * 0.3, size.y * 0.55, -size.z / 2.0 + HEAD_LENGTH + 0.2)
-		add_child(eye)
-
 	var mouth_shape := BoxShape3D.new()
 	mouth_shape.size = Vector3(size.x + 0.4, 2.0, HEAD_LENGTH + 0.8)
 	var mouth_collision := CollisionShape3D.new()

@@ -10,7 +10,10 @@ var sink_delay := 1.0
 ## Secondi per andare del tutto sott'acqua.
 var sink_time := 2.0
 
-var _bark: MeshInstance3D
+const MODEL := preload("res://assets/models/log.glb")
+
+## Il modello del tronco: trema tutto insieme quando sta per affondare.
+var _bark: Node3D
 var _bubbles: CPUParticles3D
 ## Secondi passati con la rana sopra.
 var _weighted := 0.0
@@ -20,16 +23,15 @@ var _sunk := 0.0
 
 func _build() -> void:
 	super()
-	_bark = MeshInstance3D.new()
-	var mesh := CylinderMesh.new()
-	mesh.top_radius = size.x / 2.0
-	mesh.bottom_radius = size.x / 2.0
-	mesh.height = size.z
-	mesh.material = Style.material("log")
-	_bark.mesh = mesh
-	# Il cilindro nasce verticale: lo si corica lungo Z.
-	_bark.rotation.x = PI / 2.0
+	# Il modello è lungo 1 m: la corteccia si allunga, teste e moncone vanno
+	# al loro posto.
+	_bark = MODEL.instantiate()
 	add_child(_bark)
+	Style.apply_palette(_bark)
+	(_bark.get_node("Bark") as Node3D).scale.z = size.z
+	for end: Node3D in [_bark.get_node("EndA"), _bark.get_node("EndB")]:
+		end.position.z = signf(end.position.z) * size.z / 2.0
+	(_bark.get_node("Stub") as Node3D).position.z = -size.z * 0.2
 
 
 func _physics_process(delta: float) -> void:

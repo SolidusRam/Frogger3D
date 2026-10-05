@@ -1,9 +1,9 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
 ## Un'inquadratura di tre quarti su un bioma, con la rana in primo piano.
-## SCENE: strada | fumo | fiume | tana | tana_lontano | laghetto | ferrovia | aeroporto | porto.
+## SCENE: strada | fumo | bestiario (coccodrillo e tronco da vicino) | fiume | tana | tana_lontano | laghetto | ferrovia | aeroporto | porto.
 ## HEAT, SHOT.
-const BIOMES := {"strada": 2, "fiume": 3, "ferrovia": 4, "tana": 5, "tana_lontano": 5, "laghetto": 5, "fumo": 2, "aeroporto": 6, "porto": 7}
+const BIOMES := {"strada": 2, "fiume": 3, "ferrovia": 4, "tana": 5, "tana_lontano": 5, "laghetto": 5, "fumo": 2, "bestiario": 1, "aeroporto": 6, "porto": 7}
 var frame := 0
 var main: Node
 var scene := OS.get_environment("SCENE")
@@ -39,7 +39,23 @@ func _process(_d: float) -> bool:
 		cam.fov = 60
 		cam.make_current()
 		var at: Vector3 = frog.global_position + Vector3(0, 0.5, -6)
-		if scene == "laghetto":
+		if scene == "bestiario":
+			var croc: Node3D = load("res://scripts/crocodile.gd").new()
+			croc.size = Vector3(1.4, 0.8, 6.0)
+			# Prima di entrare in scena: si sincronizzano con la fisica.
+			croc.position = frog.global_position + Vector3(-1.5, 0.4, -5.0)
+			croc.rotation.y = PI - 0.9
+			main.add_child(croc)
+			croc.set_physics_process(false)
+			croc._set_mouth_open(true)
+			var log: Node3D = load("res://scripts/river_log.gd").new()
+			log.size = Vector3(1.6, 1.0, 8.0)
+			log.position = frog.global_position + Vector3(3.5, 0.5, -6.0)
+			log.rotation.y = 0.3
+			main.add_child(log)
+			log.set_physics_process(false)
+			cam.look_at_from_position(frog.global_position + Vector3(-4.5, 3.0, 3.5), frog.global_position + Vector3(0.5, 0.3, -5.5))
+		elif scene == "laghetto":
 			# Il laghetto di destra, dall'alto e di lato.
 			var pond: Vector3 = frog.global_position + Vector3(21.0, 0.0, -9.0)
 			cam.look_at_from_position(pond + Vector3(-7.0, 6.0, 7.0), pond)
