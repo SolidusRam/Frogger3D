@@ -1,6 +1,7 @@
 class_name CameraRig
 extends Node3D
-## Telecamera in terza persona: segue il nodo padre, ruota col mouse.
+## Telecamera in terza persona: segue il nodo padre, ruota col mouse o con la
+## levetta destra del controller.
 ## Il nodo è top_level e si muove in _process sulla posizione interpolata del
 ## padre, così non scatta tra un passo di fisica e l'altro.
 
@@ -10,6 +11,10 @@ extends Node3D
 ## Altezza del punto guardato sopra i piedi della rana.
 @export var target_height := 1.2
 @export var follow_speed := 15.0
+## Con la levetta tutta piegata: radianti al secondo, in orizzontale e in
+## verticale.
+@export var stick_yaw_speed := 3.2
+@export var stick_pitch_speed := 2.0
 
 @export_group("Menu")
 ## Nel menu la telecamera gira piano attorno alla rana, un po' più larga e
@@ -42,6 +47,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if _orbiting:
 		rotation.y += orbit_speed * delta
+	elif is_processing_unhandled_input() and not _target_is_dead():
+		_look_with_stick(delta)
 	var weight := 1.0 - exp(-follow_speed * delta)
 	global_position = global_position.lerp(_target_point(), weight)
 	# La scossa usa il tempo reale: deve vedersi anche nel fermo-immagine.
@@ -67,6 +74,25 @@ func _unhandled_input(event: InputEvent) -> void:
 			deg_to_rad(min_pitch_degrees),
 			deg_to_rad(max_pitch_degrees)
 		)
+
+
+## La levetta destra: la curva al quadrato dà precisione con la levetta
+## appena piegata e velocità a fondo corsa. Il tempo è quello vero: il
+## rallentatore non rallenta lo sguardo.
+func _look_with_stick(delta: float) -> void:
+	var stick := Input.get_vector("look_left", "look_right", "look_up", "look_down")
+	if stick == Vector2.ZERO:
+		return
+	stick *= stick.length()
+	var real_delta := delta / maxf(Engine.time_scale, 0.001)
+	var sensitivity := Settings.stick_sensitivity * real_delta
+	var vertical := -1.0 if Settings.invert_y else 1.0
+	rotation.y -= stick.x * stick_yaw_speed * sensitivity
+	pitch.rotation.x = clampf(
+		pitch.rotation.x - stick.y * stick_pitch_speed * sensitivity * vertical,
+		deg_to_rad(min_pitch_degrees),
+		deg_to_rad(max_pitch_degrees)
+	)
 
 
 ## Il menu sopra il gioco: la telecamera gira attorno alla rana e non
@@ -95,8 +121,10 @@ func end_orbit(duration: float) -> void:
 
 
 ## Scossa: sposta la telecamera a caso per un attimo, in tempo reale. Le
-## opzioni la attenuano o la tolgono.
+## opzioni la attenuano o la tolgono. Col controller vibra anche quello (la
+## vibrazione ha la sua opzione).
 func shake(strength: float, duration: float) -> void:
+	Settings.rumble(strength * 1.5, strength * 2.5, duration)
 	_shake_strength = strength * Settings.shake
 	_shake_left = duration
 	_shake_duration = duration

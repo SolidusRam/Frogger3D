@@ -8,7 +8,8 @@ extends PanelContainer
 ## iniziale e la fine della run.
 ## Le statistiche sono tessere raggruppate per attrezzo, col suo colore e la
 ## sua icona; ogni carta della maestria è una scheda col colore del suo slot e
-## la barra di avanzamento delle prove. Esc chiude.
+## la barra di avanzamento delle prove. Esc (o B) chiude; col controller LB e
+## RB cambiano scheda.
 
 signal closed
 
@@ -28,6 +29,8 @@ var _golden_label: Label
 var _stats_box: GridContainer
 var _cards_box: GridContainer
 var _refund_button: Button
+var _tabs: TabContainer
+var _esc_label: Label
 ## Il rimborso chiede conferma: il primo clic lo prepara, il secondo (entro
 ## qualche secondo) lo fa.
 var _refund_armed := false
@@ -57,11 +60,11 @@ func _ready() -> void:
 	header.add_child(_golden_label)
 	box.add_child(_label("Le mosche comprano statistiche; le mosche d'oro attivano i miglioramenti delle carte, una volta superata la loro prova.", "Note"))
 
-	var tabs := TabContainer.new()
-	tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	box.add_child(tabs)
-	_stats_box = _page(tabs, "Statistiche")
-	_cards_box = _page(tabs, "Maestria delle carte")
+	_tabs = TabContainer.new()
+	_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	box.add_child(_tabs)
+	_stats_box = _page(_tabs, "Statistiche")
+	_cards_box = _page(_tabs, "Maestria delle carte")
 
 	var footer := HBoxContainer.new()
 	footer.add_theme_constant_override("separation", 16)
@@ -71,22 +74,70 @@ func _ready() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	footer.add_child(spacer)
-	var esc := _label("Esc", "Note")
-	esc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	footer.add_child(esc)
+	_esc_label = _label("", "Note")
+	_esc_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	footer.add_child(_esc_label)
 	footer.add_child(_button("Chiudi", _close))
+	Settings.changed.connect(_update_esc)
+	_update_esc()
+	# Aperto, la selezione parte dalle schede: col controller ci si muove.
+	visibility_changed.connect(func() -> void:
+		if visible:
+			_tabs.get_tab_bar().grab_focus())
 	refresh()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if visible and event.is_action_pressed("ui_cancel"):
+	if not visible:
+		return
+	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
 		_close()
+	elif event is InputEventJoypadButton and event.pressed and event.button_index in [JOY_BUTTON_LEFT_SHOULDER, JOY_BUTTON_RIGHT_SHOULDER]:
+		get_viewport().set_input_as_handled()
+		_tabs.current_tab = 1 - _tabs.current_tab
+		_tabs.get_tab_bar().grab_focus()
+
+
+## Dove sta il pulsante selezionato: [tessera, indice fra i suoi pulsanti].
+func _focused_place() -> Array:
+	var focused := get_viewport().gui_get_focus_owner() if is_inside_tree() else null
+	if focused == null:
+		return []
+	for grid in [_stats_box, _cards_box]:
+		for tile in grid.get_children():
+			if tile.is_ancestor_of(focused):
+				return [tile.name, tile.find_children("*", "Button", true, false).find(focused)]
+	return []
+
+
+## Seleziona il pulsante nello stesso posto (o il primo della tessera, se
+## quello non c'è più: un miglioramento appena attivato perde il pulsante).
+func _restore_focus(place: Array) -> void:
+	if place.is_empty():
+		return
+	for grid in [_stats_box, _cards_box]:
+		var tile: Node = grid.get_node_or_null(NodePath(place[0]))
+		if tile == null:
+			continue
+		var buttons: Array[Node] = tile.find_children("*", "Button", true, false)
+		if not buttons.is_empty():
+			(buttons[clampi(place[1], 0, buttons.size() - 1)] as Button).grab_focus()
+		else:
+			_tabs.get_tab_bar().grab_focus()
+		return
+
+
+func _update_esc() -> void:
+	_esc_label.text = Settings.ui_name("ui_cancel")
 
 
 func refresh() -> void:
 	_flies_label.text = str(Progress.flies)
 	_golden_label.text = str(Progress.golden)
+	# Il pulsante selezionato (comprando col controller) sparisce con la sua
+	# tessera: si ricorda quale era, per selezionare quello nuovo.
+	var focus := _focused_place()
 	# Le tessere vecchie escono subito, ma si cancellano a fine fotogramma: il
 	# pulsante appena premuto sta ancora mandando il suo segnale.
 	for grid in [_stats_box, _cards_box]:
@@ -97,6 +148,7 @@ func refresh() -> void:
 		_stats_box.add_child(_stat_tile(stat))
 	for card: String in Progress.CARD_UPGRADES:
 		_cards_box.add_child(_card_tile(card))
+	_restore_focus(focus)
 	_refund_armed = false
 	_update_refund_button()
 
@@ -270,6 +322,8 @@ func _page(tabs: TabContainer, title: String) -> GridContainer:
 	var scroll := ScrollContainer.new()
 	scroll.name = title
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	# Spostandosi coi tasti o col controller, la tessera scelta resta in vista.
+	scroll.follow_focus = true
 	tabs.add_child(scroll)
 	var margin := MarginContainer.new()
 	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL

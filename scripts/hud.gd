@@ -69,6 +69,7 @@ var _options: OptionsPanel
 ## Radice di tutti i controlli: porta il tema.
 var _root: Control
 var _resume_button: Button
+var _restart_button: Button
 var _last_heat_level := 0
 
 
@@ -96,6 +97,8 @@ func _ready() -> void:
 	_on_heat_changed(Heat.value, Heat.level())
 	course.den_reached.connect(_on_den_reached)
 	Style.style_changed.connect(_on_style_changed)
+	Settings.changed.connect(_update_prompts)
+	_update_prompts()
 	_last_heat_level = Heat.level()
 
 
@@ -153,6 +156,8 @@ func show_game_over(stats: Dictionary) -> void:
 		_game_over_flies.text = "+%d mosche, +%d d'oro   (in tutto %d e %d)" % [
 			stats.flies, stats.golden, stats.total_flies, stats.total_golden]
 	_game_over.visible = true
+	# Selezionato, così col controller ci si sposta su Stagno e Menu.
+	_restart_button.grab_focus()
 
 
 ## Tutte le scritte della schermata di fine, per i test.
@@ -309,12 +314,27 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			pause()
 		return
+	# In pausa anche B (indietro) riprende. B è anche lo schianto: la
+	# pressione che riprende non deve far piombare giù la rana.
+	if _pause.visible and not _options.visible and event.is_action_pressed("ui_cancel"):
+		get_viewport().set_input_as_handled()
+		for action: String in Settings.ACTIONS:
+			if event.is_action(action):
+				Input.action_release(action)
+		resume()
+		return
 	if not _offer.visible or not event is InputEventKey or not event.pressed:
 		return
 	var index: int = [KEY_1, KEY_2, KEY_3, KEY_4].find(event.physical_keycode)
 	if index >= 0 and _offer_buttons[index].visible:
 		get_viewport().set_input_as_handled()
 		_upgrades.choose(index)
+
+
+## I comandi scritti sui pulsanti seguono il dispositivo usato per ultimo.
+func _update_prompts() -> void:
+	_resume_button.text = "Riprendi (%s)" % Settings.ui_name("pause")
+	_restart_button.text = "Ricomincia (%s)" % Settings.ui_name("ui_accept")
 
 
 ## La pausa: il gioco si ferma, il mouse si libera.
@@ -605,7 +625,8 @@ func _build_game_over() -> void:
 	var gap := Control.new()
 	gap.custom_minimum_size.y = 6
 	box.add_child(gap)
-	box.add_child(_button("Ricomincia (Invio)", restart_requested.emit, "PrimaryButton"))
+	_restart_button = _button("", restart_requested.emit, "PrimaryButton")
+	box.add_child(_restart_button)
 	box.add_child(_button("Lo stagno", _open_pond))
 	box.add_child(_button("Menu", menu_requested.emit, "FlatButton"))
 	_pond = Pond.new()
@@ -629,7 +650,7 @@ func _build_pause() -> void:
 	box.add_theme_constant_override("separation", 12)
 	panel.add_child(box)
 	box.add_child(_text("Title", "Pausa"))
-	_resume_button = _button("Riprendi (Esc)", resume, "PrimaryButton")
+	_resume_button = _button("", resume, "PrimaryButton")
 	box.add_child(_resume_button)
 	box.add_child(_button("Opzioni", _open_options))
 	box.add_child(_button("Abbandona la run", abandon_requested.emit))

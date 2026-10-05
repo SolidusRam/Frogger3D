@@ -3,18 +3,25 @@ extends PanelContainer
 ## Le opzioni, a tutto schermo come lo stagno: tre schede (audio, grafica,
 ## controlli). Ogni modifica si applica subito; i cursori salvano quando si
 ## chiude. I tasti si riassegnano cliccando e premendo il tasto nuovo (o un
-## pulsante del mouse); Esc annulla. Lo usano il menu iniziale e la pausa.
+## pulsante del mouse, o un pulsante del controller nella sua colonna); Esc
+## o Start annullano. Col controller LB e RB cambiano scheda. Lo usano il
+## menu iniziale e la pausa.
 
 signal closed
 
 ## Larghezza della colonna dei comandi, a destra di ogni riga.
 const CONTROL_WIDTH := 420
+const KEY_WIDTH := 204
 
 ## Chi rimette ogni comando al valore delle opzioni (dopo un ripristino).
 var _updaters: Array[Callable] = []
+## I pulsanti dei comandi: per azione, [tastiera e mouse, controller].
 var _key_buttons := {}
-## L'azione che aspetta il tasto nuovo ("" se nessuna).
+## L'azione che aspetta il comando nuovo ("" se nessuna), e da quale
+## dispositivo.
 var _waiting := ""
+var _waiting_pad := false
+var _esc_label: Label
 var _reset_button: Button
 var _reset_armed := false
 var _tabs: TabContainer
@@ -44,11 +51,13 @@ func _ready() -> void:
 	var spacer := Control.new()
 	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	footer.add_child(spacer)
-	var esc := _label("Esc", "Note")
-	esc.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	footer.add_child(esc)
+	_esc_label = _label("", "Note")
+	_esc_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	footer.add_child(_esc_label)
 	footer.add_child(_button("Chiudi", _close))
 	Style.style_changed.connect(refresh.unbind(1))
+	# Anche quando si passa dalla tastiera al controller: cambiano i nomi.
+	Settings.changed.connect(_refresh_names)
 	refresh()
 
 
@@ -57,21 +66,33 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if _waiting == "" or not visible:
 		return
-	if event is InputEventKey and event.pressed and event.physical_keycode == KEY_ESCAPE:
+	var cancel: bool = (event is InputEventKey and event.pressed and event.physical_keycode == KEY_ESCAPE) \
+		or (event is InputEventJoypadButton and event.pressed and event.button_index == JOY_BUTTON_START)
+	if cancel:
 		get_viewport().set_input_as_handled()
 		_stop_waiting()
 		Sfx.play(&"ui_back")
-	elif Settings.can_bind(event):
+	elif (Settings.can_bind_pad(event) if _waiting_pad else Settings.can_bind(event)):
 		get_viewport().set_input_as_handled()
 		Settings.rebind(_waiting, event)
 		_stop_waiting()
 		Sfx.play(&"ui_click")
+	elif _waiting_pad and (event is InputEventJoypadButton or event is InputEventJoypadMotion):
+		# La croce e le levette, mentre si aspetta, non spostano la selezione.
+		get_viewport().set_input_as_handled()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if visible and event.is_action_pressed("ui_cancel"):
+	if not visible:
+		return
+	if event.is_action_pressed("ui_cancel"):
 		get_viewport().set_input_as_handled()
 		_close()
+	elif event is InputEventJoypadButton and event.pressed and event.button_index in [JOY_BUTTON_LEFT_SHOULDER, JOY_BUTTON_RIGHT_SHOULDER]:
+		get_viewport().set_input_as_handled()
+		var step := -1 if event.button_index == JOY_BUTTON_LEFT_SHOULDER else 1
+		_tabs.current_tab = wrapi(_tabs.current_tab + step, 0, _tabs.get_tab_count())
+		_tabs.get_tab_bar().grab_focus()
 
 
 func open() -> void:
@@ -82,10 +103,15 @@ func open() -> void:
 
 ## Rimette ogni comando al valore attuale delle opzioni.
 func refresh() -> void:
-	for updater in _updaters:
-		updater.call()
+	_refresh_names()
 	_reset_armed = false
 	_update_reset_button()
+
+
+func _refresh_names() -> void:
+	for updater in _updaters:
+		updater.call()
+	_esc_label.text = Settings.ui_name("ui_cancel")
 
 
 # --- Le schede -----------------------------------------------------------------
@@ -115,22 +141,43 @@ func _build_graphics(page: VBoxContainer) -> void:
 
 func _build_controls(page: VBoxContainer) -> void:
 	_slider(page, "Sensibilità del mouse", "mouse_sensitivity", 0.25, 3.0, 0.05, _percent)
+	_slider(page, "Sensibilità della levetta", "stick_sensitivity", 0.25, 3.0, 0.05, _percent)
 	_toggle(page, "Inverti l'asse verticale", "invert_y")
+	_toggle(page, "Vibrazione del controller", "vibration")
 	var gap := Control.new()
 	gap.custom_minimum_size.y = 8
 	page.add_child(gap)
-	page.add_child(_label("Tasti", "Header"))
-	page.add_child(_note("Clicca un comando e premi il tasto o il pulsante del mouse nuovo; Esc annulla. Se il tasto era già di un'altra azione, le due si scambiano."))
+	var head := HBoxContainer.new()
+	head.add_theme_constant_override("separation", 12)
+	page.add_child(head)
+	var title := _label("Comandi", "Header")
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(title)
+	for column in ["Tastiera e mouse", "Controller"]:
+		var name_label := _label(column, "Note")
+		name_label.custom_minimum_size.x = KEY_WIDTH
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.size_flags_vertical = Control.SIZE_SHRINK_END
+		head.add_child(name_label)
+	page.add_child(_note("Scegli un comando e premi il tasto nuovo (nella colonna del controller, un pulsante o un grilletto); Esc o Start annullano. Se era già di un'altra azione, le due si scambiano."))
 	for action: String in Settings.ACTIONS:
-		var button := _button("", _start_waiting.bind(action))
-		button.custom_minimum_size.x = CONTROL_WIDTH
-		_key_buttons[action] = button
-		_row(page, Settings.ACTIONS[action], button)
+		var pair := HBoxContainer.new()
+		pair.add_theme_constant_override("separation", 12)
+		var keys := _button("", _start_waiting.bind(action, false))
+		keys.custom_minimum_size.x = KEY_WIDTH
+		pair.add_child(keys)
+		var pad := _button("", _start_waiting.bind(action, true))
+		pad.custom_minimum_size.x = KEY_WIDTH
+		# Sul controller ci si muove con la levetta (o la croce): fisso.
+		pad.disabled = action in Settings.MOVES
+		pair.add_child(pad)
+		_key_buttons[action] = [keys, pad]
+		_row(page, Settings.ACTIONS[action], pair)
 		_updaters.append(_update_key.bind(action))
-	var keys_reset := _button("Rimetti i tasti predefiniti", _reset_keys, "FlatButton")
+	var keys_reset := _button("Rimetti i comandi predefiniti", _reset_keys, "FlatButton")
 	keys_reset.size_flags_horizontal = Control.SIZE_SHRINK_END
 	page.add_child(keys_reset)
-	page.add_child(_note("Fissi: Esc (pausa), 1-4 (carte della tana), F1 (modalità prova), F2 (stile grafico)."))
+	page.add_child(_note("Fissi: Esc (pausa), 1-4 (carte della tana), F1 (modalità prova), F2 (stile grafico). Sul controller: la levetta destra guarda intorno, Start è la pausa, A conferma e B torna indietro nei menu, LB e RB cambiano scheda."))
 
 
 # --- I comandi -----------------------------------------------------------------
@@ -200,11 +247,12 @@ func _row(page: VBoxContainer, title: String, control: Control) -> void:
 
 # --- I tasti -------------------------------------------------------------------
 
-func _start_waiting(action: String) -> void:
+func _start_waiting(action: String, pad: bool) -> void:
 	_stop_waiting()
 	_waiting = action
-	var button: Button = _key_buttons[action]
-	button.text = "Premi un tasto…"
+	_waiting_pad = pad
+	var button: Button = _key_buttons[action][1 if pad else 0]
+	button.text = "Premi un pulsante…" if pad else "Premi un tasto…"
 	button.add_theme_color_override("font_color", UiTheme.GOLD)
 	button.add_theme_color_override("font_focus_color", UiTheme.GOLD)
 
@@ -213,15 +261,16 @@ func _stop_waiting() -> void:
 	var action := _waiting
 	_waiting = ""
 	if action != "":
-		var button: Button = _key_buttons[action]
-		button.remove_theme_color_override("font_color")
-		button.remove_theme_color_override("font_focus_color")
+		for button: Button in _key_buttons[action]:
+			button.remove_theme_color_override("font_color")
+			button.remove_theme_color_override("font_focus_color")
 	refresh()
 
 
 func _update_key(action: String) -> void:
-	if action != _waiting:
-		(_key_buttons[action] as Button).text = Settings.key_name(action)
+	for pad in [false, true]:
+		if action != _waiting or pad != _waiting_pad:
+			(_key_buttons[action][1 if pad else 0] as Button).text = Settings.key_name(action, pad)
 
 
 func _reset_keys() -> void:
@@ -268,6 +317,8 @@ func _page(title: String) -> VBoxContainer:
 	var scroll := ScrollContainer.new()
 	scroll.name = title
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	# Spostandosi coi tasti o col controller, la riga scelta resta in vista.
+	scroll.follow_focus = true
 	_tabs.add_child(scroll)
 	var margin := MarginContainer.new()
 	margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL

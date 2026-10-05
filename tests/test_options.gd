@@ -66,7 +66,8 @@ func _physics_process(_delta: float) -> bool:
 			# Il pugno su J: si scambiano, il salto prende il clic.
 			settings.rebind("punch", _key(KEY_J))
 			t.check(settings.key_name("punch") == "J" and settings.key_name("jump") == "Clic", "pugno su J: il salto prende il clic (%s)" % settings.key_name("jump"))
-			t.check(InputMap.action_get_events("punch").size() == 1, "il pugno ha un solo comando")
+			var keys := InputMap.action_get_events("punch").filter(func(e): return e is InputEventKey or e is InputEventMouseButton)
+			t.check(keys.size() == 1, "il pugno ha un solo comando da tastiera e mouse")
 			Input.parse_input_event(_key(KEY_J))
 		72:
 			t.check(Input.is_action_pressed("punch") and not Input.is_action_pressed("jump"), "premere J è il pugno")
@@ -105,13 +106,13 @@ func _physics_process(_delta: float) -> bool:
 			toggle.pressed.emit()
 			t.check(not settings.flashes and toggle.text == "No", "il pulsante toglie il lampo")
 			# Riassegnare la lingua dal pannello: clic sul comando, poi K.
-			panel._key_buttons.tongue.pressed.emit()
+			panel._key_buttons.tongue[0].pressed.emit()
 			Input.parse_input_event(_key(KEY_K))
 		77:
 			var panel: Node = hud._options
-			t.check(settings.key_name("tongue") == "K" and panel._key_buttons.tongue.text == "K", "dal pannello la lingua passa a K")
+			t.check(settings.key_name("tongue") == "K" and panel._key_buttons.tongue[0].text == "K", "dal pannello la lingua passa a K")
 			# Esc mentre aspetta: annulla e non chiude.
-			panel._key_buttons.slam.pressed.emit()
+			panel._key_buttons.slam[0].pressed.emit()
 			Input.parse_input_event(_key(KEY_ESCAPE))
 		79:
 			var panel: Node = hud._options
