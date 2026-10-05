@@ -75,6 +75,11 @@ var asleep := false
 
 @onready var health := max_health
 @onready var visual: Node3D = $Visual
+## Il modello di Blender, a pezzi (vedi build_frog in build_models.py).
+@onready var model: Node3D = $Visual/Model
+@onready var _torso: Node3D = $Visual/Model/Torso
+@onready var _arms: Array[Node3D] = [$Visual/Model/Torso/ArmL, $Visual/Model/Torso/ArmR]
+@onready var _gloves: Array[Node3D] = [$Visual/Model/GloveL, $Visual/Model/GloveR]
 @onready var glider: Node3D = $Visual/Glider
 @onready var camera_rig: CameraRig = $CameraRig
 @onready var punch_power: PunchPower = $Powers/Punch
@@ -98,6 +103,11 @@ var _squash_tween: Tween
 var _wind_push := Vector3.ZERO
 var _wind_lift := 0.0
 var _burn_owed := 0.0
+## Colori della tavolozza cambiati sul modello, per nome del materiale: i
+## poteri e le carte ci mettono i loro ("glove" -> "glove_hot"...).
+var _palette := {}
+## Lunghezza a riposo delle braccia, dalla spalla al guantone.
+var _arm_lengths: Array[float] = []
 ## Modalità prova: niente toglie vita.
 var invincible := false
 ## Molle-trampolino (power-up): sui tetti delle auto si rimbalza da soli.
@@ -136,9 +146,17 @@ func _ready() -> void:
 	add_to_group("frog")
 	_spawn_position = global_position
 	compute_jump()
+	for i in _arms.size():
+		_arm_lengths.append(_arms[i].position.distance_to(_torso.transform.affine_inverse() * _gloves[i].position))
+		# Le braccia si puntano a ogni fotogramma, non a ogni passo di fisica.
+		_arms[i].physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	for power in $Powers.get_children():
 		power.setup(self)
 	_apply_palette()
+
+
+func _process(_delta: float) -> void:
+	_aim_arms()
 
 
 func _physics_process(delta: float) -> void:
@@ -296,7 +314,17 @@ func compute_jump() -> void:
 ## verde acqua.
 func set_waterproof(on: bool) -> void:
 	waterproof = on
-	$Visual/Body.material_override = Style.material("frog_wet" if on else "frog")
+	set_palette("frog", "frog_wet" if on else "")
+
+
+## Cambia un colore del modello: le parti col materiale key prendono la voce
+## value della tavolozza ("" torna al colore normale).
+func set_palette(key: String, value: String) -> void:
+	if value == "":
+		_palette.erase(key)
+	else:
+		_palette[key] = value
+	_apply_palette()
 
 
 func time_since_floor() -> float:
@@ -569,12 +597,23 @@ func _apply_gravity_and_jump(delta: float) -> void:
 
 # --- Aspetto -----------------------------------------------------------------
 
-## Le parti fatte nella scena prendono i colori dalla tavolozza dello stile.
+## Il modello prende i colori dalla tavolozza dello stile, più quelli dei
+## poteri e delle carte.
 func _apply_palette() -> void:
-	$Visual/Body.material_override = Style.material("frog")
-	for eye: MeshInstance3D in [$Visual/EyeLeft, $Visual/EyeRight]:
-		eye.material_override = Style.material("eye")
-		(eye.get_child(0) as MeshInstance3D).material_override = Style.material("pupil")
+	Style.apply_palette(model, _palette)
+
+
+## Le braccia vanno dalla spalla al guantone: quando il pugno scatta si
+## allungano come elastici.
+func _aim_arms() -> void:
+	for i in _arms.size():
+		var arm := _arms[i]
+		var target := _torso.transform.affine_inverse() * _gloves[i].position
+		var reach := target - arm.position
+		if reach.length() < 0.01:
+			continue
+		var basis := Basis.looking_at(reach, Vector3.UP).scaled_local(Vector3(1.0, 1.0, reach.length() / _arm_lengths[i]))
+		arm.transform = Transform3D(basis, arm.position)
 
 
 func _update_visual(direction: Vector3, delta: float) -> void:

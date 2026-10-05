@@ -23,7 +23,7 @@ import sys
 
 import bmesh
 import bpy
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 OUT = os.path.dirname(os.path.abspath(__file__))
 
@@ -48,6 +48,8 @@ PREVIEW = {
     "cardboard": (0.7, 0.52, 0.32, 1), "tape": (0.85, 0.75, 0.55, 1),
     "ship_hull": (0.55, 0.12, 0.1, 1), "ship_deck": (0.3, 0.32, 0.3, 1),
     "ship_bridge": (0.92, 0.92, 0.9, 1), "ship_stripe": (0.1, 0.12, 0.2, 1),
+    "frog": (0.3, 0.75, 0.25, 1), "frog_belly": (0.85, 0.88, 0.55, 1), "frog_spot": (0.18, 0.48, 0.15, 1),
+    "eye": (0.95, 0.95, 0.95, 1), "pupil": (0.05, 0.05, 0.05, 1), "glove": (0.85, 0.1, 0.1, 1),
 }
 
 
@@ -251,6 +253,147 @@ def build_truck():
     join("Body", parts)
     wheels(0.48, 0.4, hx - 0.15, (3.0, -1.6, -3.0), -hz + 0.48)
     save("truck")
+
+
+# --- La rana ---------------------------------------------------------------
+
+def ico(name, radius, location, mat, scale=(1, 1, 1)):
+    """Una sfera sfaccettata (20 facce), nello stile dei blocchi."""
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=radius, location=location)
+    obj = bpy.context.active_object
+    obj.name = name
+    obj.scale = scale
+    obj.data.materials.append(material(mat))
+    return obj
+
+
+def part(name, objects, pivot, parent=None):
+    """Una parte mobile della rana: le forme unite in un oggetto con l'origine
+    nel perno (l'articolazione), figlia della parte a cui è attaccata."""
+    if len(objects) > 1:
+        obj = join(name, objects)
+    else:
+        obj = objects[0]
+        obj.name = name
+        bpy.ops.object.select_all(action="DESELECT")
+        obj.select_set(True)
+        bpy.context.view_layer.objects.active = obj
+        bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+    obj.data.transform(Matrix.Translation(-Vector(pivot)))
+    obj.location = pivot
+    if parent:
+        obj.parent = parent
+        obj.matrix_parent_inverse = parent.matrix_world.inverted()
+    return obj
+
+
+def slope_patch(name, x0, x1, y0, y1, surface, mat):
+    """Una macchia sottile appoggiata su una superficie inclinata
+    (surface(y) dà la quota della superficie)."""
+    return block(name,
+                 [(x0, y0, surface(y0) - 0.01), (x1, y0, surface(y0) - 0.01), (x1, y1, surface(y1) - 0.01), (x0, y1, surface(y1) - 0.01)],
+                 [(x0, y0, surface(y0) + 0.025), (x1, y0, surface(y0) + 0.025), (x1, y1, surface(y1) + 0.025), (x0, y1, surface(y1) + 0.025)],
+                 mat)
+
+
+def build_frog():
+    """La rana, a pezzi rigidi come i personaggi della PS1: ogni parte ha
+    l'origine nella sua articolazione e Godot la muove da codice.
+
+    Torso (perno sui fianchi)
+      Head (collo) > EyeL, EyeR (centro dell'occhio), Throat (sotto il mento)
+      LegL, LegR (anca) > FootL/R (caviglia), SpringL/R (in cima alla molla)
+      ArmL, ArmR (spalla): un braccio lungo ARM in avanti, che Godot punta
+        verso il guantone e allunga quando il pugno scatta
+    GloveL, GloveR (centro del guantone): li muove il pugno.
+
+    Ingombro come la scatola che sostituisce: circa 0,8 x 0,65 x 1 m, più i
+    guantoni ai lati. Davanti +Y, origine a terra."""
+    reset()
+    torso_top = lambda y: 0.44 + (y + 0.36) * 0.148
+    torso = [block("back",
+                   [(-0.34, -0.42, 0.14), (0.34, -0.42, 0.14), (0.3, 0.22, 0.16), (-0.3, 0.22, 0.16)],
+                   [(-0.27, -0.36, torso_top(-0.36)), (0.27, -0.36, torso_top(-0.36)), (0.24, 0.18, torso_top(0.18)), (-0.24, 0.18, torso_top(0.18))],
+                   "frog"),
+             block("belly",
+                   [(-0.24, -0.26, 0.12), (0.24, -0.26, 0.12), (0.22, 0.24, 0.15), (-0.22, 0.24, 0.15)],
+                   [(-0.29, -0.3, 0.3), (0.29, -0.3, 0.3), (0.27, 0.25, 0.36), (-0.27, 0.25, 0.36)],
+                   "frog_belly")]
+    for i, (x0, x1, y0, y1) in enumerate([(-0.18, -0.06, -0.28, -0.16), (0.05, 0.19, -0.2, -0.06), (-0.1, 0.02, -0.02, 0.1)]):
+        torso.append(slope_patch("spot_%d" % i, x0, x1, y0, y1, torso_top, "frog_spot"))
+    torso_obj = part("Torso", torso, (0, -0.3, 0.15))
+
+    # La testa: larga e piatta, il muso che scende in avanti, la bocca come
+    # una riga scura; gli occhi sporgono sopra, su due rilievi.
+    head = [block("skull",
+                  [(-0.33, 0.06, 0.3), (0.33, 0.06, 0.3), (0.29, 0.58, 0.3), (-0.29, 0.58, 0.3)],
+                  [(-0.27, 0.08, 0.6), (0.27, 0.08, 0.6), (0.19, 0.5, 0.52), (-0.19, 0.5, 0.52)],
+                  "frog"),
+            # La bocca: una riga sul muso che piega in su agli angoli.
+            box("mouth", -0.2, 0.2, 0.53, 0.572, 0.36, 0.38, "pupil")]
+    for side in (1, -1):
+        head.append(block("mouth_corner_%d" % side,
+                          [(side * 0.2, 0.5, 0.36), (side * 0.29, 0.44, 0.38), (side * 0.29, 0.49, 0.38), (side * 0.2, 0.57, 0.36)],
+                          [(side * 0.2, 0.5, 0.38), (side * 0.29, 0.44, 0.405), (side * 0.29, 0.49, 0.405), (side * 0.2, 0.57, 0.38)],
+                          "pupil"))
+    for side in (1, -1):
+        head.append(block("socket_%d" % side,
+                          [(side * 0.06, 0.2, 0.5), (side * 0.3, 0.2, 0.5), (side * 0.3, 0.44, 0.5), (side * 0.06, 0.44, 0.5)],
+                          [(side * 0.09, 0.23, 0.63), (side * 0.27, 0.23, 0.63), (side * 0.27, 0.41, 0.63), (side * 0.09, 0.41, 0.63)],
+                          "frog"))
+        head.append(box("nostril_%d" % side, side * 0.06 - 0.025, side * 0.06 + 0.025, 0.49, 0.53, 0.505, 0.53, "pupil"))
+    head_obj = part("Head", head, (0, 0.15, 0.44), torso_obj)
+    for side, label in ((1, "R"), (-1, "L")):
+        center = (side * 0.18, 0.32, 0.66)
+        eye = [ico("ball", 0.13, center, "eye"),
+               box("pupil", center[0] - 0.05, center[0] + 0.05, center[1] + 0.09, center[1] + 0.135, center[2] - 0.035, center[2] + 0.055, "pupil")]
+        part("Eye" + label, eye, center, head_obj)
+    part("Throat", [block("throat",
+                          [(-0.2, 0.16, 0.22), (0.2, 0.16, 0.22), (0.17, 0.5, 0.26), (-0.17, 0.5, 0.26)],
+                          [(-0.25, 0.12, 0.33), (0.25, 0.12, 0.33), (0.24, 0.53, 0.33), (-0.24, 0.53, 0.33)],
+                          "frog_belly")], (0, 0.33, 0.33), head_obj)
+
+    # Le zampe dietro: la coscia ripiegata lungo il fianco, il piede palmato
+    # che punta in avanti e in fuori, la molla sotto il tallone.
+    for side, label in ((1, "R"), (-1, "L")):
+        sx = lambda x: side * x
+        def quad(points, z):
+            return [(sx(x), y, z) for x, y in points]
+        leg = part("Leg" + label, [block("haunch",
+                                         quad([(0.22, -0.5), (0.47, -0.5), (0.5, 0.06), (0.26, 0.06)], 0.05),
+                                         quad([(0.24, -0.43), (0.41, -0.43), (0.44, -0.04), (0.28, -0.04)], 0.32),
+                                         "frog")], (sx(0.29), -0.3, 0.2), torso_obj)
+        part("Foot" + label, [block("foot",
+                                    quad([(0.32, -0.04), (0.5, -0.04), (0.64, 0.32), (0.3, 0.32)], 0.0),
+                                    quad([(0.34, -0.02), (0.48, -0.02), (0.6, 0.3), (0.32, 0.3)], 0.06),
+                                    "frog")], (sx(0.41), 0.0, 0.04), leg)
+        coil = [cylinder("plate_top", 0.11, 0.03, (sx(0.33), -0.5, 0.15), "metal", sides=6, axis="Z"),
+                cylinder("plate_bottom", 0.11, 0.03, (sx(0.33), -0.5, 0.0), "metal", sides=6, axis="Z")]
+        for i, z in enumerate((0.05, 0.1)):
+            ring = cylinder("ring_%d" % i, 0.09, 0.025, (sx(0.33), -0.5, z), "metal", sides=6, axis="Z")
+            ring.rotation_euler = (0, 0, math.pi / 6 * (i + 1))
+            coil.append(ring)
+        part("Spring" + label, coil, (sx(0.33), -0.5, 0.16), leg)
+
+    # Le braccia e i guantoni da boxe, in guardia ai lati.
+    for side, label in ((1, "R"), (-1, "L")):
+        shoulder = Vector((side * 0.25, 0.12, 0.34))
+        glove = Vector((side * 0.55, 0.3, 0.38))
+        length = (glove - shoulder).length
+        verts = [(-0.07, 0, -0.07), (0.07, 0, -0.07), (0.07, 0, 0.07), (-0.07, 0, 0.07),
+                 (-0.055, length, -0.055), (0.055, length, -0.055), (0.055, length, 0.055), (-0.055, length, 0.055)]
+        faces = [(0, 1, 2, 3), (4, 5, 6, 7), (0, 1, 5, 4), (1, 2, 6, 5), (2, 3, 7, 6), (3, 0, 4, 7)]
+        arm = mesh_object("Arm" + label, verts, faces, "frog")
+        arm.location = shoulder
+        arm.rotation_mode = "QUATERNION"
+        arm.rotation_quaternion = (glove - shoulder).to_track_quat("Y", "Z")
+        arm.parent = torso_obj
+        arm.matrix_parent_inverse = torso_obj.matrix_world.inverted()
+        fist = [ico("fist", 0.25, glove, "glove", scale=(0.95, 1.12, 0.92)),
+                ico("thumb", 0.1, glove + Vector((-side * 0.17, 0.1, 0.1)), "glove"),
+                cylinder("cuff", 0.15, 0.12, glove + Vector((0, -0.24, 0)), "sign_white", sides=8, axis="Y")]
+        part("Glove" + label, fist, tuple(glove))
+    save("frog")
 
 
 # --- Deltaplano ------------------------------------------------------------
@@ -608,7 +751,7 @@ def build_mountain():
 
 BUILDERS = {
     "compact": build_compact, "sedan": build_sedan, "van": build_van, "truck": build_truck,
-    "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
+    "frog": build_frog, "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
     "mountain": build_mountain, "locomotive": build_locomotive, "boxcar": build_boxcar,
     "flatcar": build_flatcar, "signal": build_signal, "airplane": build_airplane,
     "crane": build_crane, "crane_trolley": build_crane_trolley, "ship": build_ship,

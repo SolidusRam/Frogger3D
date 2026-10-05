@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/frog.gd" id="frog_script"]
 [ext_resource type="Script" path="res://scripts/camera_rig.gd" id="camera_rig_script"]
@@ -7,33 +7,11 @@
 [ext_resource type="Script" path="res://scripts/powers/glider_power.gd" id="glider_script"]
 [ext_resource type="Script" path="res://scripts/powers/tongue_power.gd" id="tongue_script"]
 [ext_resource type="Script" path="res://scripts/powers/slam_power.gd" id="slam_script"]
+[ext_resource type="PackedScene" path="res://assets/models/frog.glb" id="frog_model"]
 
 [sub_resource type="CapsuleShape3D" id="body_shape"]
 radius = 0.4
 height = 1.0
-
-[sub_resource type="StandardMaterial3D" id="frog_material"]
-albedo_color = Color(0.3, 0.75, 0.25, 1)
-
-[sub_resource type="BoxMesh" id="body_mesh"]
-material = SubResource("frog_material")
-size = Vector3(0.8, 0.6, 1)
-
-[sub_resource type="StandardMaterial3D" id="eye_material"]
-albedo_color = Color(0.95, 0.95, 0.95, 1)
-
-[sub_resource type="SphereMesh" id="eye_mesh"]
-material = SubResource("eye_material")
-radius = 0.13
-height = 0.26
-
-[sub_resource type="StandardMaterial3D" id="pupil_material"]
-albedo_color = Color(0.05, 0.05, 0.05, 1)
-
-[sub_resource type="SphereMesh" id="pupil_mesh"]
-material = SubResource("pupil_material")
-radius = 0.06
-height = 0.12
 
 [node name="Frog" type="CharacterBody3D"]
 collision_layer = 2
@@ -47,25 +25,7 @@ shape = SubResource("body_shape")
 
 [node name="Visual" type="Node3D" parent="."]
 
-[node name="Body" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
-mesh = SubResource("body_mesh")
-
-[node name="EyeLeft" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.22, 0.65, -0.35)
-mesh = SubResource("eye_mesh")
-
-[node name="PupilLeft" type="MeshInstance3D" parent="Visual/EyeLeft"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.1)
-mesh = SubResource("pupil_mesh")
-
-[node name="EyeRight" type="MeshInstance3D" parent="Visual"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.22, 0.65, -0.35)
-mesh = SubResource("eye_mesh")
-
-[node name="PupilRight" type="MeshInstance3D" parent="Visual/EyeRight"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.1)
-mesh = SubResource("pupil_mesh")
+[node name="Model" parent="Visual" instance=ExtResource("frog_model")]
 
 [node name="Glider" type="Node3D" parent="Visual"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.35, 0)

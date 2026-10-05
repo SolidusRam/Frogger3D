@@ -22,23 +22,14 @@ var _springs: Array[Node3D] = []
 
 func setup(frog: Frog) -> void:
 	_frog = frog
-	for side in [-1.0, 1.0]:
-		var spring := MeshInstance3D.new()
-		var mesh := CylinderMesh.new()
-		mesh.top_radius = 0.1
-		mesh.bottom_radius = 0.1
-		mesh.height = 0.14
-		mesh.material = Style.material("metal")
-		spring.mesh = mesh
-		spring.position = Vector3(side * 0.25, 0.04, 0.32)
-		frog.visual.add_child(spring)
-		_springs.append(spring)
+	# Le molle sono nel modello della rana, sotto i talloni.
+	for side in ["L", "R"]:
+		_springs.append(frog.model.get_node("Torso/Leg%s/Spring%s" % [side, side]))
 
 
 ## Il colore delle molle dice cosa portano: "" per quelle normali.
 func set_spring_color(palette_key: String) -> void:
-	for spring: MeshInstance3D in _springs:
-		spring.material_override = Style.material(palette_key) if palette_key != "" else null
+	_frog.set_palette("metal", palette_key)
 
 
 func tick(delta: float) -> void:

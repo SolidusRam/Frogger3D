@@ -45,16 +45,9 @@ func setup(frog: Frog) -> void:
 	_frog = frog
 	_query.shape = SphereShape3D.new()
 	_query.collision_mask = 4 # veicoli
-	for side in [-1.0, 1.0]:
-		var glove := MeshInstance3D.new()
-		var mesh := SphereMesh.new()
-		mesh.radius = 0.28
-		mesh.height = 0.5
-		mesh.material = Style.material("glove")
-		glove.mesh = mesh
-		glove.position = Vector3(side * 0.55, 0.38, -0.3)
+	# I guantoni sono nel modello della rana.
+	for glove: Node3D in [frog.model.get_node("GloveL"), frog.model.get_node("GloveR")]:
 		glove.set_meta("rest", glove.position)
-		frog.visual.add_child(glove)
 		_gloves.append(glove)
 
 
@@ -159,8 +152,8 @@ func _refresh_gloves() -> void:
 		key = "glove_up"
 	elif long_reach:
 		key = "glove_long"
-	for glove: MeshInstance3D in _gloves:
-		glove.material_override = Style.material(key) if key != "" else null
+	_frog.set_palette("glove", key)
+	for glove in _gloves:
 		glove.scale = Vector3.ONE * (1.35 if long_reach else 1.0)
 
 
