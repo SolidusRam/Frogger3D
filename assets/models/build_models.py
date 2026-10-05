@@ -50,6 +50,8 @@ PREVIEW = {
     "ship_bridge": (0.92, 0.92, 0.9, 1), "ship_stripe": (0.1, 0.12, 0.2, 1),
     "frog": (0.3, 0.75, 0.25, 1), "frog_belly": (0.85, 0.88, 0.55, 1), "frog_spot": (0.18, 0.48, 0.15, 1),
     "eye": (0.95, 0.95, 0.95, 1), "pupil": (0.05, 0.05, 0.05, 1), "glove": (0.85, 0.1, 0.1, 1),
+    "water": (0.15, 0.4, 0.7, 1), "pad": (0.3, 0.7, 0.3, 1), "stone": (0.58, 0.55, 0.5, 1),
+    "reed": (0.42, 0.55, 0.22, 1), "cattail": (0.42, 0.25, 0.12, 1), "flower": (0.95, 0.55, 0.7, 1),
 }
 
 
@@ -394,6 +396,112 @@ def build_frog():
                 cylinder("cuff", 0.15, 0.12, glove + Vector((0, -0.24, 0)), "sign_white", sides=8, axis="Y")]
         part("Glove" + label, fist, tuple(glove))
     save("frog")
+
+
+# --- La tana ----------------------------------------------------------------
+
+def prism(name, points, z0, z1, mat):
+    """Un prisma: un poligono a terra (punti in senso antiorario, visto
+    dall'alto) alzato fra z0 e z1. Laghetti, ninfee, pietre piatte."""
+    n = len(points)
+    verts = [(x, y, z0) for x, y in points] + [(x, y, z1) for x, y in points]
+    faces = [tuple(reversed(range(n))), tuple(range(n, 2 * n))]
+    faces += [(i, (i + 1) % n, n + (i + 1) % n, n + i) for i in range(n)]
+    return mesh_object(name, verts, faces, mat)
+
+
+def wobbly_ring(cx, cy, rx, ry, sides, wobble, seed):
+    """I punti di un contorno irregolare, sempre uguale per lo stesso seed."""
+    points = []
+    for i in range(sides):
+        a = math.tau * i / sides
+        k = 1.0 + wobble * math.sin(seed * 12.9898 + i * 78.233) * 0.5
+        points.append((cx + math.cos(a) * rx * k, cy + math.sin(a) * ry * k))
+    return points
+
+
+def lily_pad(name, cx, cy, radius, turn):
+    """Una ninfea: un disco a sette lati col taglio a spicchio."""
+    notch = 0.35
+    points = [(cx, cy)]
+    for i in range(8):
+        a = turn + notch + (math.tau - 2 * notch) * i / 7
+        points.append((cx + math.cos(a) * radius, cy + math.sin(a) * radius))
+    return prism(name, points, 0.04, 0.08, "pad")
+
+
+def reed(name, x, y, height, lean, head=False):
+    """Una canna: un fusto rastremato e piegato; le tife hanno il pennacchio."""
+    top = (x + lean[0], y + lean[1], height)
+    parts = [block(name,
+                   [(x - 0.05, y - 0.05, 0), (x + 0.05, y - 0.05, 0), (x + 0.05, y + 0.05, 0), (x - 0.05, y + 0.05, 0)],
+                   [(top[0] - 0.02, top[1] - 0.02, height), (top[0] + 0.02, top[1] - 0.02, height),
+                    (top[0] + 0.02, top[1] + 0.02, height), (top[0] - 0.02, top[1] + 0.02, height)],
+                   "reed")]
+    if head:
+        f = 0.75
+        base = (x + lean[0] * f, y + lean[1] * f, height * f)
+        parts.append(tube(name + "_head", base, (x + lean[0] * 0.95, y + lean[1] * 0.95, height * 0.95), 0.07, "cattail"))
+    return parts
+
+
+def build_den():
+    """La tana: una striscia di prato larga quanto la zona di gioco (74 x
+    12 m), con un laghetto per lato (ninfee, fiori, sassi, canne), le pietre
+    del passaggio al centro e, sopra il passaggio, due grandi tife che si
+    piegano e si incrociano: l'arco che si vede arrivare da lontano.
+    Origine al centro della striscia, a terra. Solo forme: niente collisioni."""
+    reset()
+    parts = []
+    for side in (1, -1):
+        cx = side * 21.0
+        parts.append(prism("pond_%d" % side, wobbly_ring(cx, 0.2, 8.5, 3.9, 11, 0.35, side), 0.0, 0.03, "water"))
+        # I sassi sul bordo, un po' fuori dall'acqua.
+        for i, (px, py) in enumerate(wobbly_ring(cx, 0.2, 9.6, 4.8, 9, 0.3, side + 5)):
+            parts.append(ico("stone_%d_%d" % (side, i), 0.35 + 0.2 * ((i * 7) % 3) / 2, (px, py, 0.05), "stone", scale=(1.2, 1.0, 0.55)))
+        pads = [(-5.5, -1.5, 1.1), (-2.0, 1.8, 0.9), (1.5, -0.8, 1.2), (4.8, 1.5, 0.8), (6.2, -1.9, 0.7), (-6.4, 1.6, 0.6)]
+        for i, (dx, dy, r) in enumerate(pads):
+            parts.append(lily_pad("pad_%d_%d" % (side, i), cx + side * dx, dy, r, i * 1.7))
+            if i % 2 == 0:
+                fx, fy = cx + side * dx + 0.2 * r, dy + 0.15 * r
+                parts.append(ico("flower_%d_%d" % (side, i), 0.18, (fx, fy, 0.16), "flower", scale=(1, 1, 0.8)))
+                parts.append(ico("heart_%d_%d" % (side, i), 0.07, (fx, fy, 0.28), "lamp_light"))
+        # Le canne, a ciuffi sul bordo verso l'esterno.
+        for c, (dx, dy) in enumerate([(8.5, 2.5), (9.5, -2.0), (-7.8, 3.3), (2.0, 4.6), (-3.0, -4.5)]):
+            for k in range(5):
+                h = 1.2 + 0.25 * ((k * 5 + c) % 4)
+                lean = (side * 0.15 * (k - 2), 0.1 * ((k + c) % 3 - 1))
+                parts += reed("reed_%d_%d_%d" % (side, c, k), cx + side * dx + 0.18 * (k - 2), dy + 0.12 * ((k * 3) % 5 - 2), h, lean, head=(k % 2 == 1))
+
+    # Il passaggio: pietre piatte al centro.
+    for i, y in enumerate((-4.6, -2.2, 0.2, 2.6, 4.9)):
+        x = 0.6 * math.sin(i * 1.9)
+        parts.append(prism("step_%d" % i, wobbly_ring(x, y, 0.9, 0.7, 7, 0.25, i), 0.0, 0.07, "stone"))
+
+    # L'arco: due grandi tife che partono ai lati del passaggio, si piegano e si
+    # incrociano in alto; i pennacchi scendono oltre il centro.
+    for side in (1, -1):
+        points = []
+        for i in range(7):
+            t = i / 6
+            points.append(Vector((side * (6.5 - 7.6 * t * t), 0.0, 7.2 * math.sin(t * math.pi * 0.55))))
+        for i in range(6):
+            parts.append(tube("arch_%d_%d" % (side, i), points[i], points[i + 1], 0.24 - 0.02 * i, "reed"))
+        tip = points[-1]
+        direction = (points[-1] - points[-2]).normalized()
+        parts.append(tube("arch_head_%d" % side, tip - direction * 0.2, tip + direction * 1.8, 0.45, "cattail"))
+        parts.append(tube("arch_spike_%d" % side, tip + direction * 1.8, tip + direction * 2.5, 0.06, "reed"))
+        # Le foglie alla base: lame lunghe e strette.
+        for k, (dx, h, lean) in enumerate([(-0.5, 3.2, -0.8), (0.4, 2.6, 0.7), (0.0, 3.8, 0.3)]):
+            base = side * 6.5 + dx
+            tip_x, tip_y = base + side * lean, 0.1 * k
+            parts.append(block("leaf_%d_%d" % (side, k),
+                               [(base - 0.18, -0.04, 0.0), (base + 0.18, -0.04, 0.0), (base + 0.18, 0.04, 0.0), (base - 0.18, 0.04, 0.0)],
+                               [(tip_x - 0.02, tip_y - 0.01, h), (tip_x + 0.02, tip_y - 0.01, h), (tip_x + 0.02, tip_y + 0.01, h), (tip_x - 0.02, tip_y + 0.01, h)],
+                               "reed"))
+        parts.append(ico("arch_foot_%d" % side, 0.9, (side * 6.5, 0.0, 0.1), "stone", scale=(1.3, 1.1, 0.5)))
+    join("Den", parts)
+    save("den")
 
 
 # --- Deltaplano ------------------------------------------------------------
@@ -751,7 +859,7 @@ def build_mountain():
 
 BUILDERS = {
     "compact": build_compact, "sedan": build_sedan, "van": build_van, "truck": build_truck,
-    "frog": build_frog, "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
+    "frog": build_frog, "den": build_den, "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
     "mountain": build_mountain, "locomotive": build_locomotive, "boxcar": build_boxcar,
     "flatcar": build_flatcar, "signal": build_signal, "airplane": build_airplane,
     "crane": build_crane, "crane_trolley": build_crane_trolley, "ship": build_ship,

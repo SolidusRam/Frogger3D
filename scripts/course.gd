@@ -12,6 +12,7 @@ enum Kind { START, SAFE, ROAD, RIVER, RAIL, DEN, AIRPORT, PORT }
 const TREE := preload("res://assets/models/tree.glb")
 const HOUSE := preload("res://assets/models/house.glb")
 const LAMP := preload("res://assets/models/lamp.glb")
+const DEN := preload("res://assets/models/den.glb")
 
 
 @export var frog: Frog
@@ -282,28 +283,11 @@ func _prop(chunk: Node3D, scene: PackedScene, at: Vector3) -> Node3D:
 	return prop
 
 
-## La tana: un portale su un prato. Entrarci registra il checkpoint.
+## La tana: uno stagno sul prato, coi laghetti ai lati e l'arco delle tife
+## sopra il passaggio (modello di Blender, solo da vedere). Entrarci registra
+## il checkpoint.
 func _add_den(chunk: Node3D, depth: float) -> void:
-	for side in [-1.0, 1.0]:
-		var post := MeshInstance3D.new()
-		post.mesh = _box_mesh(Vector3(0.8, 6.0, 0.8), "gold")
-		post.position = Vector3(side * 8.0, 3.0, 0.0)
-		chunk.add_child(post)
-	var bar := MeshInstance3D.new()
-	bar.mesh = _box_mesh(Vector3(16.8, 0.8, 0.8), "gold")
-	bar.position.y = 6.0
-	chunk.add_child(bar)
-
-	for x in [-20.0, -12.0, 12.0, 20.0]:
-		var pad := MeshInstance3D.new()
-		var cylinder := CylinderMesh.new()
-		cylinder.top_radius = 2.0
-		cylinder.bottom_radius = 2.0
-		cylinder.height = 0.1
-		cylinder.material = Style.material("pad")
-		pad.mesh = cylinder
-		pad.position = Vector3(x, 0.05, 0.0)
-		chunk.add_child(pad)
+	_prop(chunk, DEN, Vector3.ZERO)
 
 	var trigger := Area3D.new()
 	trigger.collision_layer = 0
