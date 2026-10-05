@@ -101,9 +101,15 @@ Domanda a parte: **la musica la compri, la prendi o la fai?** È la cosa che pi�
 4. **Tutto il resto** dell'inventario.
 5. **La musica**, per ultima: a quel punto si sa quanto spazio lascia il mondo.
 
+## Risposte del giocatore
+
+**5 ottobre 2026, i riferimenti: Megabonk e Castlevania.** I due riferimenti sono quasi uno solo: il compositore di Megabonk (Miguel, "Miguelangell960") descrive la colonna sonora come un omaggio a Vampire Survivors, Castlevania, Undertale e Mega Man X, con rock, metal ed elettronica, un gusto un po' comico, e il proposito di fondere epoche diverse con un suono di oggi. Lavora con Ableton Live e plugin per l'80% gratuiti, fra cui sintetizzatori chiptune (Chipsynth, Magical 8bit Plug) e librerie di suoni di vecchi giochi ([intervista su Game*Spark](https://www.gamespark.jp/article/2025/10/05/158058.html)).
+
+Conseguenza per il §2a: la scelta non è più fra PS1, chiptune e moderno, ma un **miscuglio di epoche**: suoni chiptune e chitarre rock dentro una produzione di oggi, piena e potente. Per gli effetti, la stessa idea: suoni carichi ed esagerati, che premiano ogni colpo. Il filtro PS1 diventa un colore sul bus (F2), non un vincolo sui file.
+
 ## Domande aperte
 
-1. Quale strada per l'epoca del suono (§2a): PS1 vera, chiptune o moderna?
+1. ~~Quale strada per l'epoca del suono~~: riferimenti scelti, Megabonk e Castlevania (sopra). Resta da dire quale Castlevania: quello del NES (chiptune) o Symphony of the Night (PS1, gotico e orchestrale)?
 2. La musica (§2b): segue il calore, respira nelle tane, reagisce alle azioni, oppure non c'è?
 3. Il mondo (§2c): auto pesanti e serie o giocattolo? La rana ha una voce?
 4. La musica la si fa, la si prende o la si commissiona?
