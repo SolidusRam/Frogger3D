@@ -1,9 +1,9 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
 ## Un'inquadratura di tre quarti su un bioma, con la rana in primo piano.
-## SCENE: strada | fiume | tana | tana_lontano | ferrovia | aeroporto | porto.
+## SCENE: strada | fiume | tana | tana_lontano | laghetto | ferrovia | aeroporto | porto.
 ## HEAT, SHOT.
-const BIOMES := {"strada": 2, "fiume": 3, "ferrovia": 4, "tana": 5, "tana_lontano": 5, "aeroporto": 6, "porto": 7}
+const BIOMES := {"strada": 2, "fiume": 3, "ferrovia": 4, "tana": 5, "tana_lontano": 5, "laghetto": 5, "aeroporto": 6, "porto": 7}
 var frame := 0
 var main: Node
 var scene := OS.get_environment("SCENE")
@@ -39,7 +39,11 @@ func _process(_d: float) -> bool:
 		cam.fov = 60
 		cam.make_current()
 		var at: Vector3 = frog.global_position + Vector3(0, 0.5, -6)
-		if scene == "tana_lontano":
+		if scene == "laghetto":
+			# Il laghetto di destra, dall'alto e di lato.
+			var pond: Vector3 = frog.global_position + Vector3(21.0, 0.0, -9.0)
+			cam.look_at_from_position(pond + Vector3(-7.0, 6.0, 7.0), pond)
+		elif scene == "tana_lontano":
 			# Da dietro la rana, come giocando, con la tana in fondo.
 			cam.look_at_from_position(frog.global_position + Vector3(0, 3.0, 30.0), frog.global_position + Vector3(0, 1.5, -12.0))
 		else:

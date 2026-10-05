@@ -52,6 +52,7 @@ PREVIEW = {
     "eye": (0.95, 0.95, 0.95, 1), "pupil": (0.05, 0.05, 0.05, 1), "glove": (0.85, 0.1, 0.1, 1),
     "water": (0.15, 0.4, 0.7, 1), "pad": (0.3, 0.7, 0.3, 1), "stone": (0.58, 0.55, 0.5, 1),
     "reed": (0.42, 0.55, 0.22, 1), "cattail": (0.42, 0.25, 0.12, 1), "flower": (0.95, 0.55, 0.7, 1),
+    "water_shallow": (0.35, 0.62, 0.75, 1), "ripple": (0.85, 0.93, 0.97, 1),
 }
 
 
@@ -410,6 +411,25 @@ def prism(name, points, z0, z1, mat):
     return mesh_object(name, verts, faces, mat)
 
 
+def ring(name, cx, cy, r_in, r_out, sides, z0, z1, mat):
+    """Un anello piatto a facce (le increspature dell'acqua)."""
+    verts = []
+    for z in (z0, z1):
+        for r in (r_out, r_in):
+            for i in range(sides):
+                a = math.tau * i / sides
+                verts.append((cx + math.cos(a) * r, cy + math.sin(a) * r, z))
+    n = sides
+    faces = []
+    for i in range(n):
+        j = (i + 1) % n
+        faces.append((2 * n + i, 2 * n + j, 3 * n + j, 3 * n + i))  # sopra
+        faces.append((i, n + i, n + j, j))                          # sotto
+        faces.append((i, j, 2 * n + j, 2 * n + i))                  # fuori
+        faces.append((n + i, 3 * n + i, 3 * n + j, n + j))          # dentro
+    return mesh_object(name, verts, faces, mat)
+
+
 def wobbly_ring(cx, cy, rx, ry, sides, wobble, seed):
     """I punti di un contorno irregolare, sempre uguale per lo stesso seed."""
     points = []
@@ -455,7 +475,9 @@ def build_den():
     parts = []
     for side in (1, -1):
         cx = side * 21.0
-        parts.append(prism("pond_%d" % side, wobbly_ring(cx, 0.2, 8.5, 3.9, 11, 0.35, side), 0.0, 0.03, "water"))
+        # L'acqua bassa chiara sul bordo, quella profonda più scura al centro.
+        parts.append(prism("pond_%d" % side, wobbly_ring(cx, 0.2, 8.5, 3.9, 11, 0.35, side), 0.0, 0.03, "water_shallow"))
+        parts.append(prism("deep_%d" % side, wobbly_ring(cx + side * 0.4, 0.1, 6.2, 2.5, 9, 0.3, side + 2), 0.0, 0.035, "water"))
         # I sassi sul bordo, un po' fuori dall'acqua.
         for i, (px, py) in enumerate(wobbly_ring(cx, 0.2, 9.6, 4.8, 9, 0.3, side + 5)):
             parts.append(ico("stone_%d_%d" % (side, i), 0.35 + 0.2 * ((i * 7) % 3) / 2, (px, py, 0.05), "stone", scale=(1.2, 1.0, 0.55)))
@@ -472,6 +494,17 @@ def build_den():
                 h = 1.2 + 0.25 * ((k * 5 + c) % 4)
                 lean = (side * 0.15 * (k - 2), 0.1 * ((k + c) % 3 - 1))
                 parts += reed("reed_%d_%d_%d" % (side, c, k), cx + side * dx + 0.18 * (k - 2), dy + 0.12 * ((k * 3) % 5 - 2), h, lean, head=(k % 2 == 1))
+
+    # Le increspature attorno ad alcune ninfee: oggetti a sé, Godot le fa
+    # allargare piano (Ripple_*).
+    ripples = []
+    for side in (1, -1):
+        for k, (dx, dy, r) in enumerate([(-2.0, 1.8, 0.9), (1.5, -0.8, 1.2)]):
+            cx, cy = side * 21.0 + side * dx, dy
+            for n, extra in enumerate((0.3, 0.6)):
+                ripple = ring("Ripple_%d_%d_%d" % (side, k, n), 0, 0, r + extra, r + extra + 0.07, 10, 0.04, 0.045, "ripple")
+                ripple.location = (cx, cy, 0)
+                ripples.append(ripple)
 
     # Il passaggio: pietre piatte al centro.
     for i, y in enumerate((-4.6, -2.2, 0.2, 2.6, 4.9)):

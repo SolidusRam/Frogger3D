@@ -287,7 +287,16 @@ func _prop(chunk: Node3D, scene: PackedScene, at: Vector3) -> Node3D:
 ## sopra il passaggio (modello di Blender, solo da vedere). Entrarci registra
 ## il checkpoint.
 func _add_den(chunk: Node3D, depth: float) -> void:
-	_prop(chunk, DEN, Vector3.ZERO)
+	var den := _prop(chunk, DEN, Vector3.ZERO)
+	# Le increspature attorno alle ninfee si allargano piano, sfasate.
+	# (Sfasate a indice, non a caso: la sequenza casuale è del percorso.)
+	var ripples := den.find_children("Ripple_*", "", false, false)
+	for i in ripples.size():
+		var ripple: Node3D = ripples[i]
+		var tween := ripple.create_tween().set_loops().set_trans(Tween.TRANS_SINE)
+		tween.tween_interval((i % 5) * 0.35)
+		tween.tween_property(ripple, "scale", Vector3(1.25, 1.0, 1.25), 1.6)
+		tween.tween_property(ripple, "scale", Vector3.ONE, 1.6)
 
 	var trigger := Area3D.new()
 	trigger.collision_layer = 0
