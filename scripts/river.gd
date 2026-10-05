@@ -27,6 +27,13 @@ extends Node3D
 
 var _lanes: Array[RiverLane] = []
 var _water: Area3D
+## Le scie sulla superficie: scorrono come le correnti, così si legge dove
+## e quanto in fretta va l'acqua.
+var _streaks: MultiMesh
+var _streak_base := PackedFloat32Array()
+var _streak_lane := PackedInt32Array()
+var _streak_z := PackedFloat32Array()
+var _lane_shift: Array[float] = []
 
 
 func _ready() -> void:
@@ -43,6 +50,50 @@ func _ready() -> void:
 		lane.crocodile_chance = crocodile_chance
 		add_child(lane)
 		_lanes.append(lane)
+	_build_streaks()
+
+
+## Due file di scie chiare per corrente, sfalsate; la lunghezza varia un po'.
+## Nessun numero casuale: la sequenza casuale è del percorso.
+func _build_streaks() -> void:
+	var spacing := 8.0
+	var per_row := int(length / spacing)
+	for i in lane_count:
+		_lane_shift.append(0.0)
+		for row in 2:
+			var z := _lane_offset(i) + (row - 0.5) * lane_width * 0.45
+			for k in per_row:
+				_streak_base.append(-length / 2.0 + (k + 0.5 * row + fmod(i * 0.37, 1.0)) * spacing)
+				_streak_lane.append(i)
+				_streak_z.append(z)
+	var mesh := BoxMesh.new()
+	mesh.size = Vector3(1.0, 0.03, 0.16)
+	# Piene, non trasparenti: l'acqua semitrasparente le coprirebbe.
+	mesh.material = Style.material("current")
+	_streaks = MultiMesh.new()
+	_streaks.transform_format = MultiMesh.TRANSFORM_3D
+	_streaks.mesh = mesh
+	_streaks.instance_count = _streak_base.size()
+	var instance := MultiMeshInstance3D.new()
+	instance.multimesh = _streaks
+	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	# Si aggiornano a ogni fotogramma: niente interpolazione fisica.
+	instance.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	add_child(instance)
+
+
+func _process(delta: float) -> void:
+	if _streaks == null:
+		return
+	for i in _lanes.size():
+		_lane_shift[i] += _lanes[i].direction * _lanes[i].speed * delta
+	for n in _streak_base.size():
+		var lane := _streak_lane[n]
+		var x := wrapf(_streak_base[n] + _lane_shift[lane], -length / 2.0, length / 2.0)
+		var golden := fmod(n * 0.618, 1.0)
+		var stretch := 0.8 + 1.4 * golden
+		var z := _streak_z[n] + (golden - 0.5) * lane_width * 0.3
+		_streaks.set_instance_transform(n, Transform3D(Basis.from_scale(Vector3(stretch, 1.0, 1.0)), Vector3(x, water_level + 0.05, z)))
 
 
 func _physics_process(_delta: float) -> void:
