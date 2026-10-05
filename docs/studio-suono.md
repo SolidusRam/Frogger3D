@@ -107,6 +107,27 @@ Domanda a parte: **la musica la compri, la prendi o la fai?** È la cosa che pi�
 
 Conseguenza per il §2a: la scelta non è più fra PS1, chiptune e moderno, ma un **miscuglio di epoche**: suoni chiptune e chitarre rock dentro una produzione di oggi, piena e potente. Per gli effetti, la stessa idea: suoni carichi ed esagerati, che premiano ogni colpo. Il filtro PS1 diventa un colore sul bus (F2), non un vincolo sui file.
 
+## Ascolti dalla PS1
+
+Proposti il 5 ottobre 2026, per farsi l'orecchio. Si trovano su YouTube cercando "nome del gioco OST" (musica) o "sound effects" (effetti).
+
+**Musica**
+- **Castlevania: Symphony of the Night** (Michiru Yamane): "Dracula's Castle" (chitarre rock sopra un'atmosfera gotica), "Lost Painting", "Wood Carving Partita". Il ponte fra Castlevania e la PS1.
+- **Mega Man X4**: i temi dei livelli, per esempio Cyber Peacock. Chitarre sintetiche e ritmo da azione, uno dei riferimenti dichiarati di Megabonk.
+- **Ape Escape** (Soichi Terada): drum and bass frenetico e buffo. Musica comica che non rallenta mai: il caso più vicino a una rana che fa volare le auto.
+- **Crash Bandicoot** (Mutato Muzik): "N. Sanity Beach". Marimba, percussioni e il cartone animato in musica.
+- **Spyro the Dragon** (Stewart Copeland, il batterista dei Police): "Stone Hill", "Dark Hollow". Batteria viva e melodie che restano in testa.
+- **Wipeout 2097**: elettronica dura (c'è anche "Firestarter" dei Prodigy). Che cosa vuol dire velocità e pericolo in musica.
+
+**Effetti**
+- **Metal Gear Solid**: il "!" dell'allarme quando si viene scoperti, e la musica che cambia. È il calore che sale di livello.
+- **Spyro**: la gemma raccolta (un tintinnio diverso per valore) e **Crash**: la cassa rotta e il frutto Wumpa. Sono le mosche e la mosca d'oro.
+- **Final Fantasy VII**: il cursore dei menu. Un suono minuscolo che milioni di persone riconoscono: l'interfaccia ha una voce.
+- **Driver** (1999): inseguimenti in auto alla anni '70, sirene, frenate e schianti. Il traffico.
+- **Twisted Metal 2**: auto che esplodono e lamiere che volano. Le catene di rottami.
+- **GTA 2**: la polizia che arriva quando si esagera. L'escalation da cui è nata l'idea del calore.
+- **Frogger** (1997, PS1): il Frogger 3D dell'epoca. Da sentire per capire che cosa omaggiare e che cosa evitare.
+
 ## Domande aperte
 
 1. ~~Quale strada per l'epoca del suono~~: riferimenti scelti, Megabonk e Castlevania (sopra). Resta da dire quale Castlevania: quello del NES (chiptune) o Symphony of the Night (PS1, gotico e orchestrale)?
