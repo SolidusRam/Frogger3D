@@ -781,3 +781,15 @@ msgstr "Show hints again"
 
 msgid "I suggerimenti del primo minuto spariscono dopo che li hai eseguiti in due corse. Rivederli li rimette tutti."
 msgstr "First-minute hints go away once you've done them in two runs. Showing them again brings them all back."
+
+msgid "Nuovo attrezzo: il pugno"
+msgstr "New tool: the punch"
+
+msgid "Nuovo attrezzo: il super salto"
+msgstr "New tool: the super jump"
+
+msgid "Nuovo attrezzo: il deltaplano"
+msgstr "New tool: the glider"
+
+msgid "Nuovo attrezzo: la lingua"
+msgstr "New tool: the tongue"

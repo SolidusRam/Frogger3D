@@ -9,6 +9,7 @@ extends CanvasLayer
 ##   --bioma=strada|fiume|ferrovia|aeroporto|porto|tana  --calore=0..5
 ##   --blocca-calore  --invincibile  --poteri  --senza-fuoco
 ##   --power=tongue,slam,napalm   (gli id sono quelli di Upgrades.CATALOG)
+##   --attrezzi   (pugno, super salto e deltaplano semplici negli slot vuoti)
 ##   --mosche=N   (mosche in più da spendere allo stagno: restano)
 ## Le opzioni restano attive anche dopo "Ricomincia". Una run in cui si usa
 ## la modalità prova non salva il record, e in alto compare PROVA.
@@ -72,6 +73,15 @@ func set_heat_level(level: int) -> void:
 
 func jump_to(biome: String) -> void:
 	_game.course.jump_to(BIOMES[biome])
+	_mark_test_run()
+
+
+## Gli attrezzi semplici negli slot vuoti: la rana parte coi soli guantoni,
+## per provare tutto servono anche molle e ala.
+func give_tools() -> void:
+	for slot in ["gloves", "springs", "wing"]:
+		_game.upgrades.give_base(slot)
+	_game.hud.show_equipment(_game.upgrades)
 	_mark_test_run()
 
 
@@ -168,6 +178,8 @@ func _read_command_line() -> void:
 				set_heat_locked(true)
 			"mosche":
 				give_flies(int(parts[1]))
+			"attrezzi":
+				give_tools()
 			"power":
 				for id in parts[1].split(","):
 					equip(id)
@@ -239,6 +251,7 @@ func _build() -> void:
 	box.add_child(_toggle("Blocca il calore al livello attuale", "heat_locked", set_heat_locked))
 	box.add_child(_toggle("Ferma l'incendio", "fire_off", set_fire_off))
 	box.add_child(_toggle("Animazioni della rana a scatti (15 pose al secondo; spento: fluide)", "steps", set_steps))
+	box.add_child(_button("Attrezzi semplici: pugno, super salto e deltaplano", give_tools))
 	box.add_child(_button("Apri una tana: scegli un power-up", offer_upgrade))
 	box.add_child(_button("+100 mosche (per lo stagno, restano)", give_flies.bind(100)))
 	box.add_child(_title("Equipaggia subito", 16))

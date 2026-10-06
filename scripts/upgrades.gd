@@ -11,9 +11,22 @@ extends Node
 ## occupa i due slot e tiene gli effetti di tutti e due, più il suo.
 ## apply() sa anche sostituire un modificatore (e togliere una fusione): lo usa
 ## la modalità prova, non la tana.
+##
+## Gli attrezzi (deciso il 6 ottobre 2026): la rana parte con un solo
+## attrezzo (equip_kit), e tutto il resto arriva dalle carte. Uno slot vuoto
+## vuol dire nessun potere; "base" è l'attrezzo semplice, senza modificatore,
+## e una carta di quello slot lo sostituisce. Una carta dà l'attrezzo nella sua
+## versione: coi guantoni esplosivi la rana ha i guantoni, e sono esplosivi.
 
 signal offered(options: Array[String])
 signal equipped(id: String)
+
+## Il valore di uno slot con l'attrezzo semplice.
+const BASE := "base"
+## L'attrezzo semplice di ogni slot (il corpo non ne ha).
+const BASE_SLOTS := ["gloves", "springs", "wing", "tongue"]
+## I potenziamenti numerici che servono a un attrezzo: senza, non si offrono.
+const NEEDS := {"punch_power": "gloves", "quick_springs": "springs", "big_wing": "wing"}
 
 const SLOT_NAMES := {
 	"gloves": "Guantoni", "springs": "Molle", "wing": "Ala", "body": "Corpo", "tongue": "Lingua",
@@ -107,8 +120,42 @@ func fusion_ready(id: String) -> bool:
 	return item.slot == "fusion" and item.parts.all(func(part): return slots[CATALOG[part].slot] == part)
 
 
-## Prepara un'offerta: tre power-up diversi, solo per slot ancora liberi e
-## senza i numerici già al massimo. Una fusione pronta c'è sempre.
+## Vero se la rana ha l'attrezzo dello slot (semplice o da carta).
+func has_tool(slot: String) -> bool:
+	return slots[slot] != ""
+
+
+## Il modificatore dello slot ("" se lo slot è vuoto o ha l'attrezzo semplice).
+func modifier(slot: String) -> String:
+	return "" if slots[slot] == BASE else slots[slot]
+
+
+## Gli attrezzi con cui parte la rana: per slot, BASE o l'id di una carta.
+## Tutti gli altri restano spenti finché non arriva una carta.
+func equip_kit(kit: Dictionary) -> void:
+	for slot: String in slots:
+		if slots[slot] != "" and slots[slot] != BASE:
+			_remove(slots[slot])
+		slots[slot] = ""
+		_set_tool(slot, false)
+	for slot: String in kit:
+		if kit[slot] == BASE:
+			slots[slot] = BASE
+			_set_tool(slot, true)
+		else:
+			apply(kit[slot])
+
+
+## Dà l'attrezzo semplice di uno slot vuoto (la modalità prova).
+func give_base(slot: String) -> void:
+	if slots[slot] == "":
+		slots[slot] = BASE
+		_set_tool(slot, true)
+
+
+## Prepara un'offerta: tre power-up diversi, solo per slot ancora liberi (o
+## con l'attrezzo semplice) e senza i numerici già al massimo o senza il loro
+## attrezzo. Una fusione pronta c'è sempre.
 func make_offer(count := -1) -> Array[String]:
 	if count < 0:
 		count = offer_size
@@ -120,10 +167,13 @@ func make_offer(count := -1) -> Array[String]:
 			if fusion_ready(id):
 				fusions.append(id)
 			continue
-		# Lo slot è occupato per tutta la run.
-		if item.slot != "" and slots[item.slot] != "":
+		# Lo slot è occupato per tutta la run (l'attrezzo semplice no: una
+		# carta lo sostituisce).
+		if item.slot != "" and slots[item.slot] != "" and slots[item.slot] != BASE:
 			continue
 		if item.slot == "" and stacks.get(id, 0) >= item.max:
+			continue
+		if NEEDS.has(id) and not has_tool(NEEDS[id]):
 			continue
 		pool.append(id)
 	pool.shuffle()
@@ -147,12 +197,14 @@ func apply(id: String) -> void:
 	if item.slot == "fusion":
 		for slot: String in slots_of(id):
 			slots[slot] = id
+			_set_tool(slot, true)
 		_set_modifier(id, true)
 	elif item.slot != "":
 		var previous: String = slots[item.slot]
-		if previous != "":
+		if previous != "" and previous != BASE:
 			_remove(previous)
 		slots[item.slot] = id
+		_set_tool(item.slot, true)
 		_set_modifier(id, true)
 	else:
 		stacks[id] = stacks.get(id, 0) + 1
@@ -179,6 +231,21 @@ func _remove(id: String) -> void:
 			_set_modifier(part, false)
 	for slot: String in slots_of(id):
 		slots[slot] = ""
+		_set_tool(slot, false)
+
+
+## Accende o spegne l'attrezzo di uno slot: il potere e il suo pezzo sul
+## modello. La lingua semplice è il rampino (la carta "tongue").
+func _set_tool(slot: String, on: bool) -> void:
+	match slot:
+		"gloves":
+			frog.punch_power.enabled = on
+		"springs":
+			frog.super_jump_power.enabled = on
+		"wing":
+			frog.glider_power.enabled = on
+		"tongue":
+			frog.tongue_power.enabled = on
 
 
 ## Accende o spegne un modificatore. I miglioramenti speciali della carta

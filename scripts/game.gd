@@ -27,6 +27,9 @@ const MENU_SCENE := "res://scenes/menu.tscn"
 @export var start_seconds := 0.9
 ## I suggerimenti del primo minuto (vedi Hints); i test li spengono.
 @export var tutorial := true
+## Gli attrezzi con cui parte la rana (vedi Upgrades.equip_kit): la rana
+## comune ha solo i guantoni. I test partono coi tre attrezzi di prima.
+var starting_kit := {"gloves": Upgrades.BASE}
 
 @export_group("Mosche")
 ## Mosche date da ogni tana, e in più quando la tana non ha carte da offrire
@@ -77,6 +80,7 @@ func _ready() -> void:
 	Engine.time_scale = 1.0
 	Heat.reset()
 	Progress.load_from(progress_path)
+	upgrades.equip_kit(starting_kit)
 	_apply_stats()
 	Style.bind(environment.environment, sun, post)
 	record_distance = _load_record()

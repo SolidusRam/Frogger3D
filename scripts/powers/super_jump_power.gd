@@ -13,6 +13,13 @@ extends Node
 @export var air_acceleration := 6.0
 
 var cooldown_left := 0.0
+## La rana ha le molle (vedi Upgrades). Senza, niente super salto e niente
+## molle sotto i talloni.
+var enabled := true:
+	set(value):
+		enabled = value
+		for spring in _springs:
+			spring.visible = value
 ## Vero dal salto fino all'atterraggio.
 var active := false
 
@@ -39,7 +46,7 @@ func tick(delta: float) -> void:
 
 
 func is_ready() -> bool:
-	return cooldown_left == 0.0
+	return enabled and cooldown_left == 0.0
 
 
 ## Da 0 (appena usato) a 1 (pronto).

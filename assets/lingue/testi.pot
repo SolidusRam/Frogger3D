@@ -167,6 +167,22 @@ msgid "Abbandonando, le mosche raccolte restano."
 msgstr ""
 
 #: scripts/hud.gd
+msgid "Nuovo attrezzo: il pugno"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Nuovo attrezzo: il super salto"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Nuovo attrezzo: il deltaplano"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Nuovo attrezzo: la lingua"
+msgstr ""
+
+#: scripts/hud.gd
 msgid "Pugno"
 msgstr ""
 

@@ -44,6 +44,8 @@ const MODEL := preload("res://assets/models/glider.glb")
 
 var charge := 0.0
 var gliding := false
+## La rana ha l'ala (vedi Upgrades). Senza, Spazio in aria non apre niente.
+var enabled := true
 ## Power-up "Correnti calde" equipaggiato.
 var thermals := false
 ## Power-up "Ala a reazione": più veloce, ma scalda finché si vola.
@@ -250,7 +252,7 @@ func close() -> void:
 ## Serve una nuova pressione in aria, lontano dal suolo e fuori dal coyote
 ## time; vicino al suolo la stessa pressione resta un salto anticipato.
 func _can_open() -> bool:
-	if charge <= 0.0 or _frog.time_since_floor() <= _frog.coyote_time:
+	if not enabled or charge <= 0.0 or _frog.time_since_floor() <= _frog.coyote_time:
 		return false
 	var from := _frog.global_position + Vector3.UP * 0.1
 	var query := PhysicsRayQueryParameters3D.create(from, from + Vector3.DOWN * (min_height + 0.1), 1 | 4 | 8)

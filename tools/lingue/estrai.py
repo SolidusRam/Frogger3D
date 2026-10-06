@@ -33,6 +33,7 @@ PATTERNS = [
 BLOCKS = {
     "scripts/settings.gd": ["ACTIONS", "KEY_NAMES", "MOUSE_NAMES", "PAD_NAMES", "TRIGGER_NAMES", "UI_NAMES", "WINDOW_MODES"],
     "scripts/upgrades.gd": ["SLOT_NAMES"],
+    "scripts/hud.gd": ["NEW_POWER"],
 }
 # Stringhe che non si traducono (codici, nomi propri, simboli).
 SKIP = {"", "Frogger 3D", "Esc", "A", "B", "X", "Y", "LB", "RB", "LT", "RT", "L1", "R1", "L2", "R2",

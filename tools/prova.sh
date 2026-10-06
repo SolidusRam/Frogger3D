@@ -7,6 +7,7 @@
 # Opzioni: --bioma=strada|fiume|ferrovia|aeroporto|porto|tana
 #          --calore=0..5  --blocca-calore  --invincibile  --poteri  --senza-fuoco
 #          --power=tongue,slam,napalm   (id in scripts/upgrades.gd, CATALOG)
+#          --attrezzi   (la rana parte coi soli guantoni: dà anche molle e ala)
 # In gioco F1 apre lo stesso pannello. Una run di prova non salva il record.
 cd "$(dirname "$0")/.." || exit 1
 exec godot --path . -- "$@"

@@ -113,12 +113,14 @@ func _watch() -> void:
 	_caught = caught
 	var ahead := course.kind_at(frog.global_position.z - 5.0)
 	var here := course.kind_at(frog.global_position.z)
-	if ahead == Course.Kind.ROAD or here == Course.Kind.ROAD:
+	# Si suggeriscono solo i poteri degli attrezzi che la rana ha: quelli
+	# arrivati da una carta compaiono alla prima occasione dopo la tana.
+	if (ahead == Course.Kind.ROAD or here == Course.Kind.ROAD) and frog.punch_power.enabled:
 		_want("punch")
 	var water := course.kind_at(frog.global_position.z - 8.0)
-	if water == Course.Kind.RIVER or water == Course.Kind.PORT:
+	if (water == Course.Kind.RIVER or water == Course.Kind.PORT) and frog.glider_power.enabled:
 		_want("glide")
-	if ahead == Course.Kind.RAIL or game.run_time > SUPER_JUMP_SECONDS:
+	if (ahead == Course.Kind.RAIL or game.run_time > SUPER_JUMP_SECONDS) and frog.super_jump_power.enabled:
 		_want("super_jump")
 	if not fire.waiting and fire.distance() < FIRE_METERS:
 		_want("fire", true)

@@ -22,6 +22,11 @@ const HEALTH_COLOR := Color(0.4, 0.8, 0.3)
 const HEALTH_LOW_COLOR := Color(0.9, 0.25, 0.2)
 ## Sotto questa frazione la barra della vita diventa rossa e pulsa.
 const HEALTH_LOW := 0.3
+## La riga della carta quando lo slot è vuoto: la carta dà l'attrezzo.
+const NEW_POWER := {
+	"gloves": "Nuovo attrezzo: il pugno", "springs": "Nuovo attrezzo: il super salto",
+	"wing": "Nuovo attrezzo: il deltaplano", "tongue": "Nuovo attrezzo: la lingua",
+}
 ## I poteri: nome, azione (il tasto lo dicono le opzioni), attrezzo. L'ordine
 ## è quello dall'alto in basso.
 const POWERS := {
@@ -134,6 +139,10 @@ func _process(_delta: float) -> void:
 	_chips.punch.set_ratio(1.0 - punch.cooldown_left / maxf(punch.cooldown, 0.001))
 	_chips.super_jump.set_ratio(frog.super_jump_power.ready_ratio())
 	_chips.glide.set_ratio(frog.glide_charge_ratio())
+	# Si vedono solo i poteri degli attrezzi che la rana ha.
+	_chips.punch.visible = punch.enabled
+	_chips.super_jump.visible = frog.super_jump_power.enabled
+	_chips.glide.visible = frog.glider_power.enabled
 	_chips.tongue.visible = frog.tongue_power.enabled
 	_chips.tongue.set_ratio(frog.tongue_power.ready_ratio())
 	_chips.slam.visible = frog.slam_power.enabled
@@ -259,12 +268,20 @@ func show_offer(options: Array[String], upgrades: Upgrades) -> void:
 		if slot == "fusion":
 			slot_label.text = tr("FUSIONE")
 			tag.text = tr("Unisce %s e %s") % item.parts.map(func(part): return tr(Upgrades.CATALOG[part].name))
+			tag.remove_theme_color_override("font_color")
 		elif slot != "":
 			slot_label.text = tr(Upgrades.SLOT_NAMES[slot]).to_upper()
-			tag.text = tr("Occupa lo slot fino a fine run")
+			# Uno slot vuoto: la carta dà anche l'attrezzo, cioè un potere nuovo.
+			if not upgrades.has_tool(slot) and NEW_POWER.has(slot):
+				tag.text = tr(NEW_POWER[slot])
+				tag.add_theme_color_override("font_color", UiTheme.GOLD)
+			else:
+				tag.text = tr("Occupa lo slot fino a fine run")
+				tag.remove_theme_color_override("font_color")
 		else:
 			slot_label.text = tr("POTENZIAMENTO")
 			tag.text = tr("Si somma: %d di %d") % [upgrades.stacks.get(id, 0) + 1, item.max]
+			tag.remove_theme_color_override("font_color")
 		_style_card(button, color)
 		# L'entrata: dal basso, una dopo l'altra.
 		button.pivot_offset = button.custom_minimum_size / 2.0
@@ -303,13 +320,13 @@ func show_equipment(upgrades: Upgrades) -> void:
 	_upgrades = upgrades
 	for power: String in POWERS:
 		var slot: String = POWERS[power][2]
-		var id: String = upgrades.slots[slot]
+		var id: String = upgrades.modifier(slot)
 		# Lingua e schianto sono loro stessi il modificatore.
 		var shown := id != "" and id != power and not (power == "super_jump" and id == "slam")
 		_chips[power].set_modifier(tr(Upgrades.CATALOG[id].name) if shown else "")
 	for child in _extras.get_children():
 		child.queue_free()
-	var body: String = upgrades.slots["body"]
+	var body: String = upgrades.modifier("body")
 	if body != "":
 		_extras.add_child(_extra("body", tr(Upgrades.CATALOG[body].name)))
 	for id: String in upgrades.stacks:

@@ -71,6 +71,9 @@ func _texts() -> Dictionary:
 				texts[text] = "nomi"
 	for text in names.WINDOW_MODES:
 		texts[text] = "nomi"
+	var new_power: Dictionary = load("res://scripts/hud.gd").NEW_POWER
+	for slot in new_power:
+		texts[new_power[slot]] = "carte"
 	var powers: Dictionary = load("res://scripts/hud.gd").POWERS
 	for power in powers:
 		texts[powers[power][0]] = "poteri"

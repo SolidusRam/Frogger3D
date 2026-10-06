@@ -15,6 +15,13 @@ extends Node
 @export var cooldown := 0.4
 
 var cooldown_left := 0.0
+## La rana ha i guantoni (vedi Upgrades: gli attrezzi iniziali e le carte).
+## Senza, niente pugno e niente guantoni sul modello.
+var enabled := true:
+	set(value):
+		enabled = value
+		for glove in _gloves:
+			glove.visible = value
 ## Guantoni esplosivi: l'auto colpita esplode al primo urto con un veicolo.
 var explosive := false
 ## Montante: il pugno solleva le auto molto di più (volano e ricadono).
@@ -56,7 +63,7 @@ func tick(delta: float) -> void:
 
 
 func is_ready() -> bool:
-	return cooldown_left == 0.0
+	return enabled and cooldown_left == 0.0
 
 
 func use() -> void:
