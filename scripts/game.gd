@@ -27,9 +27,11 @@ const MENU_SCENE := "res://scenes/menu.tscn"
 @export var start_seconds := 0.9
 ## I suggerimenti del primo minuto (vedi Hints); i test li spengono.
 @export var tutorial := true
-## Gli attrezzi con cui parte la rana (vedi Upgrades.equip_kit): la rana
-## comune ha solo i guantoni. I test partono coi tre attrezzi di prima.
-var starting_kit := {"gloves": Upgrades.BASE}
+## La rana (vedi Frogs): "" la scelta nel menu (Progress.frog).
+var frog_kind := ""
+## Gli attrezzi con cui parte la rana, se non quelli della rana (vedi
+## Upgrades.equip_kit): i test partono coi tre attrezzi di prima.
+var starting_kit := {}
 
 @export_group("Mosche")
 ## Mosche date da ogni tana, e in più quando la tana non ha carte da offrire
@@ -79,9 +81,19 @@ func _ready() -> void:
 	Sfx.muffle_world(attract)
 	Engine.time_scale = 1.0
 	Heat.reset()
+	# Senza schermo (i test) mai i file veri del giocatore, anche quando un
+	# test ricomincia la partita o cambia scena.
+	if DisplayServer.get_name() == "headless":
+		progress_path = "user://progressi_test.cfg"
+		record_path = "user://record_test.cfg"
 	Progress.load_from(progress_path)
-	upgrades.equip_kit(starting_kit)
-	_apply_stats()
+	if frog_kind == "":
+		frog_kind = Frogs.selected()
+	preview_frog(frog_kind)
+	# Nel menu la rana aspetta: pro, contro e stagno valgono da quando parte.
+	if not attract:
+		_apply_frog_mods()
+		_apply_stats()
 	Style.bind(environment.environment, sun, post)
 	record_distance = _load_record()
 	frog.power_used.connect(Heat.on_power_used)
@@ -122,6 +134,8 @@ func start_run() -> void:
 	attract = false
 	Sfx.muffle_world(false)
 	Heat.reset()
+	_apply_frog_mods()
+	_apply_stats()
 	run_time = 0.0
 	hud.visible = true
 	frog.asleep = false
@@ -372,6 +386,25 @@ func _finish_run() -> Dictionary:
 		"total_golden": Progress.golden,
 		"test_run": test_run,
 	}
+
+
+## La rana: i suoi attrezzi iniziali e la sua pelle (anche nel menu, che la
+## mostra mentre si sceglie).
+func preview_frog(id: String) -> void:
+	frog_kind = id
+	upgrades.equip_kit(starting_kit if not starting_kit.is_empty() else Frogs.ALL[id].kit)
+	frog.skin = Frogs.ALL[id].color
+
+
+## Il pro e il contro della rana, all'inizio della run (prima dello stagno).
+func _apply_frog_mods() -> void:
+	var mods: Dictionary = Frogs.ALL[frog_kind].mods
+	frog.max_health = mods.get("health", frog.max_health)
+	frog.jump_height *= mods.get("jump", 1.0)
+	frog.glider_power.duration *= mods.get("glide", 1.0)
+	frog.swim_speed *= mods.get("swim", 1.0)
+	frog.move_speed *= mods.get("speed", 1.0)
+	frog.tongue_power.cooldown *= mods.get("tongue_cooldown", 1.0)
 
 
 ## Le statistiche comprate allo stagno, all'inizio di ogni run.

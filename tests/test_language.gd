@@ -80,6 +80,10 @@ func _texts() -> Dictionary:
 	for style in root.get_node("Style").styles:
 		texts[style.name] = "stili"
 	texts["Nessuno"] = "opzioni"
+	var frogs: Dictionary = load("res://scripts/frogs.gd").ALL
+	for id in frogs:
+		for key in ["name", "pro", "contro"]:
+			texts[frogs[id][key]] = "rane"
 	var feats: Dictionary = load("res://scripts/feats.gd").ALL
 	for id in feats:
 		for key in ["name", "text", "reward_name", "group"]:

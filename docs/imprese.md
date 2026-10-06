@@ -84,7 +84,7 @@ Nel gioco alcuni testi sono diventati inviti ("Fatti investire da un'auto che ha
 
 In tutto 26 imprese. Da decidere: le rane (pro e contro), le fusioni nuove (guscio da bowling, bomba a mano), le modalità di sfida (dopo).
 
-## Rane (proposta del 6 ottobre 2026)
+## Rane (6 ottobre 2026; nel gioco: scripts/frogs.gd)
 
 Ognuna parte con un solo attrezzo (riga "Attrezzi iniziali" di regole-design.md) e ha un pro e un contro. Valori da tarare giocando.
 

@@ -1,6 +1,6 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
-## Screenshot delle schermate: menu | partenza | stagno | maestria | opzioni | audio | grafica | tasti | imprese | impresa | hud | carte | pausa | fine | prova.
+## Screenshot delle schermate: menu | partenza | stagno | maestria | opzioni | audio | grafica | tasti | imprese | impresa | rane | hud | carte | pausa | fine | prova.
 ## HEAT, SHOT; LINGUA=en per le schermate in inglese.
 var frame := 0
 var main: Node
@@ -20,7 +20,7 @@ func _initialize() -> void:
 	progress.stat_levels = {"health": 2, "speed": 1, "choice": 1}
 	progress.trials = {"explosive_gloves:0": 30.0, "uppercut:0": 12.0, "slam:1": 3.0}
 	progress.save()
-	if scene in ["menu", "stagno", "maestria", "partenza", "opzioni", "audio", "grafica", "tasti", "imprese"]:
+	if scene in ["menu", "stagno", "maestria", "partenza", "opzioni", "audio", "grafica", "tasti", "imprese", "rane"]:
 		var menu: Node = load("res://scenes/menu.tscn").instantiate()
 		menu.progress_path = PROGRESS
 		menu.record_path = "user://record_shot.cfg"
@@ -62,6 +62,9 @@ func _process(_d: float) -> bool:
 				for id in ["boomerang", "acrobata", "fuochi", "arrosto"]:
 					load("res://scripts/progress.gd").feats[id] = true
 				current_scene._open_feats()
+			"rane":
+				load("res://scripts/progress.gd").feats["tana5"] = true
+				current_scene._open_frogs()
 			"impresa":
 				main.get_node("Hud").show_feat("Boomerang", "Rana velenosa", false)
 			"carte":

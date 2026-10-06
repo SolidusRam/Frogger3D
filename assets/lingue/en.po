@@ -1057,3 +1057,63 @@ msgstr "Unlocked: %s"
 
 msgid "Sbloccata (arriva più avanti): %s"
 msgstr "Unlocked (coming later): %s"
+
+msgid "niente"
+msgstr "nothing"
+
+msgid "Comune"
+msgstr "Common"
+
+msgid "Equilibrata: parte col pugno"
+msgstr "Balanced: starts with the punch"
+
+msgid "Salto normale molto più alto"
+msgstr "Much higher normal jump"
+
+msgid "70 di vita"
+msgstr "70 health"
+
+msgid "Il deltaplano dura il doppio"
+msgstr "The glider lasts twice as long"
+
+msgid "Niente pugno finché una tana non le dà i guantoni"
+msgstr "No punch until a den gives her the gloves"
+
+msgid "Nuota veloce, e l'acqua non la ferisce"
+msgstr "Swims fast, and water doesn't hurt her"
+
+msgid "Lenta a terra"
+msgstr "Slow on land"
+
+msgid "La lingua si ricarica in metà tempo"
+msgstr "The tongue recharges in half the time"
+
+msgid "150 di vita"
+msgstr "150 health"
+
+msgid "Parte senza attrezzi: il Frogger puro fino alla prima tana"
+msgstr "Starts with no tools: pure Frogger until the first den"
+
+msgid "Parte con: %s"
+msgstr "Starts with: %s"
+
+msgid "Scelta"
+msgstr "Chosen"
+
+msgid "Scegli"
+msgstr "Choose"
+
+msgid "Si sblocca con l'impresa «%s»: %s"
+msgstr "Unlocked by the feat “%s”: %s"
+
+msgid "Chiusa"
+msgstr "Locked"
+
+msgid "Le rane"
+msgstr "The frogs"
+
+msgid "Ogni rana parte con un solo attrezzo: gli altri arrivano dalle carte delle tane."
+msgstr "Each frog starts with a single tool: the others come from the den cards."
+
+msgid "Rana: %s"
+msgstr "Frog: %s"

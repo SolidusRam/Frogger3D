@@ -362,6 +362,86 @@ msgstr ""
 msgid "Chiudi"
 msgstr ""
 
+#: scripts/frogs.gd
+msgid "niente"
+msgstr ""
+
+#: scripts/frogs.gd
+msgid "Comune"
+msgstr ""
+
+#: scripts/frogs.gd
+msgid "Equilibrata: parte col pugno"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Nessuno"
+msgstr ""
+
+#: scripts/frogs.gd
+msgid "Salto normale molto più alto"
+msgstr ""
+
+#: scripts/frogs.gd
+msgid "70 di vita"
+msgstr ""
+
+#: scripts/frogs.gd
+msgid "Il deltaplano dura il doppio"
+msgstr ""
+
+#: scripts/frogs.gd
+msgid "Niente pugno finché una tana non le dà i guantoni"
+msgstr ""
+
+#: scripts/frogs.gd
+msgid "Nuota veloce, e l'acqua non la ferisce"
+msgstr ""
+
+#: scripts/frogs.gd
+msgid "Lenta a terra"
+msgstr ""
+
+#: scripts/frogs.gd
+msgid "La lingua si ricarica in metà tempo"
+msgstr ""
+
+#: scripts/frogs.gd
+msgid "150 di vita"
+msgstr ""
+
+#: scripts/frogs.gd
+msgid "Parte senza attrezzi: il Frogger puro fino alla prima tana"
+msgstr ""
+
+#: scripts/frogs_panel.gd
+msgid "Parte con: %s"
+msgstr ""
+
+#: scripts/frogs_panel.gd
+msgid "Scelta"
+msgstr ""
+
+#: scripts/frogs_panel.gd
+msgid "Scegli"
+msgstr ""
+
+#: scripts/frogs_panel.gd
+msgid "Si sblocca con l'impresa «%s»: %s"
+msgstr ""
+
+#: scripts/frogs_panel.gd
+msgid "Chiusa"
+msgstr ""
+
+#: scripts/frogs_panel.gd
+msgid "Le rane"
+msgstr ""
+
+#: scripts/frogs_panel.gd
+msgid "Ogni rana parte con un solo attrezzo: gli altri arrivano dalle carte delle tane."
+msgstr ""
+
 #: scripts/game.gd
 msgid "Seconda vita!"
 msgstr ""
@@ -580,6 +660,10 @@ msgstr ""
 
 #: scripts/menu.gd
 msgid "Mosche d'oro: %d"
+msgstr ""
+
+#: scripts/menu.gd
+msgid "Rana: %s"
 msgstr ""
 
 #: scripts/menu.gd
@@ -1400,9 +1484,5 @@ msgstr ""
 
 #: scripts/upgrades.gd
 msgid "Corpo"
-msgstr ""
-
-#: scripts/options_panel.gd
-msgid "Nessuno"
 msgstr ""
 

@@ -27,7 +27,7 @@ PATTERNS = [
     r'\b_text\(\s*"[^"]*",\s*' + STRING,
     r'\b_page\(\s*(?:\w+,\s*)?' + STRING,
     r'\b(?:_slider|_toggle|_choice)\(\s*\w+,\s*' + STRING,
-    r'"(?:name|text|trial|reward_name|group)":\s*' + STRING,
+    r'"(?:name|text|trial|reward_name|group|pro|contro)":\s*' + STRING,
 ]
 # Costanti con nomi da mostrare: tutte le stringhe dentro il loro blocco.
 BLOCKS = {

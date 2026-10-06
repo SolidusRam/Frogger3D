@@ -109,6 +109,13 @@ var _burn_owed := 0.0
 ## Colori della tavolozza cambiati sul modello, per nome del materiale: i
 ## poteri e le carte ci mettono i loro ("glove" -> "glove_hot"...).
 var _palette := {}
+## Il colore della pelle (la voce della tavolozza; "" la verde di sempre):
+## ogni rana ha il suo (vedi Frogs).
+var skin := "":
+	set(value):
+		skin = value
+		# Bagnata (pelle impermeabile) resta del colore dell'acqua.
+		set_palette("frog", "frog_wet" if waterproof else value)
 ## Lunghezza a riposo delle braccia, dalla spalla al guantone.
 var _arm_lengths: Array[float] = []
 ## Modalità prova: niente toglie vita.
@@ -333,7 +340,7 @@ func compute_jump() -> void:
 ## verde acqua.
 func set_waterproof(on: bool) -> void:
 	waterproof = on
-	set_palette("frog", "frog_wet" if on else "")
+	set_palette("frog", "frog_wet" if on else skin)
 
 
 ## Cambia un colore del modello: le parti col materiale key prendono la voce

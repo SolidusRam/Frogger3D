@@ -1,8 +1,8 @@
 extends Node
 ## Il menu iniziale, sopra il gioco vivo: dietro c'è la partita vera (in
 ## modalità attract), col traffico che passa e la telecamera che gira attorno
-## alla rana sulla striscia di partenza. A sinistra Gioca, Lo stagno, Imprese,
-## Opzioni, Esci;
+## alla rana sulla striscia di partenza. A sinistra Gioca, la rana scelta,
+## Lo stagno, Imprese, Opzioni, Esci;
 ## in basso mosche e record. Gioca fa partire la run sul posto: la telecamera
 ## torna dietro la rana e il menu sparisce.
 ## Avviato con le opzioni della modalità prova (tools/prova.sh), salta il
@@ -22,6 +22,8 @@ var _record_label: Label
 var _pond: Pond
 var _options: OptionsPanel
 var _feats: FeatsPanel
+var _frogs: FrogsPanel
+var _frog_button: Button
 
 
 func _ready() -> void:
@@ -29,6 +31,11 @@ func _ready() -> void:
 		get_tree().change_scene_to_file.call_deferred(GAME)
 		return
 	get_tree().paused = false
+	# Senza schermo (i test) mai i file veri del giocatore: i test che aprono
+	# il menu non possono impostarne i percorsi prima che parta.
+	if DisplayServer.get_name() == "headless":
+		progress_path = "user://progressi_test.cfg"
+		record_path = "user://record_test.cfg"
 	Progress.load_from(progress_path)
 	_game = load(GAME).instantiate()
 	_game.attract = true
@@ -86,6 +93,8 @@ func _build() -> void:
 	play.custom_minimum_size = Vector2(340, 64)
 	play.add_theme_font_size_override("font_size", 32)
 	column.add_child(play)
+	_frog_button = _button("", _open_frogs)
+	column.add_child(_frog_button)
 	column.add_child(_button("Lo stagno", _open_pond))
 	column.add_child(_button("Imprese", _open_feats))
 	column.add_child(_button("Opzioni", _open_options))
@@ -122,6 +131,12 @@ func _build() -> void:
 	_pond.closed.connect(_on_pond_closed)
 	_ui.add_child(_pond)
 
+	_frogs = FrogsPanel.new()
+	_frogs.visible = false
+	_frogs.closed.connect(_frog_button.grab_focus)
+	_frogs.chosen.connect(_on_frog_chosen)
+	_ui.add_child(_frogs)
+
 	_feats = FeatsPanel.new()
 	_feats.visible = false
 	_feats.closed.connect(_play_button.grab_focus)
@@ -143,6 +158,7 @@ func _notification(what: int) -> void:
 func _refresh() -> void:
 	_flies_label.text = tr("Mosche: %d") % Progress.flies
 	_golden_label.text = tr("Mosche d'oro: %d") % Progress.golden
+	_frog_button.text = tr("Rana: %s") % tr(Frogs.ALL[Frogs.selected()].name)
 	var record: float = _game.record_distance
 	_record_label.text = tr("Record: %d m") % roundi(record) if record > 0.0 else tr("Nessun record")
 	_golden_label.visible = Progress.golden > 0
@@ -160,6 +176,16 @@ func _play() -> void:
 func _open_pond() -> void:
 	_pond.refresh()
 	_pond.visible = true
+
+
+func _open_frogs() -> void:
+	_frogs.open()
+
+
+## La rana scelta compare subito sullo sfondo, coi suoi colori e attrezzi.
+func _on_frog_chosen(id: String) -> void:
+	_game.preview_frog(id)
+	_refresh()
 
 
 func _open_feats() -> void:

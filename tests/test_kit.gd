@@ -27,7 +27,7 @@ func _physics_process(_delta: float) -> bool:
 	match frame:
 		2:
 			var fresh: Node = load("res://scenes/main.tscn").instantiate()
-			t.check(fresh.starting_kit == {"gloves": "base"}, "la rana comune parte coi soli guantoni")
+			t.check(fresh.starting_kit.is_empty() and load("res://scripts/frogs.gd").ALL.comune.kit == {"gloves": "base"}, "la rana comune parte coi soli guantoni")
 			fresh.free()
 			upgrades.equip_kit({"gloves": "base"})
 			t.check(frog.punch_power.is_ready(), "coi guantoni il pugno c'è")
