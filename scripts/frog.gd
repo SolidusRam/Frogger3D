@@ -133,6 +133,30 @@ var bounce_streak := 0
 var cooldown_factor := 1.0
 ## Pelle impermeabile (power-up): l'acqua non toglie vita.
 var waterproof := false
+## Il guscio (carta del corpo): un guscio di tartaruga sulla schiena assorbe
+## un colpo intero, poi si riforma in shell_recharge secondi. Miglioramenti:
+## le spine (l'auto che lo rompe diventa rottame) e il guscio rapido (si
+## riforma in metà tempo).
+var shell := false:
+	set(value):
+		shell = value
+		_shell_ready = value
+		_shell_left = 0.0
+		if _shell_mesh:
+			_shell_mesh.visible = value
+			_shell_mesh.scale = Vector3.ONE
+var shell_spines := false
+var shell_quick := false
+@export var shell_recharge := 25.0
+## Colpi parati dal guscio in questa sezione (la prova del guscio rapido).
+var shell_blocks_section := 0
+## Chi ha colpito la rana per ultimo, se lo dice (le auto): per le spine.
+var last_hit_by: Node3D
+var _shell_ready := false
+var _shell_left := 0.0
+var _shell_mesh: MeshInstance3D
+## Dove sta il guscio, sul torso.
+const SHELL_POSITION := Vector3(0.0, 0.2, -0.22)
 ## Miglioramenti speciali della pelle impermeabile: il tuffo (in acqua, con
 ## Ctrl, ci si immerge e si passa sotto tronchi e coccodrilli) e l'ondata
 ## (saltando fuori dall'acqua si spingono via auto e rottami vicini).
@@ -172,6 +196,7 @@ func _ready() -> void:
 		_arms[i].physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	for power in $Powers.get_children():
 		power.setup(self)
+	_build_shell()
 	_apply_palette()
 	animator = FrogAnimator.new(self)
 
@@ -190,6 +215,7 @@ func _physics_process(delta: float) -> void:
 	punch_power.tick(delta)
 	super_jump_power.tick(delta)
 	tongue_power.tick(delta)
+	_regrow_shell(delta)
 	slam_power.tick(delta)
 	if not is_swimming():
 		submerged = false
@@ -200,7 +226,12 @@ func _physics_process(delta: float) -> void:
 		input = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var direction := camera_rig.flat_basis() * Vector3(input.x, 0.0, input.y)
 
-	if can_act() and Input.is_action_just_pressed("super_jump") and super_jump_power.is_ready():
+	if can_act() and Input.is_action_just_pressed("super_jump") and super_jump_power.can_air_jump():
+		# Le molle a razzo: in aria un altro salto, anche in ricarica.
+		glider_power.close()
+		tongue_power.release()
+		super_jump_power.air_jump(direction)
+	elif can_act() and Input.is_action_just_pressed("super_jump") and super_jump_power.is_ready():
 		glider_power.close()
 		tongue_power.release()
 		super_jump_power.use(direction)
@@ -469,6 +500,11 @@ func take_hit(damage: int, knockback: Vector3) -> void:
 		return
 	# Prima che il colpo chiuda il deltaplano: "abbattuta in volo".
 	Feats.note(&"frog_hit")
+	var hitter := last_hit_by
+	last_hit_by = null
+	if shell and _shell_ready:
+		_shell_absorb(knockback, hitter)
+		return
 	velocity = knockback
 	_stun_time = stun_duration
 	_invulnerable_time = invulnerability_duration
@@ -479,6 +515,62 @@ func take_hit(damage: int, knockback: Vector3) -> void:
 	if not invincible:
 		Sfx.play(&"frog_hurt")
 	_lose_health(damage)
+
+
+## Il guscio para il colpo: niente danno, mezza spinta, e si rompe.
+func _shell_absorb(knockback: Vector3, hitter: Node3D) -> void:
+	_shell_ready = false
+	_shell_left = shell_recharge * (0.5 if shell_quick else 1.0)
+	velocity = knockback * 0.5
+	_invulnerable_time = 0.6
+	squash(Vector3(1.25, 0.8, 1.25), 0.2)
+	Sfx.play(&"wreck_hit", 0.0, 1.5)
+	camera_rig.shake(0.2, 0.2)
+	var tween := _shell_mesh.create_tween()
+	tween.tween_property(_shell_mesh, "scale", Vector3(1.4, 1.4, 1.4), 0.06)
+	tween.tween_property(_shell_mesh, "scale", Vector3.ZERO, 0.12)
+	tween.tween_callback(func() -> void: _shell_mesh.visible = false)
+	Progress.trial_add("shell", 0, 1)
+	shell_blocks_section += 1
+	Progress.trial_best("shell", 1, shell_blocks_section)
+	if shell_spines and hitter is Car and hitter.state == Car.State.DRIVING:
+		hitter.become_wreck()
+
+
+## Il guscio si riforma: ricresce sulla schiena.
+func _regrow_shell(delta: float) -> void:
+	if not shell or _shell_ready:
+		return
+	_shell_left -= delta
+	if _shell_left > 0.0:
+		return
+	_shell_ready = true
+	_shell_mesh.visible = true
+	_shell_mesh.scale = Vector3.ZERO
+	_shell_mesh.create_tween().tween_property(_shell_mesh, "scale", Vector3.ONE, 0.4).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	Sfx.play(&"flower_pop", 0.0, 0.8)
+
+
+## Il guscio: una cupola sfaccettata sulla schiena, nascosta finché non c'è
+## la carta.
+func _build_shell() -> void:
+	_shell_mesh = MeshInstance3D.new()
+	var dome := SphereMesh.new()
+	dome.is_hemisphere = true
+	dome.radius = 0.36
+	dome.height = 0.3
+	dome.radial_segments = 8
+	dome.rings = 2
+	# Il colore lo dà la tavolozza (apply_palette), dal nome del materiale.
+	var paint := StandardMaterial3D.new()
+	paint.resource_name = "shell"
+	dome.material = paint
+	_shell_mesh.mesh = dome
+	_shell_mesh.name = "Shell"
+	_shell_mesh.position = SHELL_POSITION
+	_shell_mesh.rotation_degrees = Vector3(6.0, 0.0, 0.0)
+	_shell_mesh.visible = false
+	_torso.add_child(_shell_mesh)
 
 
 func _lose_health(amount: int) -> void:

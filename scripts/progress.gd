@@ -70,6 +70,18 @@ const CARD_UPGRADES := {
 		{"name": "Tuffo", "text": "In acqua, {slam}: ti immergi e passi sotto tronchi e coccodrilli.", "trial": "Nuota per 300 m", "goal": 300, "kind": "total", "cost": 2},
 		{"name": "Ondata", "text": "Saltando fuori dall'acqua sollevi un'onda che spinge via auto e rottami.", "trial": "Resta 15 s di fila in acqua", "goal": 15, "kind": "best", "cost": 4},
 	],
+	"rocket_springs": [
+		{"name": "Terzo stadio", "text": "Un terzo salto in aria.", "trial": "Fai 40 secondi salti", "goal": 40, "kind": "total", "cost": 2},
+		{"name": "Scia di fuoco", "text": "Il salto in aria lascia sotto una fiammata che fa rottami.", "trial": "Sali oltre 12 m d'altezza", "goal": 12, "kind": "best", "cost": 4},
+	],
+	"shell": [
+		{"name": "Spine", "text": "L'auto che rompe il guscio diventa rottame.", "trial": "Il guscio para 20 colpi", "goal": 20, "kind": "total", "cost": 2},
+		{"name": "Guscio rapido", "text": "Il guscio si riforma in metà tempo.", "trial": "Para 3 colpi nella stessa sezione", "goal": 3, "kind": "best", "cost": 4},
+	],
+	"catapult_tongue": [
+		{"name": "Lancio lungo", "text": "Il rottame scagliato vola molto più lontano.", "trial": "Scaglia 30 rottami", "goal": 30, "kind": "total", "cost": 2},
+		{"name": "Strike", "text": "Il rottame scagliato, colpita un'auto, rimbalza verso la più vicina.", "trial": "Un rottame scagliato ne colpisce 2", "goal": 2, "kind": "best", "cost": 4},
+	],
 	"tongue": [
 		{"name": "Fionda", "text": "Lasciando dopo un traino parti a velocità doppia.", "trial": "Fatti trascinare 20 volte", "goal": 20, "kind": "total", "cost": 2},
 		{"name": "Lingua doppia", "text": "Mentre una lingua ti trascina, l'altra mangia le mosche vicine.", "trial": "Fatti trascinare per 50 m in un solo traino", "goal": 50, "kind": "best", "cost": 4},

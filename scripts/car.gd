@@ -367,9 +367,39 @@ func _on_wreck_body_entered(body: Node) -> void:
 	if other and other.state == State.DRIVING:
 		if (linear_velocity - other.motion_velocity()).length() > crash_speed:
 			other.become_wreck()
+			if has_meta("thrown"):
+				_thrown_hit(other)
 			# Maestria del montante: un'auto lanciata ne ribalta un'altra.
 			if has_meta("uppercut"):
 				Progress.trial_add("uppercut", 1, 1)
+
+
+## Per seconds secondi quest'auto non fa male alla rana (il rottame tenuto
+## o appena scagliato dalla lingua-catapulta).
+func spare_frog(seconds: float) -> void:
+	_frog_grace = maxf(_frog_grace, seconds)
+
+
+## Un rottame scagliato dalla lingua-catapulta ha colpito un'auto: conta i
+## colpi (la prova dello strike) e, con lo strike, la prima volta rimbalza
+## verso l'auto in marcia più vicina.
+func _thrown_hit(other: Car) -> void:
+	var hits: int = get_meta("thrown") + 1
+	set_meta("thrown", hits)
+	Progress.trial_best("catapult_tongue", 1, hits)
+	if not has_meta("strike"):
+		return
+	remove_meta("strike")
+	var best: Car = null
+	for car: Car in get_tree().get_nodes_in_group("cars"):
+		if car == other or car == self or car.state != State.DRIVING:
+			continue
+		var gap := car.global_position.distance_to(global_position)
+		if gap < 15.0 and (best == null or gap < best.global_position.distance_to(global_position)):
+			best = car
+	if best:
+		var toward := best.global_position - global_position
+		linear_velocity = Vector3(toward.x, 0.0, toward.z).normalized() * maxf(linear_velocity.length(), 14.0) + Vector3.UP * 2.0
 
 
 ## Tira e molla (guantone a molla migliorato): l'auto, già rottame, viene
@@ -425,6 +455,7 @@ func _hit_overlapping_frogs() -> void:
 		var closing_speed := (velocity - frog.velocity).dot(toward_frog)
 		if own_speed >= min_harmful_speed and closing_speed >= min_harmful_speed:
 			Feats.note(&"car_hit", 1.0 if has_meta("punched") else 0.0)
+			frog.last_hit_by = self
 			frog.take_hit(hit_damage, _knockback_for(frog, velocity))
 
 

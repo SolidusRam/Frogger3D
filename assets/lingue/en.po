@@ -1117,3 +1117,75 @@ msgstr "Each frog starts with a single tool: the others come from the den cards.
 
 msgid "Rana: %s"
 msgstr "Frog: %s"
+
+msgid "Terzo stadio"
+msgstr "Third stage"
+
+msgid "Un terzo salto in aria."
+msgstr "A third jump in the air."
+
+msgid "Fai 40 secondi salti"
+msgstr "Make 40 second jumps"
+
+msgid "Scia di fuoco"
+msgstr "Fire trail"
+
+msgid "Il salto in aria lascia sotto una fiammata che fa rottami."
+msgstr "The mid-air jump leaves a blast below that wrecks cars."
+
+msgid "Sali oltre 12 m d'altezza"
+msgstr "Climb higher than 12 m"
+
+msgid "Spine"
+msgstr "Spikes"
+
+msgid "L'auto che rompe il guscio diventa rottame."
+msgstr "The car that breaks the shell gets wrecked."
+
+msgid "Il guscio para 20 colpi"
+msgstr "The shell blocks 20 hits"
+
+msgid "Guscio rapido"
+msgstr "Quick shell"
+
+msgid "Il guscio si riforma in metà tempo."
+msgstr "The shell grows back in half the time."
+
+msgid "Para 3 colpi nella stessa sezione"
+msgstr "Block 3 hits in the same section"
+
+msgid "Lancio lungo"
+msgstr "Long throw"
+
+msgid "Il rottame scagliato vola molto più lontano."
+msgstr "The thrown wreck flies much farther."
+
+msgid "Scaglia 30 rottami"
+msgstr "Throw 30 wrecks"
+
+msgid "Strike"
+msgstr "Strike"
+
+msgid "Il rottame scagliato, colpita un'auto, rimbalza verso la più vicina."
+msgstr "After hitting a car, the thrown wreck bounces toward the nearest one."
+
+msgid "Un rottame scagliato ne colpisce 2"
+msgstr "Hit 2 cars with one thrown wreck"
+
+msgid "Molle a razzo"
+msgstr "Rocket springs"
+
+msgid "In aria, {super_jump} di nuovo: un secondo super salto."
+msgstr "In the air, {super_jump} again: a second super jump."
+
+msgid "Guscio"
+msgstr "Shell"
+
+msgid "Un guscio di tartaruga assorbe un colpo, poi si riforma in 25 s."
+msgstr "A turtle shell absorbs one hit, then grows back in 25 s."
+
+msgid "Lingua-catapulta"
+msgstr "Catapult tongue"
+
+msgid "{tongue}: la lingua afferra un rottame e lo tiene sopra la testa; lasciando, lo scagli dove guardi."
+msgstr "{tongue}: your tongue grabs a wreck and holds it over your head; let go to hurl it where you look."

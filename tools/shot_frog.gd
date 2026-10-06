@@ -1,7 +1,7 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
 ## Primo piano della rana. SCENE: fronte | lato | dietro | pugno | salto |
-## caduta | boxe. SHOT.
+## caduta | boxe | guscio (di spalle, col guscio e le molle a razzo). SHOT.
 var frame := 0
 var main: Node
 var scene := OS.get_environment("SCENE")
@@ -23,6 +23,9 @@ func _process(_d: float) -> bool:
 		main.get_node("Wildfire").stopped = true
 		main.get_node("Hud").visible = false
 		main.get_node("Upgrades").apply("explosive_gloves")
+		if scene == "guscio":
+			main.get_node("Upgrades").apply("shell")
+			main.get_node("Upgrades").apply("rocket_springs")
 	if frame == 30:
 		var cam := Camera3D.new()
 		root.add_child(cam)
@@ -31,7 +34,7 @@ func _process(_d: float) -> bool:
 		var at: Vector3 = frog.global_position + Vector3(0, 0.4, 0)
 		var eye: Vector3 = {"fronte": Vector3(1.0, 0.9, -2.6), "lato": Vector3(2.8, 0.7, 0.2), "dietro": Vector3(-1.4, 1.5, 2.4),
 			"pugno": Vector3(2.4, 1.0, -1.6), "salto": Vector3(3.2, 0.6, 0.0), "caduta": Vector3(3.2, 0.6, 0.0),
-			"boxe": Vector3(1.6, 0.9, -2.4)}[scene]
+			"boxe": Vector3(1.6, 0.9, -2.4), "guscio": Vector3(-1.8, 1.4, 1.8)}[scene]
 		cam.look_at_from_position(at + eye + (Vector3.UP * 2.0 if scene in ["salto", "caduta"] else Vector3.ZERO), at + (Vector3.UP * 2.0 if scene in ["salto", "caduta"] else Vector3.ZERO))
 		if scene == "boxe":
 			frog.animator._idle_time = 5.0

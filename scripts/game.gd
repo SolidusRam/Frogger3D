@@ -267,6 +267,8 @@ func _on_den_reached(_count: int, distance: float) -> void:
 	if _over:
 		return
 	add_flies(den_flies)
+	# Una sezione nuova: la prova del guscio rapido ricomincia.
+	frog.shell_blocks_section = 0
 	if den_regen > 0.0:
 		frog.health = mini(frog.health + roundi(frog.max_health * den_regen), frog.max_health)
 		frog.health_changed.emit(frog.health, frog.max_health)

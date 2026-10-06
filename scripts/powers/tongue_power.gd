@@ -32,6 +32,16 @@ var enabled := false
 var slingshot := false
 var double_tongue := false
 @export var double_tongue_reach := 6.0
+## La lingua-catapulta (carta, slot lingua): aggancia solo rottami (e mosche),
+## li tiene sospesi sopra la testa finché si tiene premuto e, lasciando, li
+## scaglia dove guarda la telecamera. Miglioramenti: lancio lungo e strike
+## (il rottame, colpita un'auto, rimbalza verso la più vicina).
+var catapult := false
+var long_throw := false
+var strike := false
+@export var throw_speed := 24.0
+@export var long_throw_factor := 1.6
+@export var hold_height := 2.8
 var cooldown_left := 0.0
 ## Vero mentre la lingua è agganciata a qualcosa.
 var attached := false
@@ -171,11 +181,22 @@ func _eat_nearby_flies() -> void:
 
 
 ## Il rottame agganciato viene tirato verso la rana, fino a tether_length.
+## Con la catapulta resta sospeso sopra la sua testa.
 func pull_wreck(_delta: float) -> void:
 	if not _still_hooked():
 		release()
 		return
 	var body := _target as RigidBody3D
+	# Un rottame fermo da un po' dorme: la lingua lo sveglia.
+	body.sleeping = false
+	if catapult:
+		# Il rottame tenuto (e appena scagliato) non investe la rana.
+		if body is Car:
+			body.spare_frog(0.5)
+		var hold := _frog.global_position + Vector3.UP * hold_height
+		body.linear_velocity = (hold - body.global_position).limit_length(1.0) * minf(body.global_position.distance_to(hold) * 8.0, 26.0)
+		body.angular_velocity = body.angular_velocity * 0.9
+		return
 	var toward := _frog.global_position - body.global_position
 	toward.y = 0.0
 	if toward.length() > tether_length + 1.0:
@@ -188,7 +209,9 @@ func release() -> void:
 		return
 	attached = false
 	Sfx.play(&"tongue_reel")
-	if not _is_loose(_target):
+	if catapult and is_instance_valid(_target) and _is_loose(_target):
+		_throw(_target as RigidBody3D)
+	elif not _is_loose(_target):
 		Progress.trial_best("tongue", 1, _tow_distance)
 		if slingshot:
 			_frog.velocity.x *= 2.0
@@ -196,6 +219,21 @@ func release() -> void:
 		_frog.velocity.y = maxf(_frog.velocity.y, release_hop)
 	_target = null
 	cooldown_left = cooldown
+
+
+## La catapulta: il rottame parte dove guarda la telecamera, un po' in alto.
+func _throw(body: RigidBody3D) -> void:
+	var forward := -_frog.camera_rig.flat_basis().z
+	var speed := throw_speed * (long_throw_factor if long_throw else 1.0)
+	body.linear_velocity = forward * speed + Vector3.UP * 4.0
+	if body is Car:
+		body.spare_frog(0.5)
+	body.set_meta("thrown", 0)
+	if strike:
+		body.set_meta("strike", true)
+	Progress.trial_add("catapult_tongue", 0, 1)
+	_frog.squash(Vector3(0.85, 1.2, 0.85), 0.2)
+	Sfx.play(&"punch_swing", 0.0, 0.8)
 
 
 ## Senza sgancio né slancio: un colpo interrompe tutto.
@@ -266,6 +304,9 @@ func _find_target() -> Node3D:
 	for result in space.intersect_shape(query, 64):
 		var body := result.collider as Node3D
 		if body == null or body == standing_on:
+			continue
+		# La catapulta prende solo quello che si può scagliare.
+		if catapult and not _is_loose(body):
 			continue
 		var offset := body.global_position - _frog.global_position
 		var flat := Vector3(offset.x, 0.0, offset.z)

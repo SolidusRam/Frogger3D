@@ -71,6 +71,18 @@ const CATALOG := {
 		"name": "Lingua-rampino", "slot": "tongue",
 		"text": "{tongue}: la lingua aggancia da sola la cosa più vicina dove guardi. Ti tira su auto, tronchi e navi; un rottame lo tira verso di te.",
 	},
+	"rocket_springs": {
+		"name": "Molle a razzo", "slot": "springs",
+		"text": "In aria, {super_jump} di nuovo: un secondo super salto.",
+	},
+	"shell": {
+		"name": "Guscio", "slot": "body",
+		"text": "Un guscio di tartaruga assorbe un colpo, poi si riforma in 25 s.",
+	},
+	"catapult_tongue": {
+		"name": "Lingua-catapulta", "slot": "tongue",
+		"text": "{tongue}: la lingua afferra un rottame e lo tiene sopra la testa; lasciando, lo scagli dove guardi.",
+	},
 	"punch_power": {"name": "Pugno più forte", "slot": "", "max": 3, "text": "+30% di spinta del pugno."},
 	"quick_springs": {"name": "Molle rapide", "slot": "", "max": 3, "text": "Il super salto si ricarica il 25% più in fretta."},
 	"big_wing": {"name": "Ala più grande", "slot": "", "max": 3, "text": "+1 secondo di volo col deltaplano."},
@@ -277,6 +289,13 @@ func _set_modifier(id: String, on: bool) -> void:
 			frog.set_waterproof(on)
 		"tongue":
 			frog.tongue_power.enabled = on
+		"rocket_springs":
+			frog.super_jump_power.rocket = on
+			frog.super_jump_power.set_spring_color("spring_rocket" if on else "")
+		"shell":
+			frog.shell = on
+		"catapult_tongue":
+			frog.tongue_power.catapult = on
 		"napalm":
 			Car.smoke_seconds = 15.0 if on else Car.SMOKE_SECONDS
 			frog.glider_power.wide_thermals = on
@@ -316,3 +335,12 @@ func _set_special(id: String, first: bool, second: bool) -> void:
 		"tongue":
 			frog.tongue_power.slingshot = first
 			frog.tongue_power.double_tongue = second
+		"rocket_springs":
+			frog.super_jump_power.air_jumps = 2 if first else 1
+			frog.super_jump_power.fire_trail = second
+		"shell":
+			frog.shell_spines = first
+			frog.shell_quick = second
+		"catapult_tongue":
+			frog.tongue_power.long_throw = first
+			frog.tongue_power.strike = second

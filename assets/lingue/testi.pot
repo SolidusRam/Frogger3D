@@ -1199,6 +1199,78 @@ msgid "Resta 15 s di fila in acqua"
 msgstr ""
 
 #: scripts/progress.gd
+msgid "Terzo stadio"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Un terzo salto in aria."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Fai 40 secondi salti"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Scia di fuoco"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Il salto in aria lascia sotto una fiammata che fa rottami."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Sali oltre 12 m d'altezza"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Spine"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "L'auto che rompe il guscio diventa rottame."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Il guscio para 20 colpi"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Guscio rapido"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Il guscio si riforma in metà tempo."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Para 3 colpi nella stessa sezione"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Lancio lungo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Il rottame scagliato vola molto più lontano."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Scaglia 30 rottami"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Strike"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Il rottame scagliato, colpita un'auto, rimbalza verso la più vicina."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Un rottame scagliato ne colpisce 2"
+msgstr ""
+
+#: scripts/progress.gd
 msgid "Fionda"
 msgstr ""
 
@@ -1432,6 +1504,30 @@ msgstr ""
 
 #: scripts/upgrades.gd
 msgid "{tongue}: la lingua aggancia da sola la cosa più vicina dove guardi. Ti tira su auto, tronchi e navi; un rottame lo tira verso di te."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Molle a razzo"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "In aria, {super_jump} di nuovo: un secondo super salto."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Guscio"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Un guscio di tartaruga assorbe un colpo, poi si riforma in 25 s."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Lingua-catapulta"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "{tongue}: la lingua afferra un rottame e lo tiene sopra la testa; lasciando, lo scagli dove guardi."
 msgstr ""
 
 #: scripts/upgrades.gd
