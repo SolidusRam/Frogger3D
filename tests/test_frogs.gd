@@ -43,12 +43,18 @@ func _physics_process(_delta: float) -> bool:
 			main._apply_frog_mods()
 			t.check(upgrades.slots.springs == "base" and not frog.punch_power.enabled, "la raganella parte con le molle e senza pugno")
 			t.check(frog.skin == "frog_tree", "ha la sua pelle")
+			t.check(frog._palette.get("eye") == "eye_red" and frog.model.find_child("FootL__pads", true, false) != null, "la raganella ha gli occhi rossi e le ventose sulle dita")
 			t.check(frog.max_health == 70 and is_equal_approx(frog.jump_height, jump * 1.6), "70 di vita e salto più alto")
 			# La rana di fiume: la pelle impermeabile, e il colore dell'acqua.
 			main.preview_frog("fiume")
 			t.check(upgrades.slots.body == "waterproof" and frog.waterproof and frog._palette.get("frog") == "frog_wet", "la rana di fiume parte impermeabile, del colore dell'acqua")
+			# La paracadutista: la cuffia appesa alla testa.
+			main.preview_frog("paracadutista")
+			var cap: Node = frog.model.find_child("Head__cap", true, false)
+			t.check(cap != null and cap.get_parent().name == "Head" and frog.model.find_child("FootL__pads", true, false) == null, "la paracadutista ha la cuffia sulla testa, e le ventose se ne sono andate")
 			# Il rospo: niente.
 			main.preview_frog("rospo")
+			t.check(frog.model.scale.x > 1.1 and frog._palette.get("frog_spot") == "wart", "il rospo è più tozzo, con le macchie marroni")
 			t.check(upgrades.slots.values().all(func(item: String) -> bool: return item == ""), "il rospo parte senza attrezzi")
 			# La schermata.
 			var panel: Node = load("res://scripts/frogs_panel.gd").new()

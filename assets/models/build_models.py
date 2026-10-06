@@ -54,6 +54,8 @@ PREVIEW = {
     "reed": (0.42, 0.55, 0.22, 1), "cattail": (0.42, 0.25, 0.12, 1), "flower": (0.95, 0.55, 0.7, 1),
     "water_shallow": (0.35, 0.62, 0.75, 1), "ripple": (0.85, 0.93, 0.97, 1),
     "log": (0.45, 0.3, 0.15, 1), "log_end": (0.78, 0.62, 0.4, 1),
+    "leather": (0.45, 0.28, 0.15, 1), "lens": (0.3, 0.6, 0.85, 1), "scarf": (0.85, 0.15, 0.15, 1),
+    "flipper": (0.98, 0.6, 0.1, 1), "eye_red": (0.9, 0.15, 0.1, 1), "wart": (0.36, 0.27, 0.15, 1),
     "croc": (0.2, 0.4, 0.2, 1), "croc_dark": (0.16, 0.32, 0.16, 1), "croc_eye": (0.95, 0.85, 0.2, 1),
 }
 
@@ -399,6 +401,121 @@ def build_frog():
                 cylinder("cuff", 0.15, 0.12, glove + Vector((0, -0.24, 0)), "sign_white", sides=8, axis="Y")]
         part("Glove" + label, fist, tuple(glove))
     save("frog")
+
+
+# --- Gli accessori delle rane ------------------------------------------------
+
+# I perni delle parti della rana (vedi build_frog): un accessorio ha l'origine
+# nel perno della parte a cui si aggancia, e si chiama "Parte__nome"; in gioco
+# Frog.set_look lo appende a quella parte, così segue le animazioni.
+PIVOTS = {
+    "Torso": (0, -0.3, 0.15), "Head": (0, 0.15, 0.44),
+    "EyeL": (-0.18, 0.32, 0.66), "EyeR": (0.18, 0.32, 0.66),
+    "FootL": (-0.41, 0.0, 0.04), "FootR": (0.41, 0.0, 0.04),
+}
+
+
+def attach(target, name, objects):
+    """Un accessorio: le forme unite, con l'origine nel perno di target."""
+    return part(target + "__" + name, objects, PIVOTS[target])
+
+
+def torso_top(y):
+    return 0.44 + (y + 0.36) * 0.148
+
+
+def build_frog_raganella():
+    """La raganella: ventose tonde sulle punte delle dita (gli occhi rossi e il
+    corpo più snello li dà il gioco)."""
+    reset()
+    for side, label in ((1, "R"), (-1, "L")):
+        pads = [ico("pad_%d" % i, 0.06, (side * x, y, 0.045), "frog_belly", scale=(1, 1, 0.7))
+                for i, (x, y) in enumerate([(0.32, 0.33), (0.47, 0.35), (0.62, 0.33)])]
+        attach("Foot" + label, "pads", pads)
+    save("frog_raganella")
+
+
+def build_frog_paracadutista():
+    """La paracadutista: cuffia di cuoio con i paraorecchie, gli occhialoni
+    tirati sulla fronte e una sciarpa rossa che svolazza dietro."""
+    reset()
+    cap = [ico("cap", 0.36, (0, 0.14, 0.6), "leather", scale=(1.0, 0.95, 0.55))]
+    for side in (1, -1):
+        cap.append(box("flap_%d" % side, side * 0.29, side * 0.36, 0.02, 0.28, 0.36, 0.6, "leather"))
+    attach("Head", "cap", cap)
+    # Gli occhialoni sulla cuffia, sopra e dietro gli occhi.
+    goggles = [box("strap", -0.34, 0.34, 0.0, 0.05, 0.7, 0.76, "tire")]
+    for side in (1, -1):
+        goggles.append(cylinder("rim_%d" % side, 0.1, 0.06, (side * 0.13, 0.06, 0.78), "metal", sides=8, axis="Y"))
+        goggles.append(cylinder("lens_%d" % side, 0.075, 0.07, (side * 0.13, 0.07, 0.78), "lens", sides=8, axis="Y"))
+    attach("Head", "goggles", goggles)
+    scarf = [box("knot", -0.28, 0.28, 0.12, 0.24, 0.36, 0.46, "scarf"),
+             block("tail",
+                   [(0.12, 0.12, 0.44), (0.22, 0.12, 0.44), (0.3, -0.42, 0.5), (0.2, -0.42, 0.5)],
+                   [(0.12, 0.12, 0.47), (0.22, 0.12, 0.47), (0.3, -0.42, 0.53), (0.2, -0.42, 0.53)],
+                   "scarf")]
+    attach("Torso", "scarf", scarf)
+    save("frog_paracadutista")
+
+
+def build_frog_fiume():
+    """La rana di fiume: maschera da sub sugli occhi, boccaglio arancione e
+    pinne ai piedi."""
+    reset()
+    # La cornice è un bordo vuoto: dietro il vetro si vedono gli occhi.
+    mask = [box("frame_top", -0.32, 0.32, 0.42, 0.47, 0.77, 0.8, "tire"),
+            box("frame_bottom", -0.32, 0.32, 0.42, 0.47, 0.55, 0.58, "tire"),
+            box("frame_left", -0.32, -0.29, 0.42, 0.47, 0.55, 0.8, "tire"),
+            box("frame_right", 0.29, 0.32, 0.42, 0.47, 0.55, 0.8, "tire"),
+            box("frame_nose", -0.03, 0.03, 0.42, 0.47, 0.55, 0.62, "tire"),
+            box("glass", -0.29, 0.29, 0.455, 0.465, 0.58, 0.77, "lens"),
+            box("strap", -0.33, 0.33, 0.0, 0.42, 0.66, 0.7, "tire")]
+    attach("Head", "mask", mask)
+    snorkel = [tube("pipe", (0.3, 0.46, 0.45), (0.33, 0.3, 0.95), 0.035, "flipper"),
+               box("bite", 0.18, 0.31, 0.5, 0.56, 0.42, 0.48, "tire")]
+    attach("Head", "snorkel", snorkel)
+    for side, label in ((1, "R"), (-1, "L")):
+        fin = block("fin",
+                    [(side * 0.3, 0.28, 0.0), (side * 0.62, 0.28, 0.0), (side * 0.78, 0.7, 0.0), (side * 0.26, 0.7, 0.0)],
+                    [(side * 0.3, 0.28, 0.035), (side * 0.62, 0.28, 0.035), (side * 0.78, 0.7, 0.035), (side * 0.26, 0.7, 0.035)],
+                    "flipper")
+        attach("Foot" + label, "fin", [fin])
+    save("frog_fiume")
+
+
+def build_frog_camaleonte():
+    """Il camaleonte: una cresta sulla testa, la coda arrotolata dietro e gli
+    occhi a torretta (la pelle che li avvolge da dietro)."""
+    reset()
+    crest = [cone("spike_%d" % i, 0.06, 0.16 - 0.02 * i, (0, 0.04 + 0.11 * i, 0.64 - 0.025 * i), "frog_spot", sides=4)
+             for i in range(4)]
+    attach("Head", "crest", crest)
+    tail = []
+    for i in range(9):
+        t = i / 8.0
+        angle = t * math.pi * 1.6
+        radius = 0.22 * (1.0 - 0.6 * t)
+        y = -0.42 - 0.18 - radius * math.sin(angle)
+        z = 0.54 - radius * math.cos(angle)
+        tail.append(ico("seg_%d" % i, 0.075 * (1.0 - 0.55 * t), (0, y, z), "frog"))
+    attach("Torso", "tail", tail)
+    for side, label in ((1, "R"), (-1, "L")):
+        # La torretta avvolge l'occhio e lascia scoperta solo la pupilla.
+        attach("Eye" + label, "turret", [ico("turret", 0.155, (side * 0.18, 0.3, 0.66), "frog", scale=(1.05, 0.85, 1.05))])
+    save("frog_camaleonte")
+
+
+def build_frog_rospo():
+    """Il rospo: le verruche sulla schiena e le ghiandole gonfie dietro gli
+    occhi (il corpo più tozzo lo dà il gioco)."""
+    reset()
+    warts = []
+    for i, (x, y) in enumerate([(-0.18, -0.3), (0.12, -0.32), (0.0, -0.18), (-0.15, -0.05), (0.18, -0.08), (0.05, 0.05), (-0.05, -0.33), (0.22, -0.22)]):
+        warts.append(ico("wart_%d" % i, 0.045 + 0.012 * (i % 3), (x, y, torso_top(y) + 0.015), "wart", scale=(1, 1, 0.6)))
+    attach("Torso", "warts", warts)
+    glands = [ico("gland_%d" % side, 0.09, (side * 0.25, 0.14, 0.55), "wart", scale=(0.9, 1.5, 0.6)) for side in (1, -1)]
+    attach("Head", "glands", glands)
+    save("frog_rospo")
 
 
 # --- La tana ----------------------------------------------------------------
@@ -1003,6 +1120,9 @@ BUILDERS = {
     "crane": build_crane, "crane_trolley": build_crane_trolley, "ship": build_ship,
     "container": build_container, "tug": build_tug, "dolly": build_dolly,
     "suitcase": build_suitcase, "parcel": build_parcel,
+    "frog_raganella": build_frog_raganella, "frog_paracadutista": build_frog_paracadutista,
+    "frog_fiume": build_frog_fiume, "frog_camaleonte": build_frog_camaleonte,
+    "frog_rospo": build_frog_rospo,
 }
 
 if __name__ == "__main__":

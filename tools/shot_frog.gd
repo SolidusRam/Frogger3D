@@ -2,6 +2,8 @@ extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
 ## Primo piano della rana. SCENE: fronte | lato | dietro | pugno | salto |
 ## caduta | boxe | guscio (di spalle, col guscio e le molle a razzo). SHOT.
+## RANA=raganella|paracadutista|fiume|camaleonte|rospo: quella rana (vedi
+## Frogs), con i suoi accessori.
 var frame := 0
 var main: Node
 var scene := OS.get_environment("SCENE")
@@ -22,6 +24,8 @@ func _process(_d: float) -> bool:
 	if frame == 5:
 		main.get_node("Wildfire").stopped = true
 		main.get_node("Hud").visible = false
+		if OS.get_environment("RANA") != "":
+			main.preview_frog(OS.get_environment("RANA"))
 		main.get_node("Upgrades").apply("explosive_gloves")
 		if scene == "guscio":
 			main.get_node("Upgrades").apply("shell")

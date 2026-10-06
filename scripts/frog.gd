@@ -188,6 +188,9 @@ var last_hit_by: Node3D
 var _shell_ready := false
 var _shell_left := 0.0
 var _shell_mesh: MeshInstance3D
+## Gli accessori della rana scelta (vedi set_look).
+var _look_nodes: Array[Node] = []
+var _look_palette := {}
 ## Dove sta il guscio, sul torso.
 const SHELL_POSITION := Vector3(0.0, 0.2, -0.22)
 ## Miglioramenti speciali della pelle impermeabile: il tuffo (in acqua, con
@@ -600,6 +603,43 @@ func _regrow_shell(delta: float) -> void:
 	_shell_mesh.scale = Vector3.ZERO
 	_shell_mesh.create_tween().tween_property(_shell_mesh, "scale", Vector3.ONE, 0.4).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	Sfx.play(&"flower_pop", 0.0, 0.8)
+
+
+## L'aspetto di una rana (vedi Frogs): gli accessori del suo modello, appesi
+## alle parti a cui appartengono (così seguono le animazioni), le proporzioni
+## del corpo e il colore degli occhi. look vuoto: la rana comune.
+func set_look(look: Dictionary) -> void:
+	# Fuori subito dall'albero (si cancellano a fine fotogramma).
+	for node in _look_nodes:
+		if is_instance_valid(node):
+			node.get_parent().remove_child(node)
+			node.queue_free()
+	_look_nodes.clear()
+	model.scale = look.get("shape", Vector3.ONE)
+	set_palette("eye", look.get("eye", ""))
+	for key: String in _look_palette:
+		_palette.erase(key)
+	_look_palette = look.get("palette", {})
+	for key: String in _look_palette:
+		_palette[key] = _look_palette[key]
+	_apply_palette()
+	var path := "res://assets/models/%s.glb" % look.get("look", "")
+	if look.get("look", "") == "" or not ResourceLoader.exists(path):
+		return
+	var scene: Node3D = load(path).instantiate()
+	# Ogni accessorio si chiama "Parte__nome" e ha l'origine nel perno della
+	# parte: appeso lì, senza spostamento, è al suo posto.
+	for child in scene.get_children():
+		var target := model.find_child(String(child.name).get_slice("__", 0), true, false) as Node3D
+		if target == null:
+			continue
+		scene.remove_child(child)
+		child.owner = null
+		target.add_child(child)
+		child.transform = Transform3D.IDENTITY
+		_look_nodes.append(child)
+	scene.free()
+	_apply_palette()
 
 
 ## Il guscio: una cupola sfaccettata sulla schiena, nascosta finché non c'è

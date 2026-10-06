@@ -7,20 +7,28 @@ extends RefCounted
 ##
 ## "kit": gli attrezzi iniziali (Upgrades.BASE o l'id di una carta);
 ## "color": la voce della tavolozza per la pelle ("" la verde di sempre);
+## "look": gli accessori (assets/models/frog_<id>.glb, fatti da
+## build_models.py), "shape": le proporzioni del corpo, "eye": il colore degli
+## occhi, "palette": altri colori cambiati (vedi Frog.set_look);
 ## "mods": cosa cambia rispetto alla comune (vita, salto, volo, nuoto, passo,
 ## ricarica della lingua).
 const ALL := {
 	"comune": {"name": "Comune", "kit": {"gloves": "base"}, "color": "",
 		"pro": "Equilibrata: parte col pugno", "contro": "Nessuno", "mods": {}},
 	"raganella": {"name": "Raganella", "kit": {"springs": "base"}, "color": "frog_tree",
+		"look": "frog_raganella", "shape": Vector3(0.92, 1.06, 0.95), "eye": "eye_red",
 		"pro": "Salto normale molto più alto", "contro": "70 di vita", "mods": {"health": 70, "jump": 1.6}},
 	"paracadutista": {"name": "Paracadutista", "kit": {"wing": "base"}, "color": "frog_sky",
+		"look": "frog_paracadutista",
 		"pro": "Il deltaplano dura il doppio", "contro": "Niente pugno finché una tana non le dà i guantoni", "mods": {"glide": 2.0}},
 	"fiume": {"name": "Rana di fiume", "kit": {"body": "waterproof"}, "color": "",
+		"look": "frog_fiume", "shape": Vector3(1.05, 0.9, 1.0),
 		"pro": "Nuota veloce, e l'acqua non la ferisce", "contro": "Lenta a terra", "mods": {"swim": 1.6, "speed": 0.85}},
 	"camaleonte": {"name": "Camaleonte", "kit": {"tongue": "tongue"}, "color": "frog_chameleon",
+		"look": "frog_camaleonte",
 		"pro": "La lingua si ricarica in metà tempo", "contro": "70 di vita", "mods": {"health": 70, "tongue_cooldown": 0.5}},
 	"rospo": {"name": "Rospo", "kit": {}, "color": "frog_toad",
+		"look": "frog_rospo", "shape": Vector3(1.15, 0.9, 1.05), "palette": {"frog_spot": "wart"},
 		"pro": "150 di vita", "contro": "Parte senza attrezzi: il Frogger puro fino alla prima tana", "mods": {"health": 150}},
 }
 

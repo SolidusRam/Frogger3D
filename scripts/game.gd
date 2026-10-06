@@ -410,6 +410,7 @@ func preview_frog(id: String) -> void:
 	frog_kind = id
 	upgrades.equip_kit(starting_kit if not starting_kit.is_empty() else Frogs.ALL[id].kit)
 	frog.skin = Frogs.ALL[id].color
+	frog.set_look(Frogs.ALL[id])
 
 
 ## Il pro e il contro della rana, all'inizio della run (prima dello stagno).

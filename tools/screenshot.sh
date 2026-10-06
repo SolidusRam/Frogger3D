@@ -10,12 +10,13 @@
 #        shot_tour  = strada | fumo | bestiario | festa | fiume | ferrovia | tana | tana_lontano | laghetto | aeroporto | porto (la rana davanti al bioma);
 #        shot_frog  = fronte | lato | dietro | pugno | salto | caduta | boxe | guscio (la rana da vicino);
 #        shot_ui    = menu | partenza | stagno | maestria | opzioni | audio | grafica | tasti | imprese | impresa | rane | hud | carte | pausa | fine | prova.
-# LINGUA=en davanti al comando: le schermate in inglese.
+# LINGUA=en davanti al comando: le schermate in inglese. RANA=rospo (con
+# shot_frog): quella rana.
 # WAYLAND_DISPLAY va tolto: se il display virtuale fallisse, Godot aprirebbe
 # la finestra sul vero schermo.
 cd "$(dirname "$0")/.." || exit 1
 res="${5:-1280x720}"
-env -u WAYLAND_DISPLAY LINGUA="$LINGUA" SCENE="$2" HEAT="$3" SHOT="$4" timeout 150 \
+env -u WAYLAND_DISPLAY LINGUA="$LINGUA" RANA="$RANA" SCENE="$2" HEAT="$3" SHOT="$4" timeout 150 \
 	xvfb-run -a -s "-screen 0 ${res}x24" \
 	godot --display-driver x11 --rendering-driver opengl3 --path . --resolution "$res" \
 	-s "tools/$1.gd" 2>&1 | grep -E "salvato|SCRIPT ERROR|niente"
