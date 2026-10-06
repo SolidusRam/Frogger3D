@@ -181,7 +181,8 @@ func apply() -> void:
 ## cursore che si sta trascinando (lo salva chi chiude le opzioni).
 func set_option(option: String, value: Variant, save_now := true) -> void:
 	if option == "style":
-		Style.set_style(value)
+		# Uno stile ancora chiuso si salta.
+		Style.set_style(value if Style.unlocked(value) else Style.next_unlocked(value))
 	elif option == "language":
 		language = LANGUAGES[value]
 	else:
@@ -219,7 +220,7 @@ func load_from(file_path: String) -> void:
 		language = LANGUAGES[0]
 	window_mode = clampi(window_mode, 0, WINDOW_MODES.size() - 1)
 	var style: int = file.get_value("opzioni", "style", Style.current)
-	if style >= 0 and style < Style.styles.size():
+	if style >= 0 and style < Style.styles.size() and Style.unlocked(style):
 		Style.set_style(style)
 	for section in ["tasti", "controller"]:
 		for action: String in ACTIONS:

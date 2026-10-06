@@ -16,7 +16,7 @@
 # la finestra sul vero schermo.
 cd "$(dirname "$0")/.." || exit 1
 res="${5:-1280x720}"
-env -u WAYLAND_DISPLAY LINGUA="$LINGUA" RANA="$RANA" SCENE="$2" HEAT="$3" SHOT="$4" timeout 150 \
+env -u WAYLAND_DISPLAY LINGUA="$LINGUA" RANA="$RANA" CAPPELLO="$CAPPELLO" COLORE="$COLORE" STILE="$STILE" SCENE="$2" HEAT="$3" SHOT="$4" timeout 150 \
 	xvfb-run -a -s "-screen 0 ${res}x24" \
 	godot --display-driver x11 --rendering-driver opengl3 --path . --resolution "$res" \
 	-s "tools/$1.gd" 2>&1 | grep -E "salvato|SCRIPT ERROR|niente"

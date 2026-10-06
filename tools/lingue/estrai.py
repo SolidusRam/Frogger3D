@@ -42,7 +42,8 @@ SKIP = {"", "Frogger 3D", "Esc", "A", "B", "X", "Y", "LB", "RB", "LT", "RT", "L1
         "Lingua · Language", "Italiano", "English"}
 # Testi che i modelli sopra non vedono: il limite dei fotogrammi "Nessuno"
 # (scripts/options_panel.gd, dentro una funzione).
-EXTRA = {"Nessuno": "scripts/options_panel.gd"}
+EXTRA = {"Nessuno": "scripts/options_panel.gd", "Quello della rana": "scripts/cosmetics.gd",
+         "Game Boy": "scripts/style.gd"}
 # Chiavi dei blocchi (nomi di azioni) da non prendere per testi.
 NOT_TEXT = re.compile(r'^[a-z_]+$')
 

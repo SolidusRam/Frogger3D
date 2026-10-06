@@ -3,7 +3,8 @@ extends PanelContainer
 ## La scelta della rana (vedi Frogs), a tutto schermo come lo stagno: una
 ## tessera per rana con l'attrezzo con cui parte, il pro e il contro. Quelle
 ## ancora chiuse dicono quale impresa le sblocca. La scelta si salva e vale
-## anche per "Ricomincia". Esc (o B) chiude.
+## anche per "Ricomincia". Sotto, il guardaroba della rana scelta: cappello e
+## colore (vedi Cosmetics). Esc (o B) chiude.
 
 signal closed
 ## Scelta una rana (il menu la mostra subito sullo sfondo).
@@ -15,6 +16,10 @@ const ICONS := {"comune": "gloves", "raganella": "springs", "paracadutista": "wi
 
 var _grid: GridContainer
 var _scroll: ScrollContainer
+var _wardrobe_title: Label
+var _hat_button: Button
+var _color_button: Button
+var _wardrobe_note: Label
 var _esc_label: Label
 
 
@@ -45,6 +50,23 @@ func _ready() -> void:
 	_grid.add_theme_constant_override("h_separation", 12)
 	_grid.add_theme_constant_override("v_separation", 12)
 	margin.add_child(_grid)
+	# Il guardaroba della rana scelta.
+	var wardrobe := HBoxContainer.new()
+	wardrobe.add_theme_constant_override("separation", 16)
+	box.add_child(wardrobe)
+	_wardrobe_title = _label("", "Header")
+	_wardrobe_title.add_theme_font_size_override("font_size", 24)
+	_wardrobe_title.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	wardrobe.add_child(_wardrobe_title)
+	_hat_button = _button("", _next_cosmetic.bind("hat"))
+	wardrobe.add_child(_hat_button)
+	_color_button = _button("", _next_cosmetic.bind("color"))
+	wardrobe.add_child(_color_button)
+	_wardrobe_note = _label("", "Note")
+	_wardrobe_note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_wardrobe_note.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_wardrobe_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	wardrobe.add_child(_wardrobe_note)
 	var footer := HBoxContainer.new()
 	footer.add_theme_constant_override("separation", 16)
 	box.add_child(footer)
@@ -92,6 +114,26 @@ func refresh() -> void:
 		child.queue_free()
 	for id: String in Frogs.ALL:
 		_grid.add_child(_tile(id))
+	_update_wardrobe()
+
+
+## Il guardaroba della rana scelta: i pulsanti dicono cosa porta.
+func _update_wardrobe() -> void:
+	var frog := Frogs.selected()
+	var pick := Cosmetics.chosen(frog)
+	_wardrobe_title.text = tr("Guardaroba: %s") % tr(Frogs.ALL[frog].name)
+	_hat_button.text = tr("Cappello: %s") % Cosmetics.name_of("hat", pick.hat)
+	_color_button.text = tr("Colore: %s") % Cosmetics.name_of("color", pick.color)
+	var locked := Cosmetics.locked_count("hat") + Cosmetics.locked_count("color")
+	_wardrobe_note.text = tr("Altri %d da sbloccare con le imprese.") % locked if locked > 0 else ""
+
+
+## Il prossimo cappello o colore sbloccato; la rana sullo sfondo si cambia.
+func _next_cosmetic(kind: String) -> void:
+	var frog := Frogs.selected()
+	Cosmetics.choose(frog, kind, Cosmetics.next(kind, Cosmetics.chosen(frog)[kind]))
+	_update_wardrobe()
+	chosen.emit(frog)
 
 
 ## Una rana: icona e nome, l'attrezzo con cui parte, il pro, il contro e il

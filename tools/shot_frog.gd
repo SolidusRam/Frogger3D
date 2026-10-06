@@ -3,7 +3,7 @@ extends SceneTree
 ## Primo piano della rana. SCENE: fronte | lato | dietro | pugno | salto |
 ## caduta | boxe | guscio (di spalle, col guscio e le molle a razzo). SHOT.
 ## RANA=raganella|paracadutista|fiume|camaleonte|rospo: quella rana (vedi
-## Frogs), con i suoi accessori.
+## Frogs), con i suoi accessori. CAPPELLO, COLORE, STILE: guardaroba e stile.
 var frame := 0
 var main: Node
 var scene := OS.get_environment("SCENE")
@@ -26,6 +26,13 @@ func _process(_d: float) -> bool:
 		main.get_node("Hud").visible = false
 		if OS.get_environment("RANA") != "":
 			main.preview_frog(OS.get_environment("RANA"))
+		# CAPPELLO=hard_hat, COLORE=charred, STILE=3 (vedi Cosmetics, Style).
+		if OS.get_environment("CAPPELLO") != "":
+			frog.set_hat(OS.get_environment("CAPPELLO"))
+		if OS.get_environment("COLORE") != "":
+			frog.skin = load("res://scripts/cosmetics.gd").COLORS[OS.get_environment("COLORE")].palette
+		if OS.get_environment("STILE") != "":
+			root.get_node("Style").set_style(int(OS.get_environment("STILE")))
 		main.get_node("Upgrades").apply("explosive_gloves")
 		if scene == "guscio":
 			main.get_node("Upgrades").apply("shell")

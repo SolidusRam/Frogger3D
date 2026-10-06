@@ -138,6 +138,8 @@ static var hints := {}
 static var feats := {}
 ## La rana scelta per le prossime run (vedi Frogs).
 static var frog := "comune"
+## Il guardaroba (vedi Cosmetics): per rana, {"hat": id, "color": id}.
+static var wardrobe := {}
 
 
 static func load_from(file_path: String) -> void:
@@ -152,6 +154,7 @@ static func load_from(file_path: String) -> void:
 	hints = config.get_value("suggerimenti", "fatti", {}) if ok else {}
 	feats = config.get_value("imprese", "fatte", {}) if ok else {}
 	frog = config.get_value("rana", "scelta", "comune") if ok else "comune"
+	wardrobe = config.get_value("guardaroba", "scelte", {}) if ok else {}
 	run_trials = {}
 
 
@@ -165,6 +168,7 @@ static func save() -> void:
 	config.set_value("suggerimenti", "fatti", hints)
 	config.set_value("imprese", "fatte", feats)
 	config.set_value("rana", "scelta", frog)
+	config.set_value("guardaroba", "scelte", wardrobe)
 	config.save(path)
 
 

@@ -2,6 +2,30 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 
+#: scripts/options_panel.gd
+msgid "Nessuno"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Elmetto da cantiere"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Occhiali da pilota"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Rana incandescente"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Rana carbonizzata"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Rana di coccodrillo"
+msgstr ""
+
 #: scripts/feats.gd
 msgid "Carte"
 msgstr ""
@@ -279,10 +303,6 @@ msgid "Resta 2 minuti al livello 5 di calore"
 msgstr ""
 
 #: scripts/feats.gd
-msgid "Rana incandescente"
-msgstr ""
-
-#: scripts/feats.gd
 msgid "Segrete"
 msgstr ""
 
@@ -295,19 +315,11 @@ msgid "Muori bruciata dall'incendio"
 msgstr ""
 
 #: scripts/feats.gd
-msgid "Rana carbonizzata"
-msgstr ""
-
-#: scripts/feats.gd
 msgid "Lavori in corso"
 msgstr ""
 
 #: scripts/feats.gd
 msgid "Fatti schiacciare da un container"
-msgstr ""
-
-#: scripts/feats.gd
-msgid "Elmetto da cantiere"
 msgstr ""
 
 #: scripts/feats.gd
@@ -319,19 +331,11 @@ msgid "Fatti mordere da un coccodrillo mentre sei appesa alla lingua"
 msgstr ""
 
 #: scripts/feats.gd
-msgid "Rana di coccodrillo"
-msgstr ""
-
-#: scripts/feats.gd
 msgid "Copilota"
 msgstr ""
 
 #: scripts/feats.gd
 msgid "Arriva al bordo seduta sull'ala di un aereo"
-msgstr ""
-
-#: scripts/feats.gd
-msgid "Occhiali da pilota"
 msgstr ""
 
 #: scripts/feats_panel.gd
@@ -374,10 +378,6 @@ msgstr ""
 msgid "Equilibrata: parte col pugno"
 msgstr ""
 
-#: scripts/options_panel.gd
-msgid "Nessuno"
-msgstr ""
-
 #: scripts/frogs.gd
 msgid "Salto normale molto più alto"
 msgstr ""
@@ -412,6 +412,22 @@ msgstr ""
 
 #: scripts/frogs.gd
 msgid "Parte senza attrezzi: il Frogger puro fino alla prima tana"
+msgstr ""
+
+#: scripts/frogs_panel.gd
+msgid "Guardaroba: %s"
+msgstr ""
+
+#: scripts/frogs_panel.gd
+msgid "Cappello: %s"
+msgstr ""
+
+#: scripts/frogs_panel.gd
+msgid "Colore: %s"
+msgstr ""
+
+#: scripts/frogs_panel.gd
+msgid "Altri %d da sbloccare con le imprese."
 msgstr ""
 
 #: scripts/frogs_panel.gd
@@ -1848,5 +1864,13 @@ msgstr ""
 
 #: scripts/upgrades.gd
 msgid "Corpo"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Quello della rana"
+msgstr ""
+
+#: scripts/style.gd
+msgid "Game Boy"
 msgstr ""
 

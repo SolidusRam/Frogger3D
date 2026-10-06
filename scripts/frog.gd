@@ -191,6 +191,7 @@ var _shell_mesh: MeshInstance3D
 ## Gli accessori della rana scelta (vedi set_look).
 var _look_nodes: Array[Node] = []
 var _look_palette := {}
+var _hat: Node3D
 ## Dove sta il guscio, sul torso.
 const SHELL_POSITION := Vector3(0.0, 0.2, -0.22)
 ## Miglioramenti speciali della pelle impermeabile: il tuffo (in acqua, con
@@ -638,6 +639,30 @@ func set_look(look: Dictionary) -> void:
 		target.add_child(child)
 		child.transform = Transform3D.IDENTITY
 		_look_nodes.append(child)
+	scene.free()
+	_apply_palette()
+
+
+## Il cappello del guardaroba (vedi Cosmetics): appeso alla testa; copre gli
+## accessori della rana che stanno lì (la cuffia). "" lo toglie.
+func set_hat(id: String) -> void:
+	if is_instance_valid(_hat):
+		_hat.get_parent().remove_child(_hat)
+		_hat.queue_free()
+	_hat = null
+	for node in _look_nodes:
+		if is_instance_valid(node) and String(node.name) in Cosmetics.HAT_HIDES:
+			node.visible = id == ""
+	var path := "res://assets/models/hat_%s.glb" % id
+	if id == "" or not ResourceLoader.exists(path):
+		return
+	var scene: Node3D = load(path).instantiate()
+	var piece := scene.get_child(0) as Node3D
+	scene.remove_child(piece)
+	piece.owner = null
+	model.find_child("Head", true, false).add_child(piece)
+	piece.transform = Transform3D.IDENTITY
+	_hat = piece
 	scene.free()
 	_apply_palette()
 

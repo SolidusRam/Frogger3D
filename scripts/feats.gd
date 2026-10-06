@@ -90,8 +90,12 @@ static func reward_ready(id: String) -> bool:
 		return Upgrades.CATALOG.has(feat.reward)
 	if feat.kind == "frog":
 		return Frogs.ALL.has(feat.reward)
-	if feat.kind == "token":
+	if feat.kind in ["token", "style"]:
 		return true
+	if feat.kind == "hat":
+		return Cosmetics.HATS.has(feat.reward)
+	if feat.kind == "color":
+		return Cosmetics.COLORS.has(feat.reward)
 	return false
 
 

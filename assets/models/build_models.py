@@ -56,6 +56,7 @@ PREVIEW = {
     "log": (0.45, 0.3, 0.15, 1), "log_end": (0.78, 0.62, 0.4, 1),
     "leather": (0.45, 0.28, 0.15, 1), "lens": (0.3, 0.6, 0.85, 1), "scarf": (0.85, 0.15, 0.15, 1),
     "flipper": (0.98, 0.6, 0.1, 1), "eye_red": (0.9, 0.15, 0.1, 1), "wart": (0.36, 0.27, 0.15, 1),
+    "hard_hat": (1.0, 0.8, 0.1, 1),
     "croc": (0.2, 0.4, 0.2, 1), "croc_dark": (0.16, 0.32, 0.16, 1), "croc_eye": (0.95, 0.85, 0.2, 1),
 }
 
@@ -516,6 +517,33 @@ def build_frog_rospo():
     glands = [ico("gland_%d" % side, 0.09, (side * 0.25, 0.14, 0.55), "wart", scale=(0.9, 1.5, 0.6)) for side in (1, -1)]
     attach("Head", "glands", glands)
     save("frog_rospo")
+
+
+# --- I cappelli del guardaroba (scripts/cosmetics.gd) ----------------------
+
+def build_hat_hard_hat():
+    """L'elmetto da cantiere: la calotta gialla con la costola, la tesa
+    davanti. Si appende alla testa, dietro gli occhi."""
+    reset()
+    hat = [ico("dome", 0.3, (0, 0.06, 0.66), "hard_hat", scale=(1.05, 1.1, 0.6)),
+           box("ridge", -0.035, 0.035, -0.26, 0.36, 0.74, 0.86, "hard_hat"),
+           block("brim",
+                 [(-0.3, 0.2, 0.62), (0.3, 0.2, 0.62), (0.26, 0.42, 0.6), (-0.26, 0.42, 0.6)],
+                 [(-0.3, 0.2, 0.65), (0.3, 0.2, 0.65), (0.26, 0.42, 0.63), (-0.26, 0.42, 0.63)],
+                 "hard_hat")]
+    attach("Head", "hat", hat)
+    save("hat_hard_hat")
+
+
+def build_hat_goggles():
+    """Gli occhiali da pilota, tirati sulla fronte con l'elastico."""
+    reset()
+    goggles = [box("strap", -0.33, 0.33, 0.0, 0.05, 0.68, 0.74, "tire")]
+    for side in (1, -1):
+        goggles.append(cylinder("rim_%d" % side, 0.1, 0.06, (side * 0.13, 0.06, 0.76), "metal", sides=8, axis="Y"))
+        goggles.append(cylinder("lens_%d" % side, 0.075, 0.07, (side * 0.13, 0.07, 0.76), "lens", sides=8, axis="Y"))
+    attach("Head", "hat", goggles)
+    save("hat_goggles")
 
 
 # --- La tana ----------------------------------------------------------------
@@ -1122,7 +1150,7 @@ BUILDERS = {
     "suitcase": build_suitcase, "parcel": build_parcel,
     "frog_raganella": build_frog_raganella, "frog_paracadutista": build_frog_paracadutista,
     "frog_fiume": build_frog_fiume, "frog_camaleonte": build_frog_camaleonte,
-    "frog_rospo": build_frog_rospo,
+    "frog_rospo": build_frog_rospo, "hat_hard_hat": build_hat_hard_hat, "hat_goggles": build_hat_goggles,
 }
 
 if __name__ == "__main__":

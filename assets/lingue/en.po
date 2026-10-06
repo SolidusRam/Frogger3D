@@ -1390,3 +1390,21 @@ msgstr "Skip"
 
 msgid "Esilia"
 msgstr "Banish"
+
+msgid "Guardaroba: %s"
+msgstr "Wardrobe: %s"
+
+msgid "Cappello: %s"
+msgstr "Hat: %s"
+
+msgid "Colore: %s"
+msgstr "Color: %s"
+
+msgid "Altri %d da sbloccare con le imprese."
+msgstr "%d more to unlock with feats."
+
+msgid "Quello della rana"
+msgstr "The frog's own"
+
+msgid "Game Boy"
+msgstr "Game Boy"

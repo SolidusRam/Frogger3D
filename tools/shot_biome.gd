@@ -24,6 +24,9 @@ func _initialize() -> void:
 	current_scene = main
 	frog = main.get_node("Frog")
 	course = main.get_node("Course")
+	# STILE=3: lo stile grafico (vedi Style).
+	if OS.get_environment("STILE") != "":
+		root.get_node("Style").set_style.call_deferred(int(OS.get_environment("STILE")))
 
 func aim_camera(at: Vector3) -> void:
 	var d := at - frog.global_position

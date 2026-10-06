@@ -442,8 +442,11 @@ func _finish_run() -> Dictionary:
 func preview_frog(id: String) -> void:
 	frog_kind = id
 	upgrades.equip_kit(starting_kit if not starting_kit.is_empty() else Frogs.ALL[id].kit)
-	frog.skin = Frogs.ALL[id].color
 	frog.set_look(Frogs.ALL[id])
+	# Il guardaroba: il cappello e il colore scelti per questa rana.
+	var pick := Cosmetics.chosen(id)
+	frog.set_hat(pick.hat)
+	frog.skin = Cosmetics.COLORS[pick.color].palette if pick.color != "" else Frogs.ALL[id].color
 
 
 ## Il pro e il contro della rana, all'inizio della run (prima dello stagno).
