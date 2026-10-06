@@ -82,6 +82,8 @@ static func reward_ready(id: String) -> bool:
 	var feat: Dictionary = ALL[id]
 	if feat.kind in ["card", "fusion"]:
 		return Upgrades.CATALOG.has(feat.reward)
+	if feat.kind == "frog":
+		return Frogs.ALL.has(feat.reward)
 	return false
 
 

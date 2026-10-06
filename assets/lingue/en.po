@@ -1189,3 +1189,90 @@ msgstr "Catapult tongue"
 
 msgid "{tongue}: la lingua afferra un rottame e lo tiene sopra la testa; lasciando, lo scagli dove guardi."
 msgstr "{tongue}: your tongue grabs a wreck and holds it over your head; let go to hurl it where you look."
+
+msgid "L'assicurazione paga!"
+msgstr "Insurance pays out!"
+
+msgid "Franchigia"
+msgstr "Deductible"
+
+msgid "L'assicurazione ti lascia con 30 di vita invece di 1."
+msgstr "Insurance leaves you with 30 health instead of 1."
+
+msgid "L'assicurazione ti salva 5 volte"
+msgstr "Get saved by insurance 5 times"
+
+msgid "Premio"
+msgstr "Bonus"
+
+msgid "Quando l'assicurazione paga, il calore non sale."
+msgstr "When insurance pays out, heat doesn't rise."
+
+msgid "Salvata, raggiungi la tana senza altri colpi"
+msgstr "After being saved, reach the den without another hit"
+
+msgid "Tossina"
+msgstr "Toxin"
+
+msgid "Il rottame avvelenato avvelena le auto che lo toccano."
+msgstr "The poisoned wreck poisons the cars that touch it."
+
+msgid "Avvelena 30 auto"
+msgstr "Poison 30 cars"
+
+msgid "Antidoto"
+msgstr "Antidote"
+
+msgid "Le auto ti fanno metà danno."
+msgstr "Cars deal you half damage."
+
+msgid "Avvelena 3 auto in 5 s"
+msgstr "Poison 3 cars in 5 s"
+
+msgid "Ariete"
+msgstr "Battering ram"
+
+msgid "In volo, l'auto che tocchi diventa rottame."
+msgstr "While flying, any car you touch gets wrecked."
+
+msgid "Para 10 colpi in volo"
+msgstr "Block 10 hits in flight"
+
+msgid "Blindata"
+msgstr "Reinforced"
+
+msgid "L'ala para due colpi per volo."
+msgstr "The wing blocks two hits per flight."
+
+msgid "Vola 40 m in un solo volo con l'ala corazzata"
+msgstr "Fly 40 m in a single flight with the armored wing"
+
+msgid "Turbina"
+msgstr "Turbine"
+
+msgid "Sospesa, l'elica spinge via e ribalta le auto sotto di te."
+msgstr "While hovering, the propeller blows away and flips the cars below you."
+
+msgid "Resta sospesa 60 s in tutto"
+msgstr "Hover for 60 s in total"
+
+msgid "Seme d'acero"
+msgstr "Maple seed"
+
+msgid "La sospensione dura il doppio."
+msgstr "Hovering lasts twice as long."
+
+msgid "Resta sospesa mentre ti passano sotto 4 auto"
+msgstr "Hover while 4 cars pass beneath you"
+
+msgid "Un colpo mortale ti lascia con 1 di vita, una volta per sezione; ma il calore sale subito di un livello."
+msgstr "A lethal hit leaves you with 1 health, once per section; but heat instantly rises one level."
+
+msgid "L'auto che ti investe diventa rottame. Il colpo lo prendi lo stesso, e ogni rottame scalda."
+msgstr "The car that hits you gets wrecked. You still take the hit, and every wreck adds heat."
+
+msgid "In volo l'ala para un colpo: niente danno, e resti in aria."
+msgstr "In flight the wing blocks one hit: no damage, and you stay in the air."
+
+msgid "Aperta, l'ala ti tiene sospesa sul posto per 2 s, come un seme d'acero; poi plani."
+msgstr "When opened, the wing keeps you hovering in place for 2 s, like a maple seed; then you glide."

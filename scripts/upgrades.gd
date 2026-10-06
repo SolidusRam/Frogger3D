@@ -83,6 +83,22 @@ const CATALOG := {
 		"name": "Lingua-catapulta", "slot": "tongue",
 		"text": "{tongue}: la lingua afferra un rottame e lo tiene sopra la testa; lasciando, lo scagli dove guardi.",
 	},
+	"insurance": {
+		"name": "Assicurazione", "slot": "body",
+		"text": "Un colpo mortale ti lascia con 1 di vita, una volta per sezione; ma il calore sale subito di un livello.",
+	},
+	"poison": {
+		"name": "Rana velenosa", "slot": "body",
+		"text": "L'auto che ti investe diventa rottame. Il colpo lo prendi lo stesso, e ogni rottame scalda.",
+	},
+	"armored_wing": {
+		"name": "Ala corazzata", "slot": "wing",
+		"text": "In volo l'ala para un colpo: niente danno, e resti in aria.",
+	},
+	"propeller_wing": {
+		"name": "Ala a elica", "slot": "wing",
+		"text": "Aperta, l'ala ti tiene sospesa sul posto per 2 s, come un seme d'acero; poi plani.",
+	},
 	"punch_power": {"name": "Pugno più forte", "slot": "", "max": 3, "text": "+30% di spinta del pugno."},
 	"quick_springs": {"name": "Molle rapide", "slot": "", "max": 3, "text": "Il super salto si ricarica il 25% più in fretta."},
 	"big_wing": {"name": "Ala più grande", "slot": "", "max": 3, "text": "+1 secondo di volo col deltaplano."},
@@ -296,6 +312,14 @@ func _set_modifier(id: String, on: bool) -> void:
 			frog.shell = on
 		"catapult_tongue":
 			frog.tongue_power.catapult = on
+		"insurance":
+			frog.insurance = on
+		"poison":
+			frog.set_poisonous(on)
+		"armored_wing":
+			frog.glider_power.set_armored(on)
+		"propeller_wing":
+			frog.glider_power.set_propeller(on)
 		"napalm":
 			Car.smoke_seconds = 15.0 if on else Car.SMOKE_SECONDS
 			frog.glider_power.wide_thermals = on
@@ -344,3 +368,15 @@ func _set_special(id: String, first: bool, second: bool) -> void:
 		"catapult_tongue":
 			frog.tongue_power.long_throw = first
 			frog.tongue_power.strike = second
+		"insurance":
+			frog.insurance_deductible = first
+			frog.insurance_bonus = second
+		"poison":
+			frog.poison_spreads = first
+			frog.antidote = second
+		"armored_wing":
+			frog.glider_power.ram = first
+			frog.glider_power.armor_hits = 2 if second else 1
+		"propeller_wing":
+			frog.glider_power.turbine = first
+			frog.glider_power.long_hover = second

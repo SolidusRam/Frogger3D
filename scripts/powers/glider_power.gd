@@ -46,6 +46,24 @@ var charge := 0.0
 var gliding := false
 ## La rana ha l'ala (vedi Upgrades). Senza, Spazio in aria non apre niente.
 var enabled := true
+## Ala corazzata (carta): in volo assorbe armor_hits colpi per volo (2 con la
+## blindatura); con l'ariete le auto che tocca in volo diventano rottami.
+var armored := false
+var armor_hits := 1
+var ram := false
+var armor_left := 0
+@export var ram_radius := 1.8
+## Ala a elica (carta): aperta, invece di planare resta sospesa sul posto per
+## hover_seconds (il doppio col seme d'acero), poi plana. Con la turbina le auto
+## sotto vengono spinte via.
+var propeller := false
+var long_hover := false
+var turbine := false
+@export var hover_seconds := 2.0
+@export var turbine_radius := 4.0
+var _hover_left := 0.0
+var _hover_cars := {}
+var _armored_flight := 0.0
 ## Power-up "Correnti calde" equipaggiato.
 var thermals := false
 ## Power-up "Ala a reazione": più veloce, ma scalda finché si vola.
@@ -114,13 +132,23 @@ func update(delta: float) -> void:
 		_track_thermal(delta)
 		if jet:
 			_track_jet(delta)
-		if not in_thermal and _frog.wind_lift() == 0.0:
+		if armored:
+			_armored_flight += Vector2(_frog.velocity.x, _frog.velocity.z).length() * delta
+			Progress.trial_best("armored_wing", 1, _armored_flight)
+			if ram:
+				_ram()
+		# Nemmeno sospesi con l'elica: la planata viene dopo, intera.
+		if not in_thermal and _frog.wind_lift() == 0.0 and _hover_left <= 0.0:
 			charge = maxf(charge - delta, 0.0)
 		if not Input.is_action_pressed("jump") or charge == 0.0:
 			close()
 	elif Input.is_action_just_pressed("jump") and _frog.can_act() and _can_open():
 		gliding = true
 		_flight = 0.0
+		armor_left = armor_hits if armored else 0
+		_armored_flight = 0.0
+		_hover_left = hover_seconds * (2.0 if long_hover else 1.0) if propeller else 0.0
+		_hover_cars.clear()
 		_unfold()
 		Sfx.play(&"glider_open")
 		Sfx.loop(_frog, &"glide_wind")
@@ -132,6 +160,9 @@ func update(delta: float) -> void:
 ## Scende lenta e plana in avanti; da fermi prosegue nella direzione in cui
 ## stava andando.
 func apply(direction: Vector3, delta: float) -> void:
+	if _hover_left > 0.0:
+		_hover(direction, delta)
+		return
 	var velocity := _frog.velocity
 	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
 	var heading := direction
@@ -172,8 +203,83 @@ func set_jet(on: bool) -> void:
 	_refresh_wing()
 
 
+## Ala corazzata, ala a elica: le strisce diventano d'acciaio o gialle.
+func set_armored(on: bool) -> void:
+	armored = on
+	_refresh_wing()
+
+
+func set_propeller(on: bool) -> void:
+	propeller = on
+	_refresh_wing()
+
+
+## In volo il colpo lo prende l'ala corazzata: niente danno, si resta in aria.
+func absorb(knockback: Vector3) -> void:
+	armor_left -= 1
+	_frog.velocity += Vector3(knockback.x, 0.0, knockback.z) * 0.3
+	Progress.trial_add("armored_wing", 0, 1)
+	Sfx.play(&"wreck_hit", 0.0, 0.7)
+	_frog.camera_rig.shake(0.15, 0.2)
+	var tween := _new_tween()
+	_wing.scale = Vector3(1.25, 1.0, 1.25)
+	tween.tween_property(_wing, "scale", Vector3.ONE, 0.25)
+
+
+## Vero se l'ala corazzata può ancora parare un colpo in questo volo.
+func can_absorb() -> bool:
+	return armored and gliding and armor_left > 0
+
+
+## L'ariete: le auto in marcia che l'ala tocca diventano rottami.
+func _ram() -> void:
+	for car in _cars_near(_frog.global_position, ram_radius, 2.0):
+		car.become_wreck()
+
+
+## L'elica: sospesa sul posto, si sterza appena; il seme d'acero gira.
+func _hover(direction: Vector3, delta: float) -> void:
+	_hover_left -= delta
+	var horizontal := Vector3(_frog.velocity.x, 0.0, _frog.velocity.z).move_toward(direction * 2.0, 20.0 * delta)
+	var vertical := move_toward(_frog.velocity.y, 0.0, 30.0 * delta)
+	_frog.velocity = Vector3(horizontal.x, vertical, horizontal.z)
+	_wing.rotation.y += 14.0 * delta
+	if _hover_left <= 0.0:
+		_wing.rotation.y = 0.0
+	Progress.trial_add("propeller_wing", 0, delta)
+	# Le auto che passano sotto (per il seme d'acero) e la turbina.
+	var space := _frog.get_world_3d().direct_space_state
+	var ray := PhysicsRayQueryParameters3D.create(_frog.global_position, _frog.global_position + Vector3.DOWN * 12.0, 4)
+	var hit := space.intersect_ray(ray)
+	if not hit.is_empty() and hit.collider is Car:
+		_hover_cars[hit.collider.get_instance_id()] = true
+		Progress.trial_best("propeller_wing", 1, _hover_cars.size())
+	if turbine:
+		for car in _cars_near(_frog.global_position + Vector3.DOWN * 6.0, turbine_radius, 8.0):
+			car.become_wreck()
+			var away := car.global_position - _frog.global_position
+			car.apply_central_impulse((Vector3(away.x, 0.0, away.z).normalized() * 8.0 + Vector3.UP * 2.0) * car.mass)
+
+
+## Le auto in marcia dentro un cilindro (raggio, mezza altezza).
+func _cars_near(center: Vector3, radius: float, half_height: float) -> Array[Car]:
+	var query := PhysicsShapeQueryParameters3D.new()
+	var shape := CylinderShape3D.new()
+	shape.radius = radius
+	shape.height = half_height * 2.0
+	query.shape = shape
+	query.transform = Transform3D(Basis(), center)
+	query.collision_mask = 4 # veicoli
+	var cars: Array[Car] = []
+	for result in _frog.get_world_3d().direct_space_state.intersect_shape(query, 16):
+		var car := result.collider as Car
+		if car and car.state == Car.State.DRIVING:
+			cars.append(car)
+	return cars
+
+
 func _refresh_wing() -> void:
-	var stripe := "wing_hot" if thermals else ("wing_jet" if jet else "")
+	var stripe := "wing_hot" if thermals else ("wing_jet" if jet else ("wing_steel" if armored else ("wing_prop" if propeller else "")))
 	Style.apply_palette(_model, {"wing_stripe": stripe} if stripe != "" else {})
 
 
@@ -238,6 +344,7 @@ func _smoke_below() -> Car:
 
 func close() -> void:
 	gliding = false
+	_hover_left = 0.0
 	in_thermal = false
 	if Sfx.is_looping(_frog, &"glide_wind"):
 		Sfx.unloop(_frog, &"glide_wind")

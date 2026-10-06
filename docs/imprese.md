@@ -140,7 +140,7 @@ Nel Frogger originale la mosca nella tana dava punti in più: qui le mosche sono
 
   Da rivedere in futuro: il bilanciamento dei miglioramenti e delle prove.
 
-  **Maestria delle carte nuove** (proposta del 6 ottobre 2026, da rivedere: le carte sono nel mazzo deciso, riga "Mazzo deciso" di regole-design.md). Nel gioco dal 6 ottobre quelle di molle a razzo, guscio e lingua-catapulta, con i testi ritoccati: Scia di fuoco "Sali oltre 12 m d'altezza"; Lancio lungo "il rottame vola molto più lontano" (×1,6); Strike "colpita un'auto, rimbalza verso la più vicina".
+  **Maestria delle carte nuove** (proposta del 6 ottobre 2026, da rivedere: le carte sono nel mazzo deciso, riga "Mazzo deciso" di regole-design.md). Nel gioco dal 6 ottobre quelle di molle a razzo, guscio, lingua-catapulta, assicurazione, rana velenosa, ala corazzata e ala a elica (la prova dell'ariete è "Para 10 colpi in volo", quella della blindata "Vola 40 m in un solo volo con l'ala corazzata"), con i testi ritoccati: Scia di fuoco "Sali oltre 12 m d'altezza"; Lancio lungo "il rottame vola molto più lontano" (×1,6); Strike "colpita un'auto, rimbalza verso la più vicina".
 
   | Carta | Miglioramento | Prova |
   | --- | --- | --- |

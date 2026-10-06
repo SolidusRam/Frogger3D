@@ -82,6 +82,22 @@ const CARD_UPGRADES := {
 		{"name": "Lancio lungo", "text": "Il rottame scagliato vola molto più lontano.", "trial": "Scaglia 30 rottami", "goal": 30, "kind": "total", "cost": 2},
 		{"name": "Strike", "text": "Il rottame scagliato, colpita un'auto, rimbalza verso la più vicina.", "trial": "Un rottame scagliato ne colpisce 2", "goal": 2, "kind": "best", "cost": 4},
 	],
+	"insurance": [
+		{"name": "Franchigia", "text": "L'assicurazione ti lascia con 30 di vita invece di 1.", "trial": "L'assicurazione ti salva 5 volte", "goal": 5, "kind": "total", "cost": 2},
+		{"name": "Premio", "text": "Quando l'assicurazione paga, il calore non sale.", "trial": "Salvata, raggiungi la tana senza altri colpi", "goal": 1, "kind": "best", "cost": 4},
+	],
+	"poison": [
+		{"name": "Tossina", "text": "Il rottame avvelenato avvelena le auto che lo toccano.", "trial": "Avvelena 30 auto", "goal": 30, "kind": "total", "cost": 2},
+		{"name": "Antidoto", "text": "Le auto ti fanno metà danno.", "trial": "Avvelena 3 auto in 5 s", "goal": 3, "kind": "best", "cost": 4},
+	],
+	"armored_wing": [
+		{"name": "Ariete", "text": "In volo, l'auto che tocchi diventa rottame.", "trial": "Para 10 colpi in volo", "goal": 10, "kind": "total", "cost": 2},
+		{"name": "Blindata", "text": "L'ala para due colpi per volo.", "trial": "Vola 40 m in un solo volo con l'ala corazzata", "goal": 40, "kind": "best", "cost": 4},
+	],
+	"propeller_wing": [
+		{"name": "Turbina", "text": "Sospesa, l'elica spinge via e ribalta le auto sotto di te.", "trial": "Resta sospesa 60 s in tutto", "goal": 60, "kind": "total", "cost": 2},
+		{"name": "Seme d'acero", "text": "La sospensione dura il doppio.", "trial": "Resta sospesa mentre ti passano sotto 4 auto", "goal": 4, "kind": "best", "cost": 4},
+	],
 	"tongue": [
 		{"name": "Fionda", "text": "Lasciando dopo un traino parti a velocità doppia.", "trial": "Fatti trascinare 20 volte", "goal": 20, "kind": "total", "cost": 2},
 		{"name": "Lingua doppia", "text": "Mentre una lingua ti trascina, l'altra mangia le mosche vicine.", "trial": "Fatti trascinare per 50 m in un solo traino", "goal": 50, "kind": "best", "cost": 4},

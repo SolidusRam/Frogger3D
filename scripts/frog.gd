@@ -10,6 +10,8 @@ signal health_changed(health: int, max_health: int)
 signal died
 ## La seconda vita (statistica dello stagno) ha appena salvato la rana.
 signal revived
+## L'assicurazione ha pagato (vedi insurance).
+signal insured
 ## Emesso a ogni pugno andato a segno, con i veicoli colpiti.
 signal punched(cars: Array[Car])
 ## Emesso a ogni uso di un potere (&"punch", &"super_jump", &"glide"): fa
@@ -114,8 +116,7 @@ var _palette := {}
 var skin := "":
 	set(value):
 		skin = value
-		# Bagnata (pelle impermeabile) resta del colore dell'acqua.
-		set_palette("frog", "frog_wet" if waterproof else value)
+		_paint_body()
 ## Lunghezza a riposo delle braccia, dalla spalla al guantone.
 var _arm_lengths: Array[float] = []
 ## Modalità prova: niente toglie vita.
@@ -133,6 +134,25 @@ var bounce_streak := 0
 var cooldown_factor := 1.0
 ## Pelle impermeabile (power-up): l'acqua non toglie vita.
 var waterproof := false
+var poisonous := false
+## Miglioramenti della rana velenosa: la tossina (il rottame avvelenato
+## avvelena chi lo urta) e l'antidoto (le auto fanno metà danno).
+var poison_spreads := false
+var antidote := false
+## L'assicurazione (carta del corpo): un colpo mortale lascia la rana con 1
+## di vita, una volta per sezione (si rinnova in tana), ma il calore sale
+## subito di un livello. Miglioramenti: la franchigia (30 di vita invece di 1)
+## e il premio (il calore non sale).
+var insurance := false:
+	set(value):
+		insurance = value
+		insurance_ready = value
+var insurance_ready := false
+var insurance_deductible := false
+var insurance_bonus := false
+## Salvata dall'assicurazione in questa sezione, e senza colpi da allora (la
+## prova del premio).
+var insured_clean := false
 ## Il guscio (carta del corpo): un guscio di tartaruga sulla schiena assorbe
 ## un colpo intero, poi si riforma in shell_recharge secondi. Miglioramenti:
 ## le spine (l'auto che lo rompe diventa rottame) e il guscio rapido (si
@@ -371,7 +391,21 @@ func compute_jump() -> void:
 ## verde acqua.
 func set_waterproof(on: bool) -> void:
 	waterproof = on
-	set_palette("frog", "frog_wet" if on else skin)
+	_paint_body()
+
+
+## Rana velenosa (carta del corpo): l'auto in marcia che la investe diventa
+## rottame (il danno lo prende lo stesso); la pelle si colora come una
+## dendrobate.
+func set_poisonous(on: bool) -> void:
+	poisonous = on
+	_paint_body()
+
+
+## La pelle: una carta del corpo la colora (bagnata, velenosa), altrimenti
+## quella della rana.
+func _paint_body() -> void:
+	set_palette("frog", "frog_wet" if waterproof else ("frog_poison" if poisonous else skin))
 
 
 ## Cambia un colore del modello: le parti col materiale key prendono la voce
@@ -502,6 +536,10 @@ func take_hit(damage: int, knockback: Vector3) -> void:
 	Feats.note(&"frog_hit")
 	var hitter := last_hit_by
 	last_hit_by = null
+	if glider_power.can_absorb():
+		glider_power.absorb(knockback)
+		_invulnerable_time = 0.5
+		return
 	if shell and _shell_ready:
 		_shell_absorb(knockback, hitter)
 		return
@@ -577,7 +615,10 @@ func _lose_health(amount: int) -> void:
 	if is_dead or invincible:
 		return
 	health = maxi(health - ceili(amount * damage_factor), 0)
-	if health == 0 and extra_lives > 0:
+	insured_clean = false
+	if health == 0 and insurance and insurance_ready:
+		_insurance_pays()
+	elif health == 0 and extra_lives > 0:
 		# La seconda vita: ci si rialza con metà vita e un attimo di respiro.
 		extra_lives -= 1
 		health = max_health / 2
@@ -587,6 +628,20 @@ func _lose_health(amount: int) -> void:
 	health_changed.emit(health, max_health)
 	if health == 0:
 		_die()
+
+
+## L'assicurazione paga: la rana resta in piedi, e il calore sale di un
+## livello (non col premio).
+func _insurance_pays() -> void:
+	insurance_ready = false
+	health = 30 if insurance_deductible else 1
+	_invulnerable_time = 1.5
+	insured_clean = true
+	if not insurance_bonus and Heat.level() < Heat.LEVELS:
+		Heat.set_value((Heat.level() + 1) * Heat.MAX / Heat.LEVELS + 1.0)
+	Progress.trial_add("insurance", 0, 1)
+	Sfx.play(&"frog_revive")
+	insured.emit()
 
 
 ## La morte chiude la run: la rana non risponde più e si gira a pancia in su.

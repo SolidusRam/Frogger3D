@@ -57,7 +57,11 @@ func _physics_process(_delta: float) -> bool:
 			t.check(not feats.done("boomerang"), "un'auto qualsiasi non basta")
 			feats.note(&"car_hit", 1.0)
 			t.check(feats.done("boomerang"), "investita dall'auto che aveva colpito: Boomerang")
-			t.check(hud.feat_text().contains("Boomerang") and hud.feat_text().contains("Rana velenosa") and hud.feat_text().contains("più avanti"), "l'impresa si annuncia, e dice che la carta arriva più avanti (%s)" % hud.feat_text())
+			t.check(hud.feat_text().contains("Boomerang") and hud.feat_text().contains("Rana velenosa") and not hud.feat_text().contains("più avanti"), "l'impresa si annuncia con quello che sblocca (%s)" % hud.feat_text())
+			t.check(feats.card_available("poison"), "e la rana velenosa entra nel mazzo")
+			# Un gettone non c'è ancora nel gioco: si sblocca e lo dice.
+			feats.note(&"container_on_car")
+			t.check(hud.feat_text().contains("Rilancia") and hud.feat_text().contains("più avanti"), "quello che non c'è ancora arriva più avanti (%s)" % hud.feat_text())
 			# Fuochi d'artificio: la Napalm entra nel mazzo.
 			feats.note(&"explosion", 2.0)
 			t.check(not feats.done("fuochi"), "due rottami non bastano")
@@ -81,11 +85,11 @@ func _physics_process(_delta: float) -> bool:
 			t.check(main.get_node("Course").next_den_distance() > 0.0, "si sa quanto manca alla prossima tana")
 			# Salvate subito.
 			progress.load_from(PROGRESS)
-			t.check(feats.done("boomerang") and feats.done("fuochi") and feats.count_done() == 6, "le imprese si salvano subito (%d)" % feats.count_done())
+			t.check(feats.done("boomerang") and feats.done("fuochi") and feats.count_done() == 7, "le imprese si salvano subito (%d)" % feats.count_done())
 			# La schermata.
 			var panel: Node = load("res://scripts/feats_panel.gd").new()
 			root.add_child(panel)
-			t.check(panel._count.text == "6 / %d" % feats.ALL.size(), "la schermata conta le imprese fatte (%s)" % panel._count.text)
+			t.check(panel._count.text == "7 / %d" % feats.ALL.size(), "la schermata conta le imprese fatte (%s)" % panel._count.text)
 			var secret: Node = panel.find_child("arrosto", true, false)
 			var texts: Array = secret.find_children("*", "Label", true, false).map(func(label: Label) -> String: return label.text)
 			t.check("???" in texts and not "Arrosto" in texts, "le segrete non fatte restano coperte")

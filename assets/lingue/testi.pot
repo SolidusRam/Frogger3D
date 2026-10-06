@@ -447,6 +447,10 @@ msgid "Seconda vita!"
 msgstr ""
 
 #: scripts/game.gd
+msgid "L'assicurazione paga!"
+msgstr ""
+
+#: scripts/game.gd
 msgid "Niente da scegliere: vita piena e %d mosche"
 msgstr ""
 
@@ -1271,6 +1275,102 @@ msgid "Un rottame scagliato ne colpisce 2"
 msgstr ""
 
 #: scripts/progress.gd
+msgid "Franchigia"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "L'assicurazione ti lascia con 30 di vita invece di 1."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "L'assicurazione ti salva 5 volte"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Premio"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Quando l'assicurazione paga, il calore non sale."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Salvata, raggiungi la tana senza altri colpi"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Tossina"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Il rottame avvelenato avvelena le auto che lo toccano."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Avvelena 30 auto"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Antidoto"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Le auto ti fanno metà danno."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Avvelena 3 auto in 5 s"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Ariete"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "In volo, l'auto che tocchi diventa rottame."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Para 10 colpi in volo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Blindata"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "L'ala para due colpi per volo."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Vola 40 m in un solo volo con l'ala corazzata"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Turbina"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Sospesa, l'elica spinge via e ribalta le auto sotto di te."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Resta sospesa 60 s in tutto"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Seme d'acero"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "La sospensione dura il doppio."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Resta sospesa mentre ti passano sotto 4 auto"
+msgstr ""
+
+#: scripts/progress.gd
 msgid "Fionda"
 msgstr ""
 
@@ -1528,6 +1628,22 @@ msgstr ""
 
 #: scripts/upgrades.gd
 msgid "{tongue}: la lingua afferra un rottame e lo tiene sopra la testa; lasciando, lo scagli dove guardi."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Un colpo mortale ti lascia con 1 di vita, una volta per sezione; ma il calore sale subito di un livello."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "L'auto che ti investe diventa rottame. Il colpo lo prendi lo stesso, e ogni rottame scalda."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "In volo l'ala para un colpo: niente danno, e resti in aria."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Aperta, l'ala ti tiene sospesa sul posto per 2 s, come un seme d'acero; poi plani."
 msgstr ""
 
 #: scripts/upgrades.gd

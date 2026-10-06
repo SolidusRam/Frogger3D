@@ -106,6 +106,7 @@ func _ready() -> void:
 	hud.abandon_requested.connect(abandon)
 	upgrades.equipped.connect(_on_equipped)
 	frog.revived.connect(func() -> void: hud.announce(tr("Seconda vita!")))
+	frog.insured.connect(func() -> void: hud.announce(tr("L'assicurazione paga!")))
 	hud.set_record(record_distance)
 	add_child(PerfOverlay.new())
 	if attract:
@@ -267,8 +268,13 @@ func _on_den_reached(_count: int, distance: float) -> void:
 	if _over:
 		return
 	add_flies(den_flies)
-	# Una sezione nuova: la prova del guscio rapido ricomincia.
+	# Una sezione nuova: la prova del guscio rapido ricomincia, e
+	# l'assicurazione si rinnova (il premio: salvata e arrivata senza colpi).
 	frog.shell_blocks_section = 0
+	if frog.insured_clean:
+		Progress.trial_best("insurance", 1, 1)
+		frog.insured_clean = false
+	frog.insurance_ready = frog.insurance
 	if den_regen > 0.0:
 		frog.health = mini(frog.health + roundi(frog.max_health * den_regen), frog.max_health)
 		frog.health_changed.emit(frog.health, frog.max_health)

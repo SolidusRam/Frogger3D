@@ -137,6 +137,9 @@ var crash_speed := 4.0
 var wreck_lifetime := 25.0
 
 var _speed := 0.0
+## Quando questa e le altre auto sono state avvelenate (prova dell'antidoto:
+## tre in cinque secondi). Condiviso fra tutte le auto.
+static var _poisoned_times: Array[int] = []
 var _hitbox: Area3D
 var _look_ahead: ShapeCast3D
 ## Passi di fisica che mancano al prossimo sguardo in avanti.
@@ -364,6 +367,10 @@ func _on_wreck_body_entered(body: Node) -> void:
 	if has_meta("meteor") and _wreck_age > 0.3 and (body is StaticBody3D or other):
 		remove_meta("meteor")
 		_meteor_wave()
+	# La tossina: il rottame avvelenato avvelena chi lo tocca, anche piano.
+	if other and other.state == State.DRIVING and has_meta("poison"):
+		other.poison(false)
+		return
 	if other and other.state == State.DRIVING:
 		if (linear_velocity - other.motion_velocity()).length() > crash_speed:
 			other.become_wreck()
@@ -372,6 +379,22 @@ func _on_wreck_body_entered(body: Node) -> void:
 			# Maestria del montante: un'auto lanciata ne ribalta un'altra.
 			if has_meta("uppercut"):
 				Progress.trial_add("uppercut", 1, 1)
+
+
+## Avvelenata (dalla rana velenosa, o da un rottame avvelenato): diventa
+## rottame. spreads: il rottame avvelena a sua volta le auto che lo urtano
+## (una generazione sola).
+func poison(spreads: bool) -> void:
+	if state != State.DRIVING:
+		return
+	become_wreck()
+	if spreads:
+		set_meta("poison", true)
+	Progress.trial_add("poison", 0, 1)
+	var now := Time.get_ticks_msec()
+	_poisoned_times.append(now)
+	_poisoned_times.assign(_poisoned_times.filter(func(t: int) -> bool: return now - t <= 5000))
+	Progress.trial_best("poison", 1, _poisoned_times.size())
 
 
 ## Per seconds secondi quest'auto non fa male alla rana (il rottame tenuto
@@ -456,7 +479,10 @@ func _hit_overlapping_frogs() -> void:
 		if own_speed >= min_harmful_speed and closing_speed >= min_harmful_speed:
 			Feats.note(&"car_hit", 1.0 if has_meta("punched") else 0.0)
 			frog.last_hit_by = self
-			frog.take_hit(hit_damage, _knockback_for(frog, velocity))
+			frog.take_hit(roundi(hit_damage * (0.5 if frog.antidote else 1.0)), _knockback_for(frog, velocity))
+			# La rana velenosa: chi la investe diventa rottame.
+			if frog.poisonous and state == State.DRIVING:
+				poison(frog.poison_spreads)
 
 
 ## Chiamato dal fiume a ogni passo in cui il rottame è in acqua.
