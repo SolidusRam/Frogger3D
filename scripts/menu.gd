@@ -162,7 +162,7 @@ func _build() -> void:
 ## Cambiata la lingua nelle opzioni, si riscrivono le scritte coi numeri (le
 ## altre si traducono da sole).
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_TRANSLATION_CHANGED and _flies_label != null:
+	if what == NOTIFICATION_TRANSLATION_CHANGED and is_instance_valid(_flies_label):
 		_refresh()
 
 
@@ -178,6 +178,9 @@ func _refresh() -> void:
 
 ## Il menu sparisce e la run parte sul posto.
 func _play() -> void:
+	# Da qui in poi le opzioni (anche dalla pausa) non riguardano più il menu:
+	# le sue scritte se ne vanno, e la rana non va più cambiata a run partita.
+	Settings.changed.disconnect(_on_settings_changed)
 	_ui.mouse_filter = Control.MOUSE_FILTER_STOP
 	var tween := create_tween()
 	tween.tween_property(_ui, "modulate:a", 0.0, 0.3)

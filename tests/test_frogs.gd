@@ -15,6 +15,7 @@ var frogs: GDScript
 var feats: GDScript
 var progress: GDScript
 var frame := 0
+var m := {}
 
 
 func _initialize() -> void:
@@ -76,8 +77,18 @@ func _physics_process(_delta: float) -> bool:
 			t.check(menu._game.upgrades.slots.springs == "base" and menu._game.frog.skin == "frog_tree", "scelta dal menu, la raganella compare sullo sfondo")
 			t.check(menu._frog_button.text == "Rana: Raganella", "e il menu la nomina")
 			menu._play()
-		15:
+			m.menu = menu
+		# Dopo la dissolvenza del menu (0,3 s): le sue scritte non ci sono più.
+		45:
+			# Dalla pausa le opzioni non toccano più il menu (le sue scritte non
+			# ci sono più) né la rana della run.
+			var settings: Node = root.get_node("Settings")
+			settings.set_option("unlock_everything", true)
+			settings.set_option("language", 1)
+			settings.set_option("language", 0)
+			settings.set_option("unlock_everything", false)
 			var game: Node = current_scene.get_child(0)
+			t.check(game.frog_kind == "raganella" and game.upgrades.slots.springs == "base", "cambiare le opzioni durante la run non cambia la rana")
 			t.check(game.frog.max_health >= 70 and game.frog.max_health < 100 and game.frog_kind == "raganella", "la run parte con la raganella (vita %d)" % game.frog.max_health)
 			DirAccess.remove_absolute(ProjectSettings.globalize_path(PROGRESS))
 			DirAccess.remove_absolute(ProjectSettings.globalize_path("user://record_test.cfg"))
