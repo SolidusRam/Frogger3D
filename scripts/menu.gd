@@ -25,6 +25,8 @@ var _feats: FeatsPanel
 var _frogs: FrogsPanel
 var _frog_button: Button
 var _unlocked_label: Label
+## Il nome della rana in anteprima, a destra sopra lo sfondo.
+var _preview_label: Label
 
 
 func _ready() -> void:
@@ -142,10 +144,23 @@ func _build() -> void:
 	_pond.closed.connect(_on_pond_closed)
 	_ui.add_child(_pond)
 
+	_preview_label = _label("", "Title")
+	_preview_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	_preview_label.offset_left = -500
+	_preview_label.offset_right = -40
+	_preview_label.offset_top = -120
+	_preview_label.offset_bottom = -60
+	_preview_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_preview_label.add_theme_constant_override("outline_size", 10)
+	_preview_label.visible = false
+	_ui.add_child(_preview_label)
+
 	_frogs = FrogsPanel.new()
 	_frogs.visible = false
 	_frogs.closed.connect(_frog_button.grab_focus)
 	_frogs.chosen.connect(_on_frog_chosen)
+	_frogs.previewed.connect(_on_frog_previewed)
+	_frogs.closed.connect(_end_frog_preview)
 	_ui.add_child(_frogs)
 
 	_feats = FeatsPanel.new()
@@ -206,6 +221,23 @@ func _on_settings_changed() -> void:
 
 func _open_frogs() -> void:
 	_frogs.open()
+	_game.frog.camera_rig.frame_preview(true)
+
+
+## Anteprima: la rana sotto il puntatore compare sullo sfondo; se è chiusa,
+## come silhouette, col suo nome e un punto di domanda.
+func _on_frog_previewed(id: String) -> void:
+	var open_frog := Frogs.unlocked(id)
+	_game.preview_frog(id, not open_frog)
+	_preview_label.text = tr(Frogs.ALL[id].name) + ("" if open_frog else "  ?")
+	_preview_label.visible = true
+
+
+## Chiusa la scelta, sullo sfondo torna la rana scelta.
+func _end_frog_preview() -> void:
+	_preview_label.visible = false
+	_game.frog.camera_rig.frame_preview(false)
+	_game.preview_frog(Frogs.selected())
 
 
 ## La rana scelta compare subito sullo sfondo, coi suoi colori e attrezzi.

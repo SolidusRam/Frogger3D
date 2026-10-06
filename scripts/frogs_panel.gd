@@ -9,8 +9,14 @@ extends PanelContainer
 signal closed
 ## Scelta una rana (il menu la mostra subito sullo sfondo).
 signal chosen(id: String)
+## Il puntatore (o la selezione col controller) è su una rana: il menu la
+## mostra sullo sfondo, a destra; chiusa, come silhouette.
+signal previewed(id: String)
 
-const COLUMNS := 3
+const COLUMNS := 2
+## Il pannello copre la sinistra dello schermo: a destra, sullo sfondo, la
+## rana in anteprima.
+const WIDTH := 0.6
 ## L'icona dell'attrezzo iniziale di ogni rana.
 const ICONS := {"comune": "gloves", "raganella": "springs", "paracadutista": "wing", "fiume": "body", "camaleonte": "tongue", "rospo": ""}
 
@@ -27,6 +33,8 @@ var _esc_label: Label
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	anchor_right = WIDTH
+	offset_right = 0.0
 	theme = UiTheme.get_theme()
 	theme_type_variation = "Backdrop"
 	var box := VBoxContainer.new()
@@ -183,6 +191,8 @@ func _tile(id: String) -> PanelContainer:
 	tile.add_theme_stylebox_override("panel", box)
 	if not open_frog:
 		tile.modulate = Color(1, 1, 1, 0.6)
+	# Passandoci sopra (o selezionandola), la rana compare sullo sfondo.
+	tile.mouse_entered.connect(previewed.emit.bind(id))
 	var column := VBoxContainer.new()
 	column.add_theme_constant_override("separation", 6)
 	tile.add_child(column)
@@ -205,6 +215,7 @@ func _tile(id: String) -> PanelContainer:
 	if open_frog:
 		var pick := _button(tr("Scelta") if chosen_now else tr("Scegli"), _choose.bind(id), "PrimaryButton" if not chosen_now else "")
 		column.add_child(pick)
+		_preview_on(pick, id)
 	else:
 		var feat: Dictionary = Feats.ALL[Frogs.unlock_feat(id)]
 		var lock := _line(tr("Si sblocca con l'impresa «%s»: %s") % [tr(feat.name), tr(feat.text)], UiTheme.GOLD)
@@ -213,7 +224,15 @@ func _tile(id: String) -> PanelContainer:
 		var locked := _button(tr("Chiusa"), func() -> void: pass)
 		locked.disabled = true
 		column.add_child(locked)
+		_preview_on(locked, id)
 	return tile
+
+
+## Il pulsante della tessera mostra la sua rana quando ci si passa sopra o lo
+## si seleziona col controller.
+func _preview_on(button: Button, id: String) -> void:
+	button.mouse_entered.connect(previewed.emit.bind(id))
+	button.focus_entered.connect(previewed.emit.bind(id))
 
 
 func _choose(id: String) -> void:

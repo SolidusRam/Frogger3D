@@ -73,6 +73,13 @@ func _physics_process(_delta: float) -> bool:
 		10:
 			var menu := current_scene
 			t.check(menu._frog_button.text == "Rana: Comune", "il menu dice la rana scelta (%s)" % menu._frog_button.text)
+			# L'anteprima: una rana chiusa sullo sfondo è una silhouette.
+			menu._frogs.previewed.emit("rospo")
+			t.check(menu._game.frog.silhouette and menu._game.frog_kind == "rospo" and menu._preview_label.text.contains("?"), "una rana chiusa in anteprima è una silhouette")
+			menu._frogs.previewed.emit("raganella")
+			t.check(not menu._game.frog.silhouette and menu._game.frog_kind == "raganella", "una aperta si vede coi suoi colori")
+			menu._frogs.closed.emit()
+			t.check(not menu._preview_label.visible and menu._game.frog_kind == "comune", "chiusa la scelta torna la rana scelta")
 			menu._frogs._choose("raganella")
 			t.check(menu._game.upgrades.slots.springs == "base" and menu._game.frog.skin == "frog_tree", "scelta dal menu, la raganella compare sullo sfondo")
 			t.check(menu._frog_button.text == "Rana: Raganella", "e il menu la nomina")

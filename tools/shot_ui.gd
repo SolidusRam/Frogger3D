@@ -68,6 +68,10 @@ func _process(_d: float) -> bool:
 				progress.drought_best["comune"] = 2
 				progress.drought_level["comune"] = 2
 				current_scene._open_frogs()
+				# La silhouette del rospo, ancora chiuso (anche se sul computer
+				# è acceso Tutto sbloccato; non si salva niente).
+				root.get_node("Settings").unlock_everything = false
+				current_scene._frogs.previewed.emit("rospo")
 			"impresa":
 				main.get_node("Hud").show_feat("Boomerang", "Rana velenosa", false)
 			"carte":

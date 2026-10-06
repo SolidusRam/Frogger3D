@@ -192,6 +192,11 @@ var _shell_mesh: MeshInstance3D
 var _look_nodes: Array[Node] = []
 var _look_palette := {}
 var _hat: Node3D
+## Anteprima di una rana ancora chiusa, nel menu: solo la sagoma nera.
+var silhouette := false:
+	set(value):
+		silhouette = value
+		_apply_palette()
 ## Dove sta il guscio, sul torso.
 const SHELL_POSITION := Vector3(0.0, 0.2, -0.22)
 ## Miglioramenti speciali della pelle impermeabile: il tuffo (in acqua, con
@@ -933,6 +938,12 @@ func _apply_gravity_and_jump(delta: float) -> void:
 ## poteri e delle carte.
 func _apply_palette() -> void:
 	Style.apply_palette(model, _palette)
+	# La silhouette (anteprima di una rana chiusa): tutto nero.
+	if silhouette:
+		for node in model.find_children("*", "MeshInstance3D", true, false):
+			var mesh_instance := node as MeshInstance3D
+			for i in mesh_instance.mesh.get_surface_count():
+				mesh_instance.set_surface_override_material(i, Style.material("silhouette"))
 
 
 ## Le braccia vanno dalla spalla al guantone: quando il pugno scatta si

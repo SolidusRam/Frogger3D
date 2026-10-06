@@ -462,7 +462,7 @@ func _finish_run() -> Dictionary:
 
 ## La rana: i suoi attrezzi iniziali e la sua pelle (anche nel menu, che la
 ## mostra mentre si sceglie).
-func preview_frog(id: String) -> void:
+func preview_frog(id: String, as_silhouette := false) -> void:
 	frog_kind = id
 	upgrades.equip_kit(starting_kit if not starting_kit.is_empty() else Frogs.ALL[id].kit)
 	frog.set_look(Frogs.ALL[id])
@@ -470,6 +470,7 @@ func preview_frog(id: String) -> void:
 	var pick := Cosmetics.chosen(id)
 	frog.set_hat(pick.hat)
 	frog.skin = Cosmetics.palette_of(pick.color) if pick.color != "" else Frogs.ALL[id].color
+	frog.silhouette = as_silhouette
 
 
 ## Il pro e il contro della rana, all'inizio della run (prima dello stagno).
