@@ -74,6 +74,9 @@ func _texts() -> Dictionary:
 	var new_power: Dictionary = load("res://scripts/hud.gd").NEW_POWER
 	for slot in new_power:
 		texts[new_power[slot]] = "carte"
+	var token_names: Dictionary = load("res://scripts/hud.gd").TOKEN_NAMES
+	for kind in token_names:
+		texts[token_names[kind]] = "gettoni"
 	var powers: Dictionary = load("res://scripts/hud.gd").POWERS
 	for power in powers:
 		texts[powers[power][0]] = "poteri"

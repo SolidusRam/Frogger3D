@@ -1,6 +1,6 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
-## Screenshot delle schermate: menu | partenza | stagno | maestria | opzioni | audio | grafica | tasti | imprese | impresa | rane | hud | carte | pausa | fine | prova.
+## Screenshot delle schermate: menu | partenza | stagno | maestria | opzioni | audio | grafica | tasti | imprese | impresa | rane | gettoni | hud | carte | pausa | fine | prova.
 ## HEAT, SHOT; LINGUA=en per le schermate in inglese.
 var frame := 0
 var main: Node
@@ -68,6 +68,10 @@ func _process(_d: float) -> bool:
 			"impresa":
 				main.get_node("Hud").show_feat("Boomerang", "Rana velenosa", false)
 			"carte":
+				main.offer_upgrade()
+			"gettoni":
+				load("res://scripts/feats.gd").unlock_all = true
+				main.get_node("Upgrades").reset_tokens()
 				main.offer_upgrade()
 			"pausa":
 				main.get_node("Hud").pause()

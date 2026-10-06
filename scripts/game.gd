@@ -38,6 +38,8 @@ var starting_kit := {}
 ## (con la vita piena).
 @export var den_flies := 3
 @export var empty_den_flies := 8
+## Il gettone Salta: niente carta, queste mosche.
+@export var skip_flies := 5
 ## L'arrivo in tana: secondi di festa (la rana alza i guantoni, i fiori si
 ## aprono) prima delle carte. 0: le carte subito, senza festa (i test).
 @export var den_celebration_seconds := 0.9
@@ -87,6 +89,7 @@ func _ready() -> void:
 		progress_path = "user://progressi_test.cfg"
 		record_path = "user://record_test.cfg"
 	Progress.load_from(progress_path)
+	upgrades.reset_tokens()
 	if frog_kind == "":
 		frog_kind = Frogs.selected()
 	preview_frog(frog_kind)
@@ -105,6 +108,7 @@ func _ready() -> void:
 	hud.menu_requested.connect(to_menu)
 	hud.abandon_requested.connect(abandon)
 	upgrades.equipped.connect(_on_equipped)
+	hud.token_used.connect(_on_token_used)
 	frog.revived.connect(func() -> void: hud.announce(tr("Seconda vita!")))
 	frog.insured.connect(func() -> void: hud.announce(tr("L'assicurazione paga!")))
 	hud.set_record(record_distance)
@@ -138,6 +142,7 @@ func start_run() -> void:
 	Heat.reset()
 	_apply_frog_mods()
 	_apply_stats()
+	upgrades.reset_tokens()
 	run_time = 0.0
 	hud.visible = true
 	frog.asleep = false
@@ -336,8 +341,12 @@ func add_golden(amount: int) -> void:
 ## Ferma il gioco e offre tre power-up (anche dalla modalità prova). Se la
 ## tana non ha più carte da offrire, dà vita piena e mosche.
 func offer_upgrade() -> void:
-	var options := upgrades.make_offer()
+	_show_offer(upgrades.make_offer())
+
+
+func _show_offer(options: Array[String]) -> void:
 	if options.is_empty():
+		_close_offer()
 		frog.heal_full()
 		add_flies(empty_den_flies)
 		hud.announce(tr("Niente da scegliere: vita piena e %d mosche") % empty_den_flies)
@@ -345,6 +354,30 @@ func offer_upgrade() -> void:
 	get_tree().paused = true
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	hud.show_offer(options, upgrades)
+
+
+## I gettoni della tana (vedi Upgrades.TOKENS). index: la carta da esiliare.
+func _on_token_used(kind: String, index: int) -> void:
+	match kind:
+		"reroll":
+			Sfx.play(&"ui_card_in", 0.0, 0.8)
+			_show_offer(upgrades.reroll())
+		"banish":
+			Sfx.play(&"ui_refund")
+			_show_offer(upgrades.banish(index))
+		"skip":
+			upgrades.tokens.skip -= 1
+			_close_offer()
+			add_flies(skip_flies)
+			hud.announce(tr("Saltata: +%d mosche") % skip_flies)
+
+
+## Le carte se ne vanno senza sceglierne una: il gioco riparte.
+func _close_offer() -> void:
+	frog.asleep = false
+	hud.hide_offer()
+	get_tree().paused = false
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 
 func _on_equipped(id: String) -> void:

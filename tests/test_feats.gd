@@ -59,9 +59,9 @@ func _physics_process(_delta: float) -> bool:
 			t.check(feats.done("boomerang"), "investita dall'auto che aveva colpito: Boomerang")
 			t.check(hud.feat_text().contains("Boomerang") and hud.feat_text().contains("Rana velenosa") and not hud.feat_text().contains("più avanti"), "l'impresa si annuncia con quello che sblocca (%s)" % hud.feat_text())
 			t.check(feats.card_available("poison"), "e la rana velenosa entra nel mazzo")
-			# Un gettone non c'è ancora nel gioco: si sblocca e lo dice.
+			# Un gettone: si sblocca e lo dice.
 			feats.note(&"container_on_car")
-			t.check(hud.feat_text().contains("Rilancia") and hud.feat_text().contains("più avanti"), "quello che non c'è ancora arriva più avanti (%s)" % hud.feat_text())
+			t.check(hud.feat_text().contains("Rilancia") and not hud.feat_text().contains("più avanti"), "Consegna sblocca il gettone Rilancia (%s)" % hud.feat_text())
 			# Fuochi d'artificio: la Napalm entra nel mazzo.
 			feats.note(&"explosion", 2.0)
 			t.check(not feats.done("fuochi"), "due rottami non bastano")

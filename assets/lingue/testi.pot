@@ -455,6 +455,10 @@ msgid "Niente da scegliere: vita piena e %d mosche"
 msgstr ""
 
 #: scripts/game.gd
+msgid "Saltata: +%d mosche"
+msgstr ""
+
+#: scripts/game.gd
 msgid "Equipaggiato: %s"
 msgstr ""
 
@@ -583,6 +587,18 @@ msgid "Ricomincia (%s)"
 msgstr ""
 
 #: scripts/hud.gd
+msgid "%s (%d)"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Esilia: scegli la carta (annulla)"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Esilia: la carta che scegli esce dal mazzo per il resto della run"
+msgstr ""
+
+#: scripts/hud.gd
 msgid "Scegli un potenziamento: tasti 1-%d o clic"
 msgstr ""
 
@@ -636,6 +652,18 @@ msgstr ""
 
 #: scripts/hud.gd
 msgid "Nuovo attrezzo: la lingua"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Rilancia"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Salta"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Esilia"
 msgstr ""
 
 #: scripts/hud.gd

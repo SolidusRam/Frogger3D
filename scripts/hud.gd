@@ -7,6 +7,8 @@ extends CanvasLayer
 ## corpo) e i potenziamenti numerici in basso a destra. Poi messaggi, catene,
 ## carte della tana, pausa (Esc) e la schermata di fine run.
 
+## Un gettone della tana (vedi Upgrades.TOKENS); index: la carta esiliata.
+signal token_used(kind: String, index: int)
 ## Lo stagno aperto dalla fine della corsa (per i suggerimenti).
 signal pond_opened
 signal restart_requested
@@ -22,6 +24,8 @@ const HEALTH_COLOR := Color(0.4, 0.8, 0.3)
 const HEALTH_LOW_COLOR := Color(0.9, 0.25, 0.2)
 ## Sotto questa frazione la barra della vita diventa rossa e pulsa.
 const HEALTH_LOW := 0.3
+## I gettoni della tana, nell'ordine dei pulsanti.
+const TOKEN_NAMES := {"reroll": "Rilancia", "skip": "Salta", "banish": "Esilia"}
 ## La riga della carta quando lo slot è vuoto: la carta dà l'attrezzo.
 const NEW_POWER := {
 	"gloves": "Nuovo attrezzo: il pugno", "springs": "Nuovo attrezzo: il super salto",
@@ -66,6 +70,10 @@ var _chain_label: Label
 var _offer: PanelContainer
 var _offer_title: Label
 var _offer_buttons: Array[Button] = []
+## I gettoni sotto le carte, e Esilia in attesa della carta da togliere.
+var _token_buttons := {}
+var _banishing := false
+var _offer_hint: Label
 ## Le parti di ogni carta: icona, nome dello slot, nome, durata, effetto.
 var _card_parts: Array[Dictionary] = []
 var _upgrades: Upgrades
@@ -297,6 +305,10 @@ func show_offer(options: Array[String], upgrades: Upgrades) -> void:
 		tween.tween_property(button, "modulate:a", 1.0, 0.18).set_delay(i * 0.07)
 		tween.tween_callback(Sfx.play.bind(&"ui_card_in", 0.0, 1.0 + 0.06 * i)).set_delay(i * 0.07)
 		tween.tween_property(button, "scale", Vector2.ONE, 0.28).set_delay(i * 0.07).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_banishing = false
+	_update_tokens()
+	# Il suggerimento in corso non spunta da sotto le carte.
+	_hint.visible = false
 	_offer.visible = true
 	_offer_buttons[0].grab_focus()
 
@@ -378,7 +390,7 @@ func _unhandled_input(event: InputEvent) -> void:
 	var index: int = [KEY_1, KEY_2, KEY_3, KEY_4].find(event.physical_keycode)
 	if index >= 0 and _offer_buttons[index].visible:
 		get_viewport().set_input_as_handled()
-		_upgrades.choose(index)
+		_on_card_pressed(index)
 
 
 ## I comandi scritti sui pulsanti seguono il dispositivo usato per ultimo.
@@ -566,8 +578,8 @@ func _build_offer() -> void:
 	_offer.add_child(box)
 	_offer_title = _text("Title")
 	box.add_child(_offer_title)
-	var hint := _text("Note", tr("Scegli un potenziamento: tasti 1-%d o clic") % MAX_CARDS)
-	box.add_child(hint)
+	_offer_hint = _text("Note")
+	box.add_child(_offer_hint)
 	var cards := HBoxContainer.new()
 	cards.add_theme_constant_override("separation", 16)
 	box.add_child(cards)
@@ -580,6 +592,16 @@ func _build_offer() -> void:
 		cards.add_child(button)
 		_offer_buttons.append(button)
 		_card_parts.append(_build_card(button, i))
+	# I gettoni: solo quelli sbloccati, con gli usi rimasti.
+	var tokens := HBoxContainer.new()
+	tokens.alignment = BoxContainer.ALIGNMENT_CENTER
+	tokens.add_theme_constant_override("separation", 14)
+	box.add_child(tokens)
+	for kind: String in TOKEN_NAMES:
+		var token := _button("", _on_token.bind(kind), "DangerButton" if kind == "banish" else "")
+		token.add_theme_font_size_override("font_size", 20)
+		tokens.add_child(token)
+		_token_buttons[kind] = token
 
 
 ## Il contenuto di una carta, sopra il pulsante (che riceve i clic).
@@ -627,7 +649,37 @@ func _build_card(button: Button, index: int) -> Dictionary:
 
 
 func _on_card_pressed(index: int) -> void:
+	if _banishing:
+		_banishing = false
+		token_used.emit("banish", index)
+		return
 	_upgrades.choose(index)
+
+
+func _on_token(kind: String) -> void:
+	if kind == "banish":
+		# Esilia aspetta la carta; di nuovo, annulla.
+		_banishing = not _banishing
+		_update_tokens()
+		return
+	_banishing = false
+	token_used.emit(kind, -1)
+
+
+## I gettoni: visibili se sbloccati, coi loro usi; Esilia dice cosa aspetta.
+func _update_tokens() -> void:
+	for kind: String in _token_buttons:
+		var button: Button = _token_buttons[kind]
+		var left: int = _upgrades.tokens.get(kind, 0) if _upgrades else 0
+		var unlocked := Feats.all_open() or Feats.done(Upgrades.TOKENS[kind])
+		button.visible = unlocked
+		button.disabled = left <= 0
+		button.text = tr("%s (%d)") % [tr(TOKEN_NAMES[kind]), left]
+	if _banishing:
+		_token_buttons.banish.text = tr("Esilia: scegli la carta (annulla)")
+		_offer_hint.text = tr("Esilia: la carta che scegli esce dal mazzo per il resto della run")
+	else:
+		_offer_hint.text = tr("Scegli un potenziamento: tasti 1-%d o clic") % MAX_CARDS
 
 
 func _build_equipment() -> void:

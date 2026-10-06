@@ -21,6 +21,12 @@ extends Node
 signal offered(options: Array[String])
 signal equipped(id: String)
 
+## I gettoni della tana (docs/imprese.md): Rilancia (carte nuove), Salta (niente
+## carta, qualche mosca), Esilia (una carta esce dal mazzo per la run). Ognuno
+## si sblocca con la sua impresa e si usa TOKEN_USES volte per run.
+const TOKENS := {"reroll": "consegna", "skip": "pelo", "banish": "maratona"}
+const TOKEN_USES := 2
+
 ## Il valore di uno slot con l'attrezzo semplice.
 const BASE := "base"
 ## L'attrezzo semplice di ogni slot (il corpo non ne ha).
@@ -136,6 +142,9 @@ var slots := {"gloves": "", "springs": "", "wing": "", "body": "", "tongue": ""}
 ## Quante volte è stato preso ogni potenziamento numerico.
 var stacks := {}
 var current_offer: Array[String] = []
+## Gettoni rimasti in questa run, e le carte esiliate.
+var tokens := {"reroll": 0, "skip": 0, "banish": 0}
+var banished: Array[String] = []
 ## Carte offerte da ogni tana (la statistica "Più scelta" ne aggiunge una).
 var offer_size := 3
 
@@ -190,6 +199,27 @@ func equip_kit(kit: Dictionary) -> void:
 			apply(kit[slot])
 
 
+## I gettoni all'inizio della run: quelli sbloccati, TOKEN_USES ciascuno.
+func reset_tokens() -> void:
+	for kind: String in TOKENS:
+		tokens[kind] = TOKEN_USES if Feats.all_open() or Feats.done(TOKENS[kind]) else 0
+	banished.clear()
+
+
+## Rilancia: un'offerta nuova al posto di questa.
+func reroll() -> Array[String]:
+	tokens.reroll -= 1
+	return make_offer()
+
+
+## Esilia: la carta index esce dal mazzo per il resto della run, e l'offerta
+## si rifà senza.
+func banish(index: int) -> Array[String]:
+	tokens.banish -= 1
+	banished.append(current_offer[index])
+	return make_offer()
+
+
 ## Dà l'attrezzo semplice di uno slot vuoto (la modalità prova).
 func give_base(slot: String) -> void:
 	if slots[slot] == "":
@@ -220,7 +250,7 @@ func make_offer(count := -1) -> Array[String]:
 		if NEEDS.has(id) and not has_tool(NEEDS[id]):
 			continue
 		# Le carte da sbloccare restano fuori finché la loro impresa non è fatta.
-		if not Feats.card_available(id):
+		if not Feats.card_available(id) or id in banished:
 			continue
 		pool.append(id)
 	pool.shuffle()

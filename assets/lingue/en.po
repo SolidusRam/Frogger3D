@@ -1369,3 +1369,24 @@ msgstr "All frogs and all cards, right away. Runs count as test runs: no best, f
 
 msgid "Tutto sbloccato: le run sono prove"
 msgstr "Everything unlocked: runs are test runs"
+
+msgid "Saltata: +%d mosche"
+msgstr "Skipped: +%d flies"
+
+msgid "%s (%d)"
+msgstr "%s (%d)"
+
+msgid "Esilia: scegli la carta (annulla)"
+msgstr "Banish: pick the card (cancel)"
+
+msgid "Esilia: la carta che scegli esce dal mazzo per il resto della run"
+msgstr "Banish: the card you pick leaves the deck for the rest of the run"
+
+msgid "Rilancia"
+msgstr "Reroll"
+
+msgid "Salta"
+msgstr "Skip"
+
+msgid "Esilia"
+msgstr "Banish"
