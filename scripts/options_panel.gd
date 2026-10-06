@@ -138,6 +138,8 @@ func _build_general(page: VBoxContainer) -> void:
 	again.size_flags_horizontal = Control.SIZE_SHRINK_END
 	page.add_child(again)
 	page.add_child(_note("I suggerimenti del primo minuto spariscono dopo che li hai eseguiti in due corse. Rivederli li rimette tutti."))
+	_toggle(page, "Tutto sbloccato (per provare)", "unlock_everything")
+	page.add_child(_note("Tutte le rane e tutte le carte, subito. Le run contano come prove: niente record, mosche né imprese. Spento, torna tutto com'era."))
 
 
 func _build_audio(page: VBoxContainer) -> void:

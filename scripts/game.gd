@@ -113,6 +113,7 @@ func _ready() -> void:
 		_enter_attract()
 	else:
 		add_child(TestMode.new())
+		_mark_unlocked_test()
 		start_hints()
 		_start_feats()
 
@@ -145,12 +146,19 @@ func start_run() -> void:
 	fire.front_z = frog.global_position.z + fire.max_gap
 	frog.camera_rig.end_orbit(start_seconds)
 	add_child(TestMode.new())
+	_mark_unlocked_test()
 	start_hints()
 	_start_feats()
 
 
 ## I suggerimenti, se le opzioni li vogliono. Una run di prova avviata da
 ## tools/prova.sh non li mostra.
+## Con "Tutto sbloccato" la run è una prova: niente record, mosche né imprese.
+func _mark_unlocked_test() -> void:
+	if Settings.unlock_everything:
+		test_run = true
+
+
 func start_hints() -> void:
 	if not tutorial or not Settings.hints or has_node("Hints") or not OS.get_cmdline_user_args().is_empty():
 		return

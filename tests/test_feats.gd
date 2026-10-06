@@ -86,6 +86,17 @@ func _physics_process(_delta: float) -> bool:
 			# Salvate subito.
 			progress.load_from(PROGRESS)
 			t.check(feats.done("boomerang") and feats.done("fuochi") and feats.count_done() == 7, "le imprese si salvano subito (%d)" % feats.count_done())
+			# "Tutto sbloccato" (per provare): rane e carte aperte, la run è una prova.
+			var settings: Node = root.get_node("Settings")
+			t.check(not feats.card_available("anchor_tongue") and not load("res://scripts/frogs.gd").unlocked("camaleonte"), "senza l'opzione la lingua-ancora e il camaleonte sono chiusi")
+			settings.set_option("unlock_everything", true)
+			t.check(feats.card_available("anchor_tongue") and load("res://scripts/frogs.gd").unlocked("camaleonte"), "con Tutto sbloccato tutto è aperto")
+			main._mark_unlocked_test()
+			t.check(main.test_run, "e la run è una prova")
+			settings.set_option("unlock_everything", false)
+			main.test_run = false
+			t.check(not feats.card_available("anchor_tongue"), "spento, torna com'era")
+			DirAccess.remove_absolute(ProjectSettings.globalize_path("user://opzioni_test.cfg"))
 			# La schermata.
 			var panel: Node = load("res://scripts/feats_panel.gd").new()
 			root.add_child(panel)

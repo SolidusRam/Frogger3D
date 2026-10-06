@@ -28,7 +28,7 @@ const ALL := {
 ## Vero se la rana si può scegliere: la comune sempre, le altre con la loro
 ## impresa fatta.
 static func unlocked(id: String) -> bool:
-	if id == "comune" or Feats.unlock_all:
+	if id == "comune" or Feats.all_open():
 		return true
 	var feat := unlock_feat(id)
 	return feat != "" and Feats.done(feat)

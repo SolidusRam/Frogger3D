@@ -24,6 +24,7 @@ var _options: OptionsPanel
 var _feats: FeatsPanel
 var _frogs: FrogsPanel
 var _frog_button: Button
+var _unlocked_label: Label
 
 
 func _ready() -> void:
@@ -117,6 +118,16 @@ func _build() -> void:
 	_record_label = _label("", "Strong")
 	stats.add_child(_record_label)
 
+	# "Tutto sbloccato" acceso: lo si dice, le run sono prove.
+	_unlocked_label = _label("Tutto sbloccato: le run sono prove", "Money")
+	_unlocked_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	_unlocked_label.offset_left = -520
+	_unlocked_label.offset_right = -32
+	_unlocked_label.offset_top = 28
+	_unlocked_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_ui.add_child(_unlocked_label)
+	Settings.changed.connect(_on_settings_changed)
+
 	var hint := _label("F2: cambia stile grafico", "Note")
 	hint.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
 	hint.offset_left = -320
@@ -159,6 +170,7 @@ func _refresh() -> void:
 	_flies_label.text = tr("Mosche: %d") % Progress.flies
 	_golden_label.text = tr("Mosche d'oro: %d") % Progress.golden
 	_frog_button.text = tr("Rana: %s") % tr(Frogs.ALL[Frogs.selected()].name)
+	_unlocked_label.visible = Settings.unlock_everything
 	var record: float = _game.record_distance
 	_record_label.text = tr("Record: %d m") % roundi(record) if record > 0.0 else tr("Nessun record")
 	_golden_label.visible = Progress.golden > 0
@@ -176,6 +188,14 @@ func _play() -> void:
 func _open_pond() -> void:
 	_pond.refresh()
 	_pond.visible = true
+
+
+## Acceso o spento "Tutto sbloccato": la scritta, e la rana scelta che magari
+## non si può più usare (torna la comune).
+func _on_settings_changed() -> void:
+	_refresh()
+	if _game.frog_kind != Frogs.selected():
+		_game.preview_frog(Frogs.selected())
 
 
 func _open_frogs() -> void:

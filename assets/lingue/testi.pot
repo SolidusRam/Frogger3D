@@ -687,6 +687,10 @@ msgid "Esci"
 msgstr ""
 
 #: scripts/menu.gd
+msgid "Tutto sbloccato: le run sono prove"
+msgstr ""
+
+#: scripts/menu.gd
 msgid "F2: cambia stile grafico"
 msgstr ""
 
@@ -720,6 +724,10 @@ msgstr ""
 
 #: scripts/options_panel.gd
 msgid "I suggerimenti del primo minuto spariscono dopo che li hai eseguiti in due corse. Rivederli li rimette tutti."
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Tutte le rane e tutte le carte, subito. Le run contano come prove: niente record, mosche né imprese. Spento, torna tutto com'era."
 msgstr ""
 
 #: scripts/options_panel.gd
@@ -780,6 +788,10 @@ msgstr ""
 
 #: scripts/options_panel.gd
 msgid "Suggerimenti"
+msgstr ""
+
+#: scripts/options_panel.gd
+msgid "Tutto sbloccato (per provare)"
 msgstr ""
 
 #: scripts/options_panel.gd

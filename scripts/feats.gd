@@ -54,6 +54,12 @@ static var tracker: Node
 static var unlock_all := false
 
 
+## Tutto aperto: nei test (unlock_all) o per provare (l'opzione "Tutto
+## sbloccato").
+static func all_open() -> bool:
+	return unlock_all or Settings.unlock_everything
+
+
 ## Un evento dal gioco ("explosion", "car_hit"...), con un valore.
 static func note(event: StringName, value := 1.0) -> void:
 	if tracker != null and is_instance_valid(tracker):
@@ -67,7 +73,7 @@ static func done(id: String) -> bool:
 ## Vero se la carta (o la fusione) può uscire nelle tane: nessuna impresa la
 ## tiene chiusa, o la sua è fatta.
 static func card_available(card: String) -> bool:
-	if unlock_all:
+	if all_open():
 		return true
 	for id: String in ALL:
 		var feat: Dictionary = ALL[id]

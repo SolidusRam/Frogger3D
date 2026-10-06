@@ -1360,3 +1360,12 @@ msgstr "{tongue} near fire (a smoking wreck, the wildfire): swallow it. {tongue}
 
 msgid "{tongue}: la lingua aggancia un'auto, un tronco o una nave e la ferma per 4 s. Un'auto ferma è un muro, un tronco fermo è un ponte."
 msgstr "{tongue}: your tongue hooks a car, a log or a ship and stops it for 4 s. A stopped car is a wall, a stopped log is a bridge."
+
+msgid "Tutto sbloccato (per provare)"
+msgstr "Everything unlocked (for testing)"
+
+msgid "Tutte le rane e tutte le carte, subito. Le run contano come prove: niente record, mosche né imprese. Spento, torna tutto com'era."
+msgstr "All frogs and all cards, right away. Runs count as test runs: no best, flies or feats. Turn it off and everything goes back to how it was."
+
+msgid "Tutto sbloccato: le run sono prove"
+msgstr "Everything unlocked: runs are test runs"

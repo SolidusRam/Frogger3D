@@ -111,6 +111,9 @@ var invert_y := false
 var vibration := true
 ## I suggerimenti del primo minuto (vedi Hints).
 var hints := true
+## Per provare: tutte le rane e tutte le carte subito (vedi Feats.all_open).
+## Le run valgono come prove: niente record, mosche né imprese.
+var unlock_everything := false
 
 ## L'ultimo dispositivo usato è il controller (e quale).
 var using_pad := false
@@ -485,4 +488,4 @@ func _decode(text: String) -> InputEvent:
 func _options() -> Array[String]:
 	return ["language", "master_volume", "effects_volume", "music_volume", "window_mode", "vsync",
 		"fps_limit", "render_scale", "shake", "flashes", "mouse_sensitivity",
-		"stick_sensitivity", "invert_y", "vibration", "hints"]
+		"stick_sensitivity", "invert_y", "vibration", "hints", "unlock_everything"]
