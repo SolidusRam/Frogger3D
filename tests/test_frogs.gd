@@ -73,6 +73,13 @@ func _physics_process(_delta: float) -> bool:
 		10:
 			var menu := current_scene
 			t.check(menu._frog_button.text == "Rana: Comune", "il menu dice la rana scelta (%s)" % menu._frog_button.text)
+			# Le rane che partono con una carta (di fiume, camaleonte) non devono
+			# fingere una carta scelta: la partita catturerebbe il mouse.
+			var announced := []
+			menu._game.upgrades.equipped.connect(func(id: String) -> void: announced.append(id))
+			menu._frogs.previewed.emit("fiume")
+			menu._frogs.previewed.emit("camaleonte")
+			t.check(announced.is_empty() and menu._game.upgrades.slots.tongue == "tongue", "gli attrezzi iniziali si montano in silenzio (niente mouse catturato)")
 			# L'anteprima: una rana chiusa sullo sfondo è una silhouette.
 			menu._frogs.previewed.emit("rospo")
 			t.check(menu._game.frog.silhouette and menu._game.frog_kind == "rospo" and menu._preview_label.text.contains("?"), "una rana chiusa in anteprima è una silhouette")

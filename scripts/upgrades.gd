@@ -196,7 +196,7 @@ func equip_kit(kit: Dictionary) -> void:
 			slots[slot] = BASE
 			_set_tool(slot, true)
 		else:
-			apply(kit[slot])
+			apply(kit[slot], false)
 
 
 ## I gettoni all'inizio della run: quelli sbloccati, TOKEN_USES ciascuno.
@@ -269,7 +269,7 @@ func choose(index: int) -> void:
 	apply(id)
 
 
-func apply(id: String) -> void:
+func apply(id: String, announce := true) -> void:
 	var item: Dictionary = CATALOG[id]
 	if item.slot == "fusion":
 		for slot: String in slots_of(id):
@@ -296,7 +296,10 @@ func apply(id: String) -> void:
 			"tough_skin":
 				frog.max_health += 25
 				frog.heal_full()
-	equipped.emit(id)
+	# equipped vuol dire "scelta una carta": la partita chiude le carte e
+	# ricattura il mouse. Gli attrezzi iniziali si montano in silenzio.
+	if announce:
+		equipped.emit(id)
 
 
 ## Toglie un modificatore; una fusione si porta via anche le sue parti.

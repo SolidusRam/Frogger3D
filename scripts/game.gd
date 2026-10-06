@@ -465,6 +465,7 @@ func _finish_run() -> Dictionary:
 func preview_frog(id: String, as_silhouette := false) -> void:
 	frog_kind = id
 	upgrades.equip_kit(starting_kit if not starting_kit.is_empty() else Frogs.ALL[id].kit)
+	hud.show_equipment(upgrades)
 	frog.set_look(Frogs.ALL[id])
 	# Il guardaroba: il cappello e il colore scelti per questa rana.
 	var pick := Cosmetics.chosen(id)
