@@ -41,7 +41,17 @@ Decisa il 4 ottobre 2026 (sblocchi a imprese, rane diverse, run da 15-20 minuti)
 
 Oggi la distanza conta fino al punto della morte e la tana salva il record. Alternativa: conta solo la distanza raggiunta all'ultima tana. Chi muore tra due tane perde il tratto fatto dopo, e ogni sezione diventa una scommessa (come incassare in Balatro).
 
-## Power-up ancora da fare
+## Power-up in riserva (6 ottobre 2026)
+
+Il mazzo da venti è deciso (regole-design.md, riga "Mazzo deciso"). Restano qui, se servissero:
+
+- **Pelle di gomma** (corpo): le auto non ti schiacciano, rimbalzi via lontano a metà danno. Forte alla prova della clip (una pallina da flipper); fusione possibile col trampolino ("palla matta").
+- **Pelle ignifuga** (corpo): fuoco ed esplosioni a metà danno, nell'incendio resisti 2 s.
+- **Muta** (corpo): senza colpi per 6 s rigeneri vita piano.
+- Scartate dall'utente: guantoni magnetici, ventose, ala a scia, lingua-frusta (troppo simile al pugno), lingua golosa (il rampino mangia già le mosche a distanza).
+- La build fredda (carte che premiano la prudenza) è stata scartata: per scegliere il mondo finale l'utente userebbe altro (vedi la domanda nei mondi).
+
+## Power-up ancora da fare (catalogo del 4 ottobre, superato)
 
 Ogni power-up si vede addosso alla rana (è un supereroe con gli attrezzi). Già fatti: guantoni esplosivi, montante, guantone a molla, molle-trampolino, schianto sismico, correnti calde, ala a reazione, pelle impermeabile, lingua-rampino, quattro numerici; fusioni Napalm e Terremoto.
 

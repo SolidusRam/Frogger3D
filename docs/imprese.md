@@ -69,6 +69,33 @@ Nel Frogger originale la mosca nella tana dava punti in più: qui le mosche sono
   | | Lingua doppia: mentre la lingua trascina, le mosche vicine finiscono in bocca | Fatti trascinare per 50 m in un solo traino |
 
   Da rivedere in futuro: il bilanciamento dei miglioramenti e delle prove.
+
+  **Maestria delle carte nuove** (proposta del 6 ottobre 2026, da rivedere: le carte sono nel mazzo deciso, riga "Mazzo deciso" di regole-design.md, ma non ancora nel gioco):
+
+  | Carta | Miglioramento | Prova |
+  | --- | --- | --- |
+  | Guantoni di ghiaccio | Pista: il blocco colpito scivola il doppio e congela ciò che urta | Congela 30 auto |
+  | | Iceberg: sul blocco ci stai anche in acqua, è una zattera | Un blocco di ghiaccio ne travolge 3 |
+  | Molle da canguro | Marsupio: atterrare in acqua o su un tetto non azzera il ritmo | Fai 300 saltelli a ritmo |
+  | | Salto lungo: al ritmo massimo un saltello scavalca una corsia | Fai 15 saltelli di fila |
+  | Molle a razzo | Terzo stadio: un terzo salto in aria | Fai 40 secondi salti |
+  | | Scia di fuoco: il secondo salto lascia sotto una fiammata che fa rottami | Supera 12 m d'altezza |
+  | Ala corazzata | Ariete: in volo, l'auto che tocchi diventa rottame | Assorbi 10 colpi in volo |
+  | | Blindata: assorbe due colpi per volo | Vola 40 m in un solo volo |
+  | Ala a elica | Turbina: sospesa, l'elica spinge via le auto sotto di te | Resta sospesa 60 s in tutto |
+  | | Seme d'acero: la sospensione dura il doppio | Resta sospesa mentre ti passano sotto 4 auto |
+  | Guscio | Spine: l'auto che rompe il guscio diventa rottame | Il guscio para 20 colpi |
+  | | Guscio rapido: si ricarica in metà tempo | Para 3 colpi nella stessa sezione |
+  | Assicurazione | Franchigia: ti salva con 30 di vita invece di 1 | L'assicurazione ti salva 5 volte |
+  | | Premio: quando ti salva, il calore non sale | Salvata, raggiungi la tana senza altri colpi |
+  | Rana velenosa | Tossina: il rottame avvelenato avvelena le auto che lo urtano | Avvelena 30 auto |
+  | | Antidoto: le auto ti colpiscono a metà danno | Avvelena 3 auto in 5 s |
+  | Lingua mangiafuoco | Raffica: tre palle più piccole invece di una | Sputa 30 palle di fuoco |
+  | | Drago: la palla esplode e fa rottami intorno | Una palla di fuoco fa partire una catena di 4 rottami |
+  | Lingua-catapulta | Lancio lungo: gittata doppia | Scaglia 30 rottami |
+  | | Strike: il rottame scagliato rimbalza da un'auto all'altra | Un rottame scagliato ne colpisce 2 |
+  | Lingua-ancora | Ancora pesante: tiene 8 s invece di 4 | Ferma 40 cose |
+  | | Doppia ancora: due ancore insieme | Passa su 3 tronchi ancorati in una sola traversata |
 - **Rimborso**: si azzera tutto e le mosche (anche quelle d'oro) tornano indietro, come in Vampire Survivors; le prove superate restano superate.
 
 Ancora da fare: i gettoni della tana (Rilancia, Salta, Esilia) e le cose da vedere (cappelli, colori, stili). Altre statistiche possibili: spinta dello schianto, durata della seconda vita, mosche d'oro anche su auto e navi.
