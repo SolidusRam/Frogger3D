@@ -140,6 +140,11 @@ var _speed := 0.0
 ## Quando questa e le altre auto sono state avvelenate (prova dell'antidoto:
 ## tre in cinque secondi). Condiviso fra tutte le auto.
 static var _poisoned_times: Array[int] = []
+## Il ghiaccio: secondi prima di sciogliersi, e velocità della scivolata.
+const ICE_SECONDS := 8.0
+const ICE_SLIDE_SPEED := 16.0
+var _ice_left := 0.0
+var _anchored_left := 0.0
 var _hitbox: Area3D
 var _look_ahead: ShapeCast3D
 ## Passi di fisica che mancano al prossimo sguardo in avanti.
@@ -202,6 +207,8 @@ func _physics_process(delta: float) -> void:
 			if state == State.DRIVING:
 				_animate_driving(delta)
 		State.WRECK:
+			if has_meta("ice"):
+				_melt(delta)
 			_frog_grace = maxf(_frog_grace - delta, 0.0)
 			_bump_wait -= delta
 			_wreck_age += delta
@@ -325,6 +332,11 @@ func explode() -> void:
 
 
 func _drive(delta: float) -> void:
+	# Ancorata dalla lingua: ferma sul posto.
+	if _anchored_left > 0.0:
+		_anchored_left -= delta
+		_speed = 0.0
+		return
 	var target_speed := cruise_speed
 	_look_wait -= 1
 	if _look_wait <= 0:
@@ -376,6 +388,13 @@ func _on_wreck_body_entered(body: Node) -> void:
 			other.become_wreck()
 			if has_meta("thrown"):
 				_thrown_hit(other)
+			if has_meta("sliding_ice"):
+				var hits: int = get_meta("sliding_ice") + 1
+				set_meta("sliding_ice", hits)
+				Progress.trial_best("ice_gloves", 1, hits)
+				# La pista: quello che il blocco urta si congela.
+				if has_meta("rink"):
+					other.freeze_ice()
 			# Maestria del montante: un'auto lanciata ne ribalta un'altra.
 			if has_meta("uppercut"):
 				Progress.trial_add("uppercut", 1, 1)
@@ -395,6 +414,61 @@ func poison(spreads: bool) -> void:
 	_poisoned_times.append(now)
 	_poisoned_times.assign(_poisoned_times.filter(func(t: int) -> bool: return now - t <= 5000))
 	Progress.trial_best("poison", 1, _poisoned_times.size())
+
+
+# --- Il ghiaccio e l'ancora (carte) ------------------------------------------
+
+## Guantoni di ghiaccio: l'auto colpita diventa un blocco di ghiaccio fermo,
+## una piattaforma; si scioglie dopo ice_seconds (mai con l'iceberg).
+## Colpita di nuovo scivola come al curling (vedi slide_ice).
+func freeze_ice(melts := true) -> void:
+	_quiet_wreck = true
+	become_wreck()
+	linear_velocity = Vector3.ZERO
+	angular_velocity = Vector3.ZERO
+	freeze = true
+	set_meta("ice", true)
+	_ice_left = ICE_SECONDS if melts else INF
+	for surface in _painted:
+		(surface[0] as MeshInstance3D).set_surface_override_material(surface[1], Style.material("ice"))
+	Sfx.play_at(&"wreck_hit", global_position, 0.0, 1.8)
+	Progress.trial_add("ice_gloves", 0, 1)
+
+
+## Il blocco di ghiaccio colpito scivola senza attrito; con la pista va il
+## doppio e congela quello che urta.
+func slide_ice(blow: Vector3, rink: bool) -> void:
+	freeze = false
+	var slippery := PhysicsMaterial.new()
+	slippery.friction = 0.0
+	physics_material_override = slippery
+	var flat := Vector3(blow.x, 0.0, blow.z).normalized()
+	linear_velocity = flat * (ICE_SLIDE_SPEED * (2.0 if rink else 1.0))
+	set_meta("sliding_ice", 0)
+	if rink:
+		set_meta("rink", true)
+	_ice_left = ICE_SECONDS
+
+
+func _melt(delta: float) -> void:
+	_ice_left -= delta
+	if _ice_left > 0.0:
+		return
+	remove_meta("ice")
+	freeze = false
+	physics_material_override = null
+	for surface in _painted:
+		(surface[0] as MeshInstance3D).set_surface_override_material(surface[1], Style.material("wreck_%d" % _color_index))
+
+
+## L'ancora della lingua: l'auto in marcia si ferma per seconds secondi (chi
+## viene dietro frena e fa la coda).
+func anchor(seconds: float) -> void:
+	_anchored_left = seconds
+
+
+func is_anchored() -> bool:
+	return _anchored_left > 0.0
 
 
 ## Per seconds secondi quest'auto non fa male alla rana (il rottame tenuto

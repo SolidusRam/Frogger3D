@@ -42,6 +42,26 @@ var strike := false
 @export var throw_speed := 24.0
 @export var long_throw_factor := 1.6
 @export var hold_height := 2.8
+## La lingua mangiafuoco (carta): ingoia il fuoco vicino (un rottame che fuma,
+## una chiazza di fuoco, l'incendio) e lo risputa come palla di fuoco. Senza
+## fuoco intorno è scarica. Miglioramenti: la raffica (tre palle più piccole)
+## e il drago (la palla esplode).
+var fire_eater := false
+var volley := false
+var dragon := false
+## Fuoco in bocca, pronto da sputare.
+var loaded := false
+## La lingua-ancora (carta): aggancia una cosa che si muove (un'auto, un
+## tronco, un coccodrillo, una nave; non treni né aerei) e la ferma per
+## anchor_seconds. Miglioramenti: l'ancora pesante (il doppio del tempo) e la
+## doppia ancora (due cose ferme insieme).
+var anchor := false
+var heavy_anchor := false
+var double_anchor := false
+@export var anchor_seconds := 4.0
+var _anchored: Array[Node3D] = []
+var _anchored_logs := {}
+var _mouth_fire: CPUParticles3D
 var cooldown_left := 0.0
 ## Vero mentre la lingua è agganciata a qualcosa.
 var attached := false
@@ -90,12 +110,17 @@ func setup(frog: Frog) -> void:
 func tick(delta: float) -> void:
 	cooldown_left = maxf(cooldown_left - delta, 0.0)
 	_flick_left = maxf(_flick_left - delta, 0.0)
-	aimed = _find_target() if is_ready() else null
+	# La mangiafuoco non mira: prende il fuoco più vicino.
+	aimed = _find_target() if is_ready() and not fire_eater else null
 	_sight.visible = aimed != null
 	if aimed:
 		_sight.global_position = _top_of(aimed) + Vector3.UP * (1.2 + 0.15 * sin(Time.get_ticks_msec() / 150.0))
 		_sight.rotation.y += delta * 4.0
 	_draw_tongue()
+	if anchor:
+		_tick_anchor()
+	if _mouth_fire and _mouth_fire.emitting:
+		_mouth_fire.global_position = _mouth()
 
 
 func is_ready() -> bool:
@@ -110,6 +135,8 @@ func ready_ratio() -> float:
 ## Aggancia ciò che il mirino segna. Falso se non c'è niente: la lingua
 ## scatta a vuoto e si ricarica in fretta.
 func use() -> bool:
+	if fire_eater:
+		return _use_fire()
 	var target := aimed if aimed else _find_target()
 	Sfx.play(&"tongue_shoot")
 	if target is Fly:
@@ -125,6 +152,9 @@ func use() -> bool:
 		_flick_left = 0.12
 		return false
 	_frog.power_used.emit(&"tongue")
+	if anchor:
+		_anchor(target)
+		return true
 	attached = true
 	_target = target
 	Sfx.play_at(&"tongue_stick", _top_of(target))
@@ -236,6 +266,123 @@ func _throw(body: RigidBody3D) -> void:
 	Sfx.play(&"punch_swing", 0.0, 0.8)
 
 
+# --- La lingua-ancora ---------------------------------------------------------
+
+## Ferma il bersaglio. Senza la doppia ancora, la nuova libera la vecchia.
+func _anchor(target: Node3D) -> void:
+	var limit := 2 if double_anchor else 1
+	while _anchored.size() >= limit:
+		var old: Node3D = _anchored.pop_front()
+		if is_instance_valid(old):
+			old.anchor(0.0)
+	target.anchor(anchor_seconds * (2.0 if heavy_anchor else 1.0))
+	_anchored.append(target)
+	_flick_to = _top_of(target)
+	_flick_left = 0.2
+	cooldown_left = 1.0
+	Sfx.play_at(&"tongue_stick", _flick_to, 0.0, 0.7)
+	Progress.trial_add("anchor_tongue", 0, 1)
+
+
+## I segni sopra le cose ancorate, e la prova della doppia ancora: i tronchi
+## ancorati su cui si passa in una sola traversata.
+func _tick_anchor() -> void:
+	_anchored.assign(_anchored.filter(func(node: Node3D) -> bool: return is_instance_valid(node) and node.is_anchored()))
+	var floor := _frog.floor_body()
+	if floor is RiverLog and floor.is_anchored():
+		_anchored_logs[floor.get_instance_id()] = true
+		Progress.trial_best("anchor_tongue", 1, _anchored_logs.size())
+	elif _frog.is_on_floor() and not (floor is Floater or floor is Ship):
+		_anchored_logs.clear()
+
+
+# --- La lingua mangiafuoco -----------------------------------------------------
+
+## Scarica: ingoia il fuoco più vicino. Carica: sputa la palla di fuoco.
+func _use_fire() -> bool:
+	if loaded:
+		_spit()
+		return true
+	var source := _fire_source()
+	Sfx.play(&"tongue_shoot")
+	if source == Vector3.INF:
+		cooldown_left = 0.3
+		_flick_to = _mouth() - _frog.camera_rig.flat_basis().z * 3.0
+		_flick_left = 0.12
+		return false
+	_flick_to = source
+	_flick_left = 0.2
+	loaded = true
+	cooldown_left = 0.4
+	Sfx.play(&"sizzle", 0.0, 1.4)
+	_mouth_flames(true)
+	return true
+
+
+## Il fuoco più vicino entro reach: un rottame che fuma, una chiazza di fuoco,
+## il fronte dell'incendio. Vector3.INF se non c'è.
+func _fire_source() -> Vector3:
+	var best := Vector3.INF
+	var best_gap := reach
+	var points: Array[Vector3] = []
+	for car in Car.smoking_wrecks():
+		points.append(car.global_position)
+	for patch in _frog.get_tree().get_nodes_in_group("fire_patches"):
+		points.append(patch.global_position)
+	var fire := _frog.get_tree().get_first_node_in_group("wildfire") as Wildfire
+	if fire and fire.distance() < reach:
+		points.append(Vector3(_frog.global_position.x, 1.0, fire.front_z))
+	for point in points:
+		var gap := point.distance_to(_frog.global_position)
+		if gap < best_gap:
+			best_gap = gap
+			best = point
+	return best
+
+
+## La palla di fuoco (tre più piccole con la raffica) dove guarda la
+## telecamera.
+func _spit() -> void:
+	loaded = false
+	_mouth_flames(false)
+	_frog.power_used.emit(&"tongue")
+	cooldown_left = cooldown
+	var forward := -_frog.camera_rig.flat_basis().z
+	var angles := [-12.0, 0.0, 12.0] if volley else [0.0]
+	for angle: float in angles:
+		var ball := Fireball.new()
+		ball.direction = forward.rotated(Vector3.UP, deg_to_rad(angle))
+		ball.dragon = dragon
+		ball.size = 0.7 if volley else 1.0
+		_frog.get_parent().add_child(ball)
+		ball.global_position = _mouth() + forward * 0.5
+	Progress.trial_add("fire_tongue", 0, 1)
+	_frog.squash(Vector3(1.2, 0.85, 1.2), 0.2)
+
+
+## Col fuoco in bocca, due fiammelle escono dal muso.
+func _mouth_flames(on: bool) -> void:
+	if _mouth_fire == null:
+		_mouth_fire = CPUParticles3D.new()
+		_mouth_fire.amount = 10
+		_mouth_fire.lifetime = 0.35
+		_mouth_fire.direction = Vector3.UP
+		_mouth_fire.spread = 25.0
+		_mouth_fire.initial_velocity_min = 1.0
+		_mouth_fire.initial_velocity_max = 2.0
+		_mouth_fire.gravity = Vector3.ZERO
+		var mesh := SphereMesh.new()
+		mesh.radius = 0.08
+		mesh.height = 0.16
+		mesh.radial_segments = 5
+		mesh.rings = 2
+		mesh.material = Style.material("fire")
+		_mouth_fire.mesh = mesh
+		_mouth_fire.top_level = true
+		_frog.add_child(_mouth_fire)
+	_mouth_fire.emitting = on
+
+
 ## Senza sgancio né slancio: un colpo interrompe tutto.
 func stop() -> void:
 	attached = false
@@ -247,6 +394,13 @@ func _still_hooked() -> bool:
 		return false
 	# Il bersaglio esce dalla zona di gioco: la lingua si stacca prima del bordo.
 	return absf(_target.to_global(_anchor_local).x) < _frog.play_half_width - 1.0
+
+
+## Si ancora un'auto in marcia, un tronco, un coccodrillo, una nave.
+static func _can_anchor(body: Node3D) -> bool:
+	if body is Car:
+		return body.state == Car.State.DRIVING
+	return body is Floater or body is Ship
 
 
 static func _is_loose(body: Node3D) -> bool:
@@ -305,8 +459,11 @@ func _find_target() -> Node3D:
 		var body := result.collider as Node3D
 		if body == null or body == standing_on:
 			continue
-		# La catapulta prende solo quello che si può scagliare.
+		# La catapulta prende solo quello che si può scagliare; l'ancora solo
+		# quello che si può fermare.
 		if catapult and not _is_loose(body):
+			continue
+		if anchor and not _can_anchor(body):
 			continue
 		var offset := body.global_position - _frog.global_position
 		var flat := Vector3(offset.x, 0.0, offset.z)

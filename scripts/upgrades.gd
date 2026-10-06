@@ -99,6 +99,22 @@ const CATALOG := {
 		"name": "Ala a elica", "slot": "wing",
 		"text": "Aperta, l'ala ti tiene sospesa sul posto per 2 s, come un seme d'acero; poi plani.",
 	},
+	"ice_gloves": {
+		"name": "Guantoni di ghiaccio", "slot": "gloves",
+		"text": "L'auto colpita diventa un blocco di ghiaccio fermo: ci sali sopra. Colpito di nuovo, scivola come al curling e travolge le auto.",
+	},
+	"kangaroo_springs": {
+		"name": "Molle da canguro", "slot": "springs",
+		"text": "Ogni salto fatto appena atterrata è più lungo e veloce del precedente. Fermarsi azzera il ritmo.",
+	},
+	"fire_tongue": {
+		"name": "Lingua mangiafuoco", "slot": "tongue",
+		"text": "{tongue} vicino al fuoco (un rottame che fuma, l'incendio): lo ingoi. {tongue} di nuovo: lo sputi, e la prima auto che colpisce diventa rottame.",
+	},
+	"anchor_tongue": {
+		"name": "Lingua-ancora", "slot": "tongue",
+		"text": "{tongue}: la lingua aggancia un'auto, un tronco o una nave e la ferma per 4 s. Un'auto ferma è un muro, un tronco fermo è un ponte.",
+	},
 	"punch_power": {"name": "Pugno più forte", "slot": "", "max": 3, "text": "+30% di spinta del pugno."},
 	"quick_springs": {"name": "Molle rapide", "slot": "", "max": 3, "text": "Il super salto si ricarica il 25% più in fretta."},
 	"big_wing": {"name": "Ala più grande", "slot": "", "max": 3, "text": "+1 secondo di volo col deltaplano."},
@@ -312,6 +328,17 @@ func _set_modifier(id: String, on: bool) -> void:
 			frog.shell = on
 		"catapult_tongue":
 			frog.tongue_power.catapult = on
+		"ice_gloves":
+			frog.punch_power.ice = on
+		"kangaroo_springs":
+			frog.kangaroo = on
+			frog.kangaroo_streak = 0
+			frog.super_jump_power.set_spring_color("spring_kangaroo" if on else "")
+		"fire_tongue":
+			frog.tongue_power.fire_eater = on
+			frog.tongue_power.loaded = false
+		"anchor_tongue":
+			frog.tongue_power.anchor = on
 		"insurance":
 			frog.insurance = on
 		"poison":
@@ -368,6 +395,18 @@ func _set_special(id: String, first: bool, second: bool) -> void:
 		"catapult_tongue":
 			frog.tongue_power.long_throw = first
 			frog.tongue_power.strike = second
+		"ice_gloves":
+			frog.punch_power.rink = first
+			frog.punch_power.iceberg = second
+		"kangaroo_springs":
+			frog.kangaroo_pouch = first
+			frog.kangaroo_long = second
+		"fire_tongue":
+			frog.tongue_power.volley = first
+			frog.tongue_power.dragon = second
+		"anchor_tongue":
+			frog.tongue_power.heavy_anchor = first
+			frog.tongue_power.double_anchor = second
 		"insurance":
 			frog.insurance_deductible = first
 			frog.insurance_bonus = second

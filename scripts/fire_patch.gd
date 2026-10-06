@@ -14,6 +14,8 @@ var _flames: Array[MeshInstance3D] = []
 
 
 func _ready() -> void:
+	# La lingua mangiafuoco le trova qui.
+	add_to_group("fire_patches")
 	_left = lifetime
 	var cone := CylinderMesh.new()
 	cone.top_radius = 0.0

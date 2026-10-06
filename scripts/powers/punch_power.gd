@@ -28,6 +28,15 @@ var explosive := false
 var uppercut := false
 ## Guantone a molla: il pugno arriva lontano.
 var long_reach := false
+## Guantoni di ghiaccio: l'auto colpita diventa un blocco di ghiaccio fermo;
+## il blocco colpito scivola. Miglioramenti: la pista (scivola il doppio e
+## congela ciò che urta) e l'iceberg (il ghiaccio non si scioglie).
+var ice := false:
+	set(value):
+		ice = value
+		_refresh_gloves()
+var rink := false
+var iceberg := false
 @export var uppercut_lift := 1.2
 @export var long_reach_distance := 4.0
 ## Miglioramenti speciali (la maestria delle carte, vedi Upgrades): meteora
@@ -109,7 +118,12 @@ func use() -> void:
 				car.set_meta("uppercut", true)
 				if meteor:
 					car.set_meta("meteor", true)
-			if long_reach and yank:
+			if ice:
+				if car.has_meta("ice") and car.freeze:
+					car.slide_ice(blow, rink)
+				else:
+					car.freeze_ice(not iceberg)
+			elif long_reach and yank:
 				_yank(car, blow)
 			else:
 				car.receive_punch(blow, explosive)
@@ -166,6 +180,8 @@ func _refresh_gloves() -> void:
 		key = "glove_up"
 	elif long_reach:
 		key = "glove_long"
+	elif ice:
+		key = "glove_ice"
 	_frog.set_palette("glove", key)
 	for glove in _gloves:
 		glove.scale = Vector3.ONE * (1.35 if long_reach else 1.0)

@@ -74,13 +74,29 @@ func _ready() -> void:
 		Sfx.play_at(&"ship_horn", global_position, 0.0, 1.0, 4.0)
 
 
+## Secondi in cui la lingua-ancora la tiene ferma.
+var anchored_left := 0.0
+
 func _physics_process(delta: float) -> void:
+	# Ancorata dalla lingua: ferma sul posto.
+	if anchored_left > 0.0:
+		anchored_left -= delta
+		return
 	position += transform.basis.x * speed * delta
+
+
+## L'ancora della lingua: la nave si ferma per seconds secondi.
+func anchor(seconds: float) -> void:
+	anchored_left = seconds
+
+
+func is_anchored() -> bool:
+	return anchored_left > 0.0
 
 
 ## Velocità della nave nel mondo.
 func motion_velocity() -> Vector3:
-	return global_basis.x * speed
+	return Vector3.ZERO if anchored_left > 0.0 else global_basis.x * speed
 
 
 # --- Le caselle dei container ------------------------------------------------

@@ -82,6 +82,22 @@ const CARD_UPGRADES := {
 		{"name": "Lancio lungo", "text": "Il rottame scagliato vola molto più lontano.", "trial": "Scaglia 30 rottami", "goal": 30, "kind": "total", "cost": 2},
 		{"name": "Strike", "text": "Il rottame scagliato, colpita un'auto, rimbalza verso la più vicina.", "trial": "Un rottame scagliato ne colpisce 2", "goal": 2, "kind": "best", "cost": 4},
 	],
+	"ice_gloves": [
+		{"name": "Pista", "text": "Il blocco colpito scivola il doppio, e congela le auto che urta.", "trial": "Congela 30 auto", "goal": 30, "kind": "total", "cost": 2},
+		{"name": "Iceberg", "text": "Il ghiaccio non si scioglie più.", "trial": "Un blocco di ghiaccio che scivola ne travolge 3", "goal": 3, "kind": "best", "cost": 4},
+	],
+	"kangaroo_springs": [
+		{"name": "Marsupio", "text": "Atterrare in acqua o su un tetto non azzera il ritmo.", "trial": "Fai 300 salti a ritmo", "goal": 300, "kind": "total", "cost": 2},
+		{"name": "Salto lungo", "text": "Al ritmo massimo vai ancora più lontano.", "trial": "Fai 15 salti di fila a ritmo", "goal": 15, "kind": "best", "cost": 4},
+	],
+	"fire_tongue": [
+		{"name": "Raffica", "text": "Tre palle di fuoco più piccole invece di una.", "trial": "Sputa 30 palle di fuoco", "goal": 30, "kind": "total", "cost": 2},
+		{"name": "Drago", "text": "La palla di fuoco esplode e fa rottami intorno.", "trial": "Una palla di fuoco fa partire una catena di 4 rottami", "goal": 4, "kind": "best", "cost": 4},
+	],
+	"anchor_tongue": [
+		{"name": "Ancora pesante", "text": "L'ancora tiene 8 s invece di 4.", "trial": "Ferma 40 cose", "goal": 40, "kind": "total", "cost": 2},
+		{"name": "Doppia ancora", "text": "Due cose ferme insieme.", "trial": "Passa su 3 tronchi ancorati in una sola traversata", "goal": 3, "kind": "best", "cost": 4},
+	],
 	"insurance": [
 		{"name": "Franchigia", "text": "L'assicurazione ti lascia con 30 di vita invece di 1.", "trial": "L'assicurazione ti salva 5 volte", "goal": 5, "kind": "total", "cost": 2},
 		{"name": "Premio", "text": "Quando l'assicurazione paga, il calore non sale.", "trial": "Salvata, raggiungi la tana senza altri colpi", "goal": 1, "kind": "best", "cost": 4},

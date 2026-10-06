@@ -1275,6 +1275,102 @@ msgid "Un rottame scagliato ne colpisce 2"
 msgstr ""
 
 #: scripts/progress.gd
+msgid "Pista"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Il blocco colpito scivola il doppio, e congela le auto che urta."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Congela 30 auto"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Iceberg"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Il ghiaccio non si scioglie più."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Un blocco di ghiaccio che scivola ne travolge 3"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Marsupio"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Atterrare in acqua o su un tetto non azzera il ritmo."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Fai 300 salti a ritmo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Salto lungo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Al ritmo massimo vai ancora più lontano."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Fai 15 salti di fila a ritmo"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Raffica"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Tre palle di fuoco più piccole invece di una."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Sputa 30 palle di fuoco"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Drago"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "La palla di fuoco esplode e fa rottami intorno."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Una palla di fuoco fa partire una catena di 4 rottami"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Ancora pesante"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "L'ancora tiene 8 s invece di 4."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Ferma 40 cose"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Doppia ancora"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Due cose ferme insieme."
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Passa su 3 tronchi ancorati in una sola traversata"
+msgstr ""
+
+#: scripts/progress.gd
 msgid "Franchigia"
 msgstr ""
 
@@ -1644,6 +1740,22 @@ msgstr ""
 
 #: scripts/upgrades.gd
 msgid "Aperta, l'ala ti tiene sospesa sul posto per 2 s, come un seme d'acero; poi plani."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "L'auto colpita diventa un blocco di ghiaccio fermo: ci sali sopra. Colpito di nuovo, scivola come al curling e travolge le auto."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Ogni salto fatto appena atterrata è più lungo e veloce del precedente. Fermarsi azzera il ritmo."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "{tongue} vicino al fuoco (un rottame che fuma, l'incendio): lo ingoi. {tongue} di nuovo: lo sputi, e la prima auto che colpisce diventa rottame."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "{tongue}: la lingua aggancia un'auto, un tronco o una nave e la ferma per 4 s. Un'auto ferma è un muro, un tronco fermo è un ponte."
 msgstr ""
 
 #: scripts/upgrades.gd

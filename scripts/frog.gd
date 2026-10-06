@@ -135,6 +135,19 @@ var cooldown_factor := 1.0
 ## Pelle impermeabile (power-up): l'acqua non toglie vita.
 var waterproof := false
 var poisonous := false
+## Molle da canguro (carta delle molle): ogni salto fatto appena atterrati è
+## più lungo del precedente, fino a kangaroo_max volte la velocità; fermarsi,
+## o atterrare in acqua o su un tetto, azzera il ritmo. Miglioramenti: il
+## marsupio (acqua e tetti non lo azzerano) e il salto lungo (al ritmo massimo
+## si va ancora più lontano).
+var kangaroo := false
+var kangaroo_pouch := false
+var kangaroo_long := false
+var kangaroo_streak := 0
+var _time_on_floor := 0.0
+@export var kangaroo_step := 0.15
+@export var kangaroo_max := 1.75
+@export var kangaroo_window := 0.25
 ## Miglioramenti della rana velenosa: la tossina (il rottame avvelenato
 ## avvelena chi lo urta) e l'antidoto (le auto fanno metà danno).
 var poison_spreads := false
@@ -775,7 +788,7 @@ func _swim(direction: Vector3, delta: float) -> void:
 func _apply_horizontal_movement(direction: Vector3, delta: float) -> void:
 	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
 	var acceleration := ground_acceleration if is_on_floor() else air_acceleration
-	var target_speed := move_speed
+	var target_speed := move_speed * kangaroo_factor()
 	if _stun_time > 0.0:
 		# Lo sbalzo si esaurisce piano, invece di essere annullato subito.
 		acceleration = air_acceleration
@@ -790,14 +803,55 @@ func _apply_horizontal_movement(direction: Vector3, delta: float) -> void:
 	velocity.z = horizontal.z
 
 
+## Il canguro: quanti salti di fila oltre il primo (0 senza la carta).
+func kangaroo_steps() -> int:
+	return maxi(kangaroo_streak - 1, 0) if kangaroo else 0
+
+
+## Quanto più veloce va la rana al ritmo attuale.
+func kangaroo_factor() -> float:
+	if not kangaroo:
+		return 1.0
+	var top := kangaroo_max * (1.3 if kangaroo_long else 1.0)
+	var factor := minf(1.0 + kangaroo_step * kangaroo_steps(), kangaroo_max)
+	# Il salto lungo: al ritmo massimo, ancora di più.
+	return top if kangaroo_long and factor >= kangaroo_max else factor
+
+
+## Un salto da terra: se arriva appena atterrati e in movimento, il ritmo
+## cresce; altrimenti riparte da uno.
+func _kangaroo_hop() -> void:
+	if not kangaroo:
+		return
+	var moving := Vector2(velocity.x, velocity.z).length() > 1.0
+	kangaroo_streak = kangaroo_streak + 1 if moving and _time_on_floor <= kangaroo_window else 1
+	if kangaroo_streak >= 2:
+		Progress.trial_add("kangaroo_springs", 0, 1)
+		Progress.trial_best("kangaroo_springs", 1, kangaroo_streak)
+
+
+## Il ritmo si perde restando a terra, fermandosi o (senza marsupio) in acqua
+## e sui tetti.
+func _track_kangaroo() -> void:
+	if not kangaroo or kangaroo_streak == 0:
+		return
+	_time_on_floor = _time_on_floor + get_physics_process_delta_time() if is_on_floor() else 0.0
+	var stopped := Vector2(velocity.x, velocity.z).length() < 1.0 and is_on_floor()
+	var bad_landing := not kangaroo_pouch and (is_swimming() or (is_on_floor() and floor_body() is Car))
+	if _time_on_floor > kangaroo_window or stopped or bad_landing:
+		kangaroo_streak = 0
+
+
 func _apply_gravity_and_jump(delta: float) -> void:
 	_time_since_floor = 0.0 if is_on_floor() else _time_since_floor + delta
 	_time_since_jump_pressed += delta
 	if Input.is_action_just_pressed("jump") and can_act():
 		_time_since_jump_pressed = 0.0
 
+	_track_kangaroo()
 	if _time_since_jump_pressed <= jump_buffer_time and _time_since_floor <= coyote_time:
-		velocity.y = jump_velocity
+		_kangaroo_hop()
+		velocity.y = jump_velocity * (1.0 + 0.1 * kangaroo_steps())
 		squash(Vector3(0.8, 1.3, 0.8), 0.25)
 		Sfx.play(&"frog_jump")
 		_time_since_jump_pressed = INF

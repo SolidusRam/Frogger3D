@@ -1276,3 +1276,87 @@ msgstr "In flight the wing blocks one hit: no damage, and you stay in the air."
 
 msgid "Aperta, l'ala ti tiene sospesa sul posto per 2 s, come un seme d'acero; poi plani."
 msgstr "When opened, the wing keeps you hovering in place for 2 s, like a maple seed; then you glide."
+
+msgid "Pista"
+msgstr "Rink"
+
+msgid "Il blocco colpito scivola il doppio, e congela le auto che urta."
+msgstr "A struck block slides twice as far, and freezes the cars it hits."
+
+msgid "Congela 30 auto"
+msgstr "Freeze 30 cars"
+
+msgid "Iceberg"
+msgstr "Iceberg"
+
+msgid "Il ghiaccio non si scioglie più."
+msgstr "The ice never melts."
+
+msgid "Un blocco di ghiaccio che scivola ne travolge 3"
+msgstr "A sliding ice block knocks out 3 cars"
+
+msgid "Marsupio"
+msgstr "Pouch"
+
+msgid "Atterrare in acqua o su un tetto non azzera il ritmo."
+msgstr "Landing in water or on a roof doesn't break your rhythm."
+
+msgid "Fai 300 salti a ritmo"
+msgstr "Make 300 rhythm jumps"
+
+msgid "Salto lungo"
+msgstr "Long jump"
+
+msgid "Al ritmo massimo vai ancora più lontano."
+msgstr "At top rhythm you go even farther."
+
+msgid "Fai 15 salti di fila a ritmo"
+msgstr "Make 15 rhythm jumps in a row"
+
+msgid "Raffica"
+msgstr "Volley"
+
+msgid "Tre palle di fuoco più piccole invece di una."
+msgstr "Three smaller fireballs instead of one."
+
+msgid "Sputa 30 palle di fuoco"
+msgstr "Spit 30 fireballs"
+
+msgid "Drago"
+msgstr "Dragon"
+
+msgid "La palla di fuoco esplode e fa rottami intorno."
+msgstr "The fireball explodes and wrecks the cars around it."
+
+msgid "Una palla di fuoco fa partire una catena di 4 rottami"
+msgstr "Start a chain of 4 wrecks with one fireball"
+
+msgid "Ancora pesante"
+msgstr "Heavy anchor"
+
+msgid "L'ancora tiene 8 s invece di 4."
+msgstr "The anchor holds for 8 s instead of 4."
+
+msgid "Ferma 40 cose"
+msgstr "Stop 40 things"
+
+msgid "Doppia ancora"
+msgstr "Double anchor"
+
+msgid "Due cose ferme insieme."
+msgstr "Two things stopped at once."
+
+msgid "Passa su 3 tronchi ancorati in una sola traversata"
+msgstr "Cross on 3 anchored logs in a single crossing"
+
+msgid "L'auto colpita diventa un blocco di ghiaccio fermo: ci sali sopra. Colpito di nuovo, scivola come al curling e travolge le auto."
+msgstr "A punched car turns into a still block of ice you can stand on. Punch it again and it slides like a curling stone, knocking out cars."
+
+msgid "Ogni salto fatto appena atterrata è più lungo e veloce del precedente. Fermarsi azzera il ritmo."
+msgstr "Every jump made right after landing is longer and faster than the last. Stopping breaks the rhythm."
+
+msgid "{tongue} vicino al fuoco (un rottame che fuma, l'incendio): lo ingoi. {tongue} di nuovo: lo sputi, e la prima auto che colpisce diventa rottame."
+msgstr "{tongue} near fire (a smoking wreck, the wildfire): swallow it. {tongue} again: spit it out, and the first car it hits gets wrecked."
+
+msgid "{tongue}: la lingua aggancia un'auto, un tronco o una nave e la ferma per 4 s. Un'auto ferma è un muro, un tronco fermo è un ponte."
+msgstr "{tongue}: your tongue hooks a car, a log or a ship and stops it for 4 s. A stopped car is a wall, a stopped log is a bridge."

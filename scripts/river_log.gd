@@ -46,7 +46,9 @@ func _physics_process(delta: float) -> void:
 	# Corrente e affondamento in una sola scrittura: con sync_to_physics una
 	# seconda scrittura partirebbe dalla posizione vecchia e annullerebbe la
 	# prima.
-	global_position = global_position + drift_velocity * delta + Vector3.DOWN * (_sunk - before)
+	# Ancorato dalla lingua: affonda (o riemerge) ma non scorre.
+	var drift := Vector3.ZERO if _held(delta) else drift_velocity
+	global_position = global_position + drift * delta + Vector3.DOWN * (_sunk - before)
 	# L'avviso: trema appena la rana sale, fa bolle mentre affonda.
 	var trembling := loaded or _sunk > 0.0
 	# Scricchiola appena la rana sale, gorgoglia quando comincia ad affondare.
