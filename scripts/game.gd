@@ -68,6 +68,8 @@ var fly_magnet := 0.0
 var fly_value := 1.0
 var den_regen := 0.0
 var max_heat_level := 0
+## Il livello di Siccità di questa run.
+var drought := 0
 var record_distance := 0.0
 
 var _over := false
@@ -93,10 +95,12 @@ func _ready() -> void:
 	if frog_kind == "":
 		frog_kind = Frogs.selected()
 	preview_frog(frog_kind)
-	# Nel menu la rana aspetta: pro, contro e stagno valgono da quando parte.
+	# Nel menu la rana aspetta: pro, contro, stagno e Siccità valgono da quando
+	# parte.
 	if not attract:
 		_apply_frog_mods()
 		_apply_stats()
+		_apply_drought()
 	Style.bind(environment.environment, sun, post)
 	record_distance = _load_record()
 	frog.power_used.connect(Heat.on_power_used)
@@ -142,6 +146,7 @@ func start_run() -> void:
 	Heat.reset()
 	_apply_frog_mods()
 	_apply_stats()
+	_apply_drought()
 	upgrades.reset_tokens()
 	run_time = 0.0
 	hud.visible = true
@@ -276,11 +281,28 @@ func _on_wreck_created(car: Node3D) -> void:
 ## La tana salva i progressi: il record viene scritto subito su disco. La
 ## rana fa festa per un attimo, poi il gioco si ferma e si sceglie un
 ## power-up, uno tra tre.
-func _on_den_reached(_count: int, distance: float) -> void:
+## Superato un livello di Siccità: si apre il prossimo, e forse una pelle.
+func _announce_drought() -> void:
+	if drought == 0:
+		hud.announce(tr("Si apre la Siccità 1!"))
+		return
+	var text := tr("Siccità %d superata!") % drought
+	var tier := Cosmetics.tier_for(drought)
+	if tier != "":
+		text += " " + tr("Nuova pelle: %s") % tr(Cosmetics.TIERS[tier].name)
+	elif drought < Drought.LEVELS.size():
+		text += " " + tr("Si apre il livello %d") % (drought + 1)
+	hud.announce(text)
+
+
+func _on_den_reached(count: int, distance: float) -> void:
 	_save_record_if_better(distance)
 	if _over:
 		return
 	add_flies(den_flies)
+	# La tana 5: il livello di Siccità è superato con questa rana.
+	if count == Drought.GOAL_DEN and not test_run and Drought.reached(frog_kind, drought):
+		_announce_drought()
 	# Una sezione nuova: la prova del guscio rapido ricomincia, e
 	# l'assicurazione si rinnova (il premio: salvata e arrivata senza colpi).
 	frog.shell_blocks_section = 0
@@ -434,6 +456,7 @@ func _finish_run() -> Dictionary:
 		"total_flies": Progress.flies,
 		"total_golden": Progress.golden,
 		"test_run": test_run,
+		"drought": drought,
 	}
 
 
@@ -446,7 +469,7 @@ func preview_frog(id: String) -> void:
 	# Il guardaroba: il cappello e il colore scelti per questa rana.
 	var pick := Cosmetics.chosen(id)
 	frog.set_hat(pick.hat)
-	frog.skin = Cosmetics.COLORS[pick.color].palette if pick.color != "" else Frogs.ALL[id].color
+	frog.skin = Cosmetics.palette_of(pick.color) if pick.color != "" else Frogs.ALL[id].color
 
 
 ## Il pro e il contro della rana, all'inizio della run (prima dello stagno).
@@ -458,6 +481,12 @@ func _apply_frog_mods() -> void:
 	frog.swim_speed *= mods.get("swim", 1.0)
 	frog.move_speed *= mods.get("speed", 1.0)
 	frog.tongue_power.cooldown *= mods.get("tongue_cooldown", 1.0)
+
+
+## La Siccità scelta per questa rana (vedi Drought).
+func _apply_drought() -> void:
+	drought = Drought.selected(frog_kind)
+	Drought.apply(self, drought)
 
 
 ## Le statistiche comprate allo stagno, all'inizio di ogni run.

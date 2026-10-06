@@ -140,6 +140,10 @@ static var feats := {}
 static var frog := "comune"
 ## Il guardaroba (vedi Cosmetics): per rana, {"hat": id, "color": id}.
 static var wardrobe := {}
+## La Siccità (vedi Drought): per rana, il livello scelto e il più alto
+## superato.
+static var drought_level := {}
+static var drought_best := {}
 
 
 static func load_from(file_path: String) -> void:
@@ -155,6 +159,8 @@ static func load_from(file_path: String) -> void:
 	feats = config.get_value("imprese", "fatte", {}) if ok else {}
 	frog = config.get_value("rana", "scelta", "comune") if ok else "comune"
 	wardrobe = config.get_value("guardaroba", "scelte", {}) if ok else {}
+	drought_level = config.get_value("siccita", "scelta", {}) if ok else {}
+	drought_best = config.get_value("siccita", "superata", {}) if ok else {}
 	run_trials = {}
 
 
@@ -169,6 +175,8 @@ static func save() -> void:
 	config.set_value("imprese", "fatte", feats)
 	config.set_value("rana", "scelta", frog)
 	config.set_value("guardaroba", "scelte", wardrobe)
+	config.set_value("siccita", "scelta", drought_level)
+	config.set_value("siccita", "superata", drought_best)
 	config.save(path)
 
 

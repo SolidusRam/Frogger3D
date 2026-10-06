@@ -34,6 +34,7 @@ BLOCKS = {
     "scripts/settings.gd": ["ACTIONS", "KEY_NAMES", "MOUSE_NAMES", "PAD_NAMES", "TRIGGER_NAMES", "UI_NAMES", "WINDOW_MODES"],
     "scripts/upgrades.gd": ["SLOT_NAMES"],
     "scripts/hud.gd": ["NEW_POWER", "TOKEN_NAMES"],
+    "scripts/drought.gd": ["LEVELS"],
 }
 # Stringhe che non si traducono (codici, nomi propri, simboli).
 SKIP = {"", "Frogger 3D", "Esc", "A", "B", "X", "Y", "LB", "RB", "LT", "RT", "L1", "R1", "L2", "R2",
@@ -66,7 +67,13 @@ def collect():
                 found.setdefault(unescape(match.group(1)), rel)
         for name in BLOCKS.get(rel, []):
             start = code.index("const " + name)
-            end = code.index("\n}", start) if code[start:].split("\n")[0].rstrip().endswith("{") else code.index("\n", start)
+            first = code[start:].split("\n")[0].rstrip()
+            if first.endswith("{"):
+                end = code.index("\n}", start)
+            elif first.endswith("["):
+                end = code.index("\n]", start)
+            else:
+                end = code.index("\n", start)
             for match in re.finditer(STRING, code[start:end + 2]):
                 text = unescape(match.group(1))
                 if not NOT_TEXT.match(text):

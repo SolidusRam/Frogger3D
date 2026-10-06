@@ -84,8 +84,10 @@ func _texts() -> Dictionary:
 		texts[style.name] = "stili"
 	texts["Nessuno"] = "opzioni"
 	texts["Quello della rana"] = "guardaroba"
+	for text in load("res://scripts/drought.gd").LEVELS:
+		texts[text] = "siccità"
 	var cosmetics: GDScript = load("res://scripts/cosmetics.gd")
-	for table in [cosmetics.HATS, cosmetics.COLORS]:
+	for table in [cosmetics.HATS, cosmetics.COLORS, cosmetics.TIERS]:
 		for id in table:
 			texts[table[id].name] = "guardaroba"
 	var frogs: Dictionary = load("res://scripts/frogs.gd").ALL

@@ -30,7 +30,7 @@ func _process(_d: float) -> bool:
 		if OS.get_environment("CAPPELLO") != "":
 			frog.set_hat(OS.get_environment("CAPPELLO"))
 		if OS.get_environment("COLORE") != "":
-			frog.skin = load("res://scripts/cosmetics.gd").COLORS[OS.get_environment("COLORE")].palette
+			frog.skin = load("res://scripts/cosmetics.gd").palette_of(OS.get_environment("COLORE"))
 		if OS.get_environment("STILE") != "":
 			root.get_node("Style").set_style(int(OS.get_environment("STILE")))
 		main.get_node("Upgrades").apply("explosive_gloves")

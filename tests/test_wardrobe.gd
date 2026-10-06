@@ -55,7 +55,7 @@ func _physics_process(_delta: float) -> bool:
 			# La schermata delle rane.
 			var panel: Node = load("res://scripts/frogs_panel.gd").new()
 			root.add_child(panel)
-			t.check(panel._hat_button.text.begins_with("Cappello") and panel._wardrobe_note.text.contains("3"), "il guardaroba nella schermata dice cosa manca (%s)" % panel._wardrobe_note.text)
+			t.check(panel._hat_button.text.begins_with("Cappello") and panel._wardrobe_note.text.contains("da sbloccare"), "il guardaroba nella schermata dice cosa manca (%s)" % panel._wardrobe_note.text)
 			panel.queue_free()
 			# Lo stile Game Boy.
 			var gameboy: int = style.styles.size() - 1

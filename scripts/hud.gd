@@ -199,6 +199,8 @@ func show_game_over(stats: Dictionary) -> void:
 		_game_over_record.text = tr("Record: %d m") % roundi(stats.record)
 	_game_over_text.text = tr("Tane %d   ·   Tempo %d:%02d   ·   Calore massimo %d") % [
 		stats.dens, floori(stats.time / 60.0), floori(stats.time) % 60, stats.heat_level]
+	if stats.get("drought", 0) > 0:
+		_game_over_text.text += "   ·   " + tr("Siccità %d") % stats.drought
 	if stats.get("test_run", false):
 		_game_over_flies.text = tr("Run di prova: le mosche non contano")
 	else:

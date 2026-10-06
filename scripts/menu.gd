@@ -170,6 +170,9 @@ func _refresh() -> void:
 	_flies_label.text = tr("Mosche: %d") % Progress.flies
 	_golden_label.text = tr("Mosche d'oro: %d") % Progress.golden
 	_frog_button.text = tr("Rana: %s") % tr(Frogs.ALL[Frogs.selected()].name)
+	var level := Drought.selected(Frogs.selected())
+	if level > 0:
+		_frog_button.text += "   " + tr("Siccità %d") % level
 	_unlocked_label.visible = Settings.unlock_everything
 	var record: float = _game.record_distance
 	_record_label.text = tr("Record: %d m") % roundi(record) if record > 0.0 else tr("Nessun record")

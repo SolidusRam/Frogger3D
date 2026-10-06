@@ -20,6 +20,8 @@ var _wardrobe_title: Label
 var _hat_button: Button
 var _color_button: Button
 var _wardrobe_note: Label
+var _drought_button: Button
+var _drought_note: Label
 var _esc_label: Label
 
 
@@ -50,6 +52,17 @@ func _ready() -> void:
 	_grid.add_theme_constant_override("h_separation", 12)
 	_grid.add_theme_constant_override("v_separation", 12)
 	margin.add_child(_grid)
+	# La Siccità della rana scelta: il livello e i suoi handicap.
+	var drought := HBoxContainer.new()
+	drought.add_theme_constant_override("separation", 16)
+	box.add_child(drought)
+	_drought_button = _button("", _next_drought, "DangerButton")
+	drought.add_child(_drought_button)
+	_drought_note = _label("", "Note")
+	_drought_note.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_drought_note.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_drought_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	drought.add_child(_drought_note)
 	# Il guardaroba della rana scelta.
 	var wardrobe := HBoxContainer.new()
 	wardrobe.add_theme_constant_override("separation", 16)
@@ -124,14 +137,31 @@ func _update_wardrobe() -> void:
 	_wardrobe_title.text = tr("Guardaroba: %s") % tr(Frogs.ALL[frog].name)
 	_hat_button.text = tr("Cappello: %s") % Cosmetics.name_of("hat", pick.hat)
 	_color_button.text = tr("Colore: %s") % Cosmetics.name_of("color", pick.color)
-	var locked := Cosmetics.locked_count("hat") + Cosmetics.locked_count("color")
-	_wardrobe_note.text = tr("Altri %d da sbloccare con le imprese.") % locked if locked > 0 else ""
+	var locked := Cosmetics.locked_count("hat") + Cosmetics.locked_count("color", frog)
+	_wardrobe_note.text = tr("Altri %d da sbloccare con le imprese e la Siccità.") % locked if locked > 0 else ""
+	var level := Drought.selected(frog)
+	_drought_button.text = tr("Siccità: %d") % level
+	_drought_button.disabled = Drought.max_level(frog) == 0
+	if level == 0:
+		_drought_note.text = tr("Raggiungi la tana %d con questa rana per aprire la Siccità 1: più difficile, più mosche.") % Drought.GOAL_DEN if Drought.max_level(frog) == 0 else tr("Nessun handicap. Ogni livello ne aggiunge uno e dà il 20% di mosche in più.")
+	else:
+		var handicaps: Array = Drought.LEVELS.slice(0, level).map(func(text: String) -> String: return tr(text))
+		_drought_note.text = "%s. %s" % ["; ".join(handicaps), tr("Mosche +%d%%.") % roundi(Drought.FLY_BONUS * level * 100.0)]
+
+
+## Il prossimo livello di Siccità aperto per la rana scelta (dopo l'ultimo,
+## lo 0).
+func _next_drought() -> void:
+	var frog := Frogs.selected()
+	Drought.choose(frog, (Drought.selected(frog) + 1) % (Drought.max_level(frog) + 1))
+	_update_wardrobe()
+	chosen.emit(frog)
 
 
 ## Il prossimo cappello o colore sbloccato; la rana sullo sfondo si cambia.
 func _next_cosmetic(kind: String) -> void:
 	var frog := Frogs.selected()
-	Cosmetics.choose(frog, kind, Cosmetics.next(kind, Cosmetics.chosen(frog)[kind]))
+	Cosmetics.choose(frog, kind, Cosmetics.next(kind, Cosmetics.chosen(frog)[kind], frog))
 	_update_wardrobe()
 	chosen.emit(frog)
 
@@ -167,6 +197,8 @@ func _tile(id: String) -> PanelContainer:
 	column.add_child(_line(tr("Parte con: %s") % Frogs.kit_text(id), UiTheme.TEXT_MUTED))
 	column.add_child(_line("+ " + tr(frog.pro), UiTheme.DONE))
 	column.add_child(_line("− " + tr(frog.contro), Color(1.0, 0.55, 0.45)))
+	if Drought.best(id) >= 1:
+		column.add_child(_line(tr("Siccità superata: %d") % Drought.best(id), UiTheme.GOLD))
 	var gap := Control.new()
 	gap.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	column.add_child(gap)

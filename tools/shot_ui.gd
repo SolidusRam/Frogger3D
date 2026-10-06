@@ -63,7 +63,10 @@ func _process(_d: float) -> bool:
 					load("res://scripts/progress.gd").feats[id] = true
 				current_scene._open_feats()
 			"rane":
-				load("res://scripts/progress.gd").feats["tana5"] = true
+				var progress: GDScript = load("res://scripts/progress.gd")
+				progress.feats["tana5"] = true
+				progress.drought_best["comune"] = 2
+				progress.drought_level["comune"] = 2
 				current_scene._open_frogs()
 			"impresa":
 				main.get_node("Hud").show_feat("Boomerang", "Rana velenosa", false)

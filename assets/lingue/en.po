@@ -1400,11 +1400,66 @@ msgstr "Hat: %s"
 msgid "Colore: %s"
 msgstr "Color: %s"
 
-msgid "Altri %d da sbloccare con le imprese."
-msgstr "%d more to unlock with feats."
 
 msgid "Quello della rana"
 msgstr "The frog's own"
 
 msgid "Game Boy"
 msgstr "Game Boy"
+
+msgid "Rame"
+msgstr "Copper"
+
+msgid "Argento"
+msgstr "Silver"
+
+msgid "Oro"
+msgstr "Gold"
+
+msgid "L'incendio parte 10 m più vicino"
+msgstr "The wildfire starts 10 m closer"
+
+msgid "Il traffico va il 15% più veloce"
+msgstr "Traffic is 15% faster"
+
+msgid "Nelle tane una carta in meno"
+msgstr "One fewer card in dens"
+
+msgid "I colpi fanno il 25% di danno in più"
+msgstr "Hits deal 25% more damage"
+
+msgid "Il calore sale il 30% più in fretta"
+msgstr "Heat rises 30% faster"
+
+msgid "Altri %d da sbloccare con le imprese e la Siccità."
+msgstr "%d more to unlock with feats and Drought."
+
+msgid "Siccità: %d"
+msgstr "Drought: %d"
+
+msgid "Raggiungi la tana %d con questa rana per aprire la Siccità 1: più difficile, più mosche."
+msgstr "Reach den %d with this frog to open Drought 1: harder, more flies."
+
+msgid "Nessun handicap. Ogni livello ne aggiunge uno e dà il 20% di mosche in più."
+msgstr "No handicaps. Each level adds one and gives 20% more flies."
+
+msgid "Mosche +%d%%."
+msgstr "Flies +%d%%."
+
+msgid "Siccità superata: %d"
+msgstr "Drought cleared: %d"
+
+msgid "Siccità %d superata!"
+msgstr "Drought %d cleared!"
+
+msgid "Nuova pelle: %s"
+msgstr "New skin: %s"
+
+msgid "Si apre il livello %d"
+msgstr "Level %d opens"
+
+msgid "Siccità %d"
+msgstr "Drought %d"
+
+msgid "Si apre la Siccità 1!"
+msgstr "Drought 1 opens!"

@@ -46,6 +46,10 @@ var value := 0.0
 var running := true
 ## Statistica dello stagno "Sangue freddo": frazione del calore dai poteri.
 var power_heat_factor := 1.0
+## La Siccità (vedi Drought): il calore che sale più in fretta e il traffico
+## più veloce. Tornano a 1 a ogni run nuova.
+var growth_factor := 1.0
+var traffic_factor := 1.0
 
 
 func _process(delta: float) -> void:
@@ -56,6 +60,8 @@ func _process(delta: float) -> void:
 func reset() -> void:
 	value = 0.0
 	running = true
+	growth_factor = 1.0
+	traffic_factor = 1.0
 	changed.emit(value, level())
 
 
@@ -66,7 +72,7 @@ func set_value(new_value: float) -> void:
 
 
 func add(amount: float) -> void:
-	value = minf(value + amount, MAX)
+	value = minf(value + amount * growth_factor, MAX)
 	changed.emit(value, level())
 
 
@@ -97,7 +103,7 @@ func on_power_used(power: StringName) -> void:
 
 
 func traffic_speed_factor() -> float:
-	return 1.0 + max_traffic_speed_bonus * ratio()
+	return (1.0 + max_traffic_speed_bonus * ratio()) * traffic_factor
 
 
 func river_speed_factor() -> float:
