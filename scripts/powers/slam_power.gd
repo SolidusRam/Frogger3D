@@ -125,6 +125,7 @@ func _wave(at: Vector3, size: float) -> void:
 		body.linear_velocity = launch
 		body.angular_velocity = Vector3(randf_range(-3.0, 3.0), randf_range(-2.0, 2.0), randf_range(-3.0, 3.0))
 	_ring(at, size)
+	Feats.note(&"slam", hit.size())
 	Progress.trial_add("slam", 0, hit.size())
 	Progress.trial_best("slam", 1, hit.size())
 	if not hit.is_empty():

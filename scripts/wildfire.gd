@@ -86,6 +86,7 @@ func _physics_process(delta: float) -> void:
 		front_z = frog.global_position.z + max_gap
 	position.z = front_z
 	if frog.global_position.z > front_z - 1.0:
+		Feats.note(&"fire_burn")
 		frog.burn(burn, delta)
 	for body in _reach.get_overlapping_bodies():
 		var car := body as Car

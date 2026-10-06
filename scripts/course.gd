@@ -101,6 +101,18 @@ func kind_at(z: float) -> Kind:
 	return Kind.START
 
 
+## Metri fra la rana e l'inizio della prossima tana davanti (INF se non c'è
+## ancora).
+func next_den_distance() -> float:
+	var best := INF
+	for chunk in get_children():
+		if chunk.has_meta("near_z") and chunk.get_meta("kind") == Kind.DEN:
+			var gap: float = frog.global_position.z - chunk.get_meta("near_z")
+			if gap >= 0.0:
+				best = minf(best, gap)
+	return best
+
+
 ## Distanza percorsa dall'inizio, in metri.
 func distance() -> float:
 	return best_distance

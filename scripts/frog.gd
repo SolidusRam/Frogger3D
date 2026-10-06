@@ -460,6 +460,8 @@ func respawn() -> void:
 func take_hit(damage: int, knockback: Vector3) -> void:
 	if _invulnerable_time > 0.0 or is_dead:
 		return
+	# Prima che il colpo chiuda il deltaplano: "abbattuta in volo".
+	Feats.note(&"frog_hit")
 	velocity = knockback
 	_stun_time = stun_duration
 	_invulnerable_time = invulnerability_duration

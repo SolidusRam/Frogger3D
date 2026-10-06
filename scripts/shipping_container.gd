@@ -86,6 +86,7 @@ func _check_frog_hit() -> void:
 			_hit = true
 			var away: Vector3 = body.global_position - global_position
 			var push := (Vector3(away.x, 0.0, away.z).normalized() + Vector3.UP * 0.5).normalized() * 10.0
+			Feats.note(&"container_hit")
 			body.take_hit(damage, push)
 
 
@@ -96,6 +97,8 @@ func _on_body_entered(body: Node) -> void:
 		Sfx.play_at(&"container_land", global_position, 0.0, 1.0, 2.5)
 	if body is Ship:
 		_ship = body
+	elif body is Car:
+		Feats.note(&"container_on_car")
 
 
 func _on_body_exited(body: Node) -> void:

@@ -2,6 +2,366 @@ msgid ""
 msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 
+#: scripts/feats.gd
+msgid "Carte"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Pugno al volo"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Colpisci un'auto mentre sei in aria"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Guantone a molla"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Zattera di lamiera"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Resta 3 s su un rottame che galleggia nel fiume"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Guantoni di ghiaccio"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Atterraggio sul tetto"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Atterra col super salto sul tetto di un'auto"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Schianto sismico"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Senza fermarsi"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Attraversa una strada di 4 corsie senza fermarti"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Molle da canguro"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Sopra il treno"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Plana sopra un treno in corsa"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Ala a elica"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Mangiafuoco"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Passa nella fiamma di un motore e sopravvivi"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Lingua mangiafuoco"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Ingorgo"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Ferma una coda di 5 auto"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Lingua-ancora"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Quasi a casa"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Muori a meno di 10 m da una tana"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Assicurazione"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Boomerang"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Fatti investire da un'auto che hai colpito tu"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Rana velenosa"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Abbattuta in volo"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Vieni colpita mentre voli"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Ala corazzata"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Rane"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Cinque tane"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Raggiungi la tana 5"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Raganella"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Planata lunga"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Plana 50 m in un solo volo"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Paracadutista"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "A bracciate"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Nuota 100 m in una run"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Rana di fiume"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Rimorchio"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Fatti trascinare dalla lingua per 40 m"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Camaleonte"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Pacifista"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Raggiungi la tana 3 senza usare il pugno"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Rospo"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Fusioni e gettoni"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Fuochi d'artificio"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Un'auto esplosa ne distrugge altre tre"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Napalm"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Scossa"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Uno schianto ribalta 5 auto"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Terremoto"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Consegna"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Un container cade su un'auto"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Gettone Rilancia"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Per un pelo"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Raggiungi una tana col fuoco a meno di 5 m"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Gettone Salta"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Maratona"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Sopravvivi 15 minuti"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Gettone Esilia"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Traguardi"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Duemila metri"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Fai 2000 m in una run"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Uno stile grafico nuovo"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Incandescente"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Resta 2 minuti al livello 5 di calore"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Rana incandescente"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Segrete"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Arrosto"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Muori bruciata dall'incendio"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Rana carbonizzata"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Lavori in corso"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Fatti schiacciare da un container"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Elmetto da cantiere"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Esca"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Fatti mordere da un coccodrillo mentre sei appesa alla lingua"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Rana di coccodrillo"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Copilota"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Arriva al bordo seduta sull'ala di un aereo"
+msgstr ""
+
+#: scripts/feats.gd
+msgid "Occhiali da pilota"
+msgstr ""
+
+#: scripts/feats_panel.gd
+msgid "Fatta"
+msgstr ""
+
+#: scripts/feats_panel.gd
+msgid "Impresa segreta: si scopre facendola"
+msgstr ""
+
+#: scripts/feats_panel.gd
+msgid "Sblocca: %s"
+msgstr ""
+
+#: scripts/feats_panel.gd
+msgid "Arriva più avanti nello sviluppo"
+msgstr ""
+
+#: scripts/feats_panel.gd
+msgid "Imprese"
+msgstr ""
+
+#: scripts/feats_panel.gd
+msgid "Ogni impresa sblocca una cosa: una carta che entra nelle tane, una rana, un gettone o qualcosa da vedere. Si fanno giocando, anche morendo."
+msgstr ""
+
+#: scripts/feats_panel.gd
+msgid "Chiudi"
+msgstr ""
+
 #: scripts/game.gd
 msgid "Seconda vita!"
 msgstr ""
@@ -143,6 +503,18 @@ msgid "Scegli un potenziamento: tasti 1-%d o clic"
 msgstr ""
 
 #: scripts/hud.gd
+msgid "Impresa: %s"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Sbloccata: %s"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Sbloccata (arriva più avanti): %s"
+msgstr ""
+
+#: scripts/hud.gd
 msgid "Lo stagno"
 msgstr ""
 
@@ -252,10 +624,6 @@ msgstr ""
 
 #: scripts/options_panel.gd
 msgid "Valori predefiniti"
-msgstr ""
-
-#: scripts/options_panel.gd
-msgid "Chiudi"
 msgstr ""
 
 #: scripts/options_panel.gd
@@ -935,10 +1303,6 @@ msgid "Il pugno solleva le auto: volano in alto e ricadono su altre auto."
 msgstr ""
 
 #: scripts/upgrades.gd
-msgid "Guantone a molla"
-msgstr ""
-
-#: scripts/upgrades.gd
 msgid "Il pugno arriva a 4 m invece che a 1,3."
 msgstr ""
 
@@ -948,10 +1312,6 @@ msgstr ""
 
 #: scripts/upgrades.gd
 msgid "Sui tetti delle auto rimbalzi da sola: il traffico diventa una strada."
-msgstr ""
-
-#: scripts/upgrades.gd
-msgid "Schianto sismico"
 msgstr ""
 
 #: scripts/upgrades.gd
@@ -1023,15 +1383,7 @@ msgid "+25 di vita massima, e vita piena subito."
 msgstr ""
 
 #: scripts/upgrades.gd
-msgid "Napalm"
-msgstr ""
-
-#: scripts/upgrades.gd
 msgid "Guantoni esplosivi + Correnti calde. I rottami fumano 15 s invece di 6, e le colonne di fumo sono più larghe."
-msgstr ""
-
-#: scripts/upgrades.gd
-msgid "Terremoto"
 msgstr ""
 
 #: scripts/upgrades.gd

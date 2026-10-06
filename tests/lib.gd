@@ -39,6 +39,8 @@ static func load_main(tree: SceneTree) -> Node:
 	# I test sono stati scritti quando la rana aveva subito pugno, super salto
 	# e deltaplano: partono così. test_kit prova la rana vera.
 	main.starting_kit = {"gloves": "base", "springs": "base", "wing": "base"}
+	# E col mazzo completo: test_feats prova quello che parte ridotto.
+	load("res://scripts/feats.gd").unlock_all = true
 	# Le carte della tana subito, senza la festa (la prova test_den).
 	main.den_celebration_seconds = 0.0
 	# Molti test cercano un fiume o una strada nel percorso del seme 1234 con

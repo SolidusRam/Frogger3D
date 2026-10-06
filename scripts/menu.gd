@@ -1,8 +1,8 @@
 extends Node
 ## Il menu iniziale, sopra il gioco vivo: dietro c'è la partita vera (in
 ## modalità attract), col traffico che passa e la telecamera che gira attorno
-## alla rana sulla striscia di partenza. A sinistra Gioca, Lo stagno, Opzioni,
-## Esci;
+## alla rana sulla striscia di partenza. A sinistra Gioca, Lo stagno, Imprese,
+## Opzioni, Esci;
 ## in basso mosche e record. Gioca fa partire la run sul posto: la telecamera
 ## torna dietro la rana e il menu sparisce.
 ## Avviato con le opzioni della modalità prova (tools/prova.sh), salta il
@@ -21,6 +21,7 @@ var _play_button: Button
 var _record_label: Label
 var _pond: Pond
 var _options: OptionsPanel
+var _feats: FeatsPanel
 
 
 func _ready() -> void:
@@ -86,6 +87,7 @@ func _build() -> void:
 	play.add_theme_font_size_override("font_size", 32)
 	column.add_child(play)
 	column.add_child(_button("Lo stagno", _open_pond))
+	column.add_child(_button("Imprese", _open_feats))
 	column.add_child(_button("Opzioni", _open_options))
 	column.add_child(_button("Esci", get_tree().quit, "FlatButton"))
 	play.grab_focus()
@@ -120,6 +122,11 @@ func _build() -> void:
 	_pond.closed.connect(_on_pond_closed)
 	_ui.add_child(_pond)
 
+	_feats = FeatsPanel.new()
+	_feats.visible = false
+	_feats.closed.connect(_play_button.grab_focus)
+	_ui.add_child(_feats)
+
 	_options = OptionsPanel.new()
 	_options.visible = false
 	_options.closed.connect(_play_button.grab_focus)
@@ -153,6 +160,11 @@ func _play() -> void:
 func _open_pond() -> void:
 	_pond.refresh()
 	_pond.visible = true
+
+
+func _open_feats() -> void:
+	_feats.refresh()
+	_feats.visible = true
 
 
 func _open_options() -> void:

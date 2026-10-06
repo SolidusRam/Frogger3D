@@ -793,3 +793,267 @@ msgstr "New tool: the glider"
 
 msgid "Nuovo attrezzo: la lingua"
 msgstr "New tool: the tongue"
+
+msgid "Carte"
+msgstr "Cards"
+
+msgid "Pugno al volo"
+msgstr "Mid-air punch"
+
+msgid "Colpisci un'auto mentre sei in aria"
+msgstr "Punch a car while you're in the air"
+
+msgid "Zattera di lamiera"
+msgstr "Sheet-metal raft"
+
+msgid "Resta 3 s su un rottame che galleggia nel fiume"
+msgstr "Stay 3 s on a wreck floating in the river"
+
+msgid "Guantoni di ghiaccio"
+msgstr "Ice gloves"
+
+msgid "Atterraggio sul tetto"
+msgstr "Roof landing"
+
+msgid "Atterra col super salto sul tetto di un'auto"
+msgstr "Land a super jump on a car roof"
+
+msgid "Senza fermarsi"
+msgstr "Non-stop"
+
+msgid "Attraversa una strada di 4 corsie senza fermarti"
+msgstr "Cross a 4-lane road without stopping"
+
+msgid "Molle da canguro"
+msgstr "Kangaroo springs"
+
+msgid "Sopra il treno"
+msgstr "Over the train"
+
+msgid "Plana sopra un treno in corsa"
+msgstr "Glide over a moving train"
+
+msgid "Ala a elica"
+msgstr "Propeller wing"
+
+msgid "Mangiafuoco"
+msgstr "Fire eater"
+
+msgid "Passa nella fiamma di un motore e sopravvivi"
+msgstr "Go through an engine's flame and survive"
+
+msgid "Lingua mangiafuoco"
+msgstr "Fire-eater tongue"
+
+msgid "Ingorgo"
+msgstr "Gridlock"
+
+msgid "Ferma una coda di 5 auto"
+msgstr "Stop a line of 5 cars"
+
+msgid "Lingua-ancora"
+msgstr "Anchor tongue"
+
+msgid "Quasi a casa"
+msgstr "Almost home"
+
+msgid "Muori a meno di 10 m da una tana"
+msgstr "Die less than 10 m from a den"
+
+msgid "Assicurazione"
+msgstr "Insurance"
+
+msgid "Boomerang"
+msgstr "Boomerang"
+
+msgid "Fatti investire da un'auto che hai colpito tu"
+msgstr "Get run over by a car you punched"
+
+msgid "Rana velenosa"
+msgstr "Poison frog"
+
+msgid "Abbattuta in volo"
+msgstr "Shot down"
+
+msgid "Vieni colpita mentre voli"
+msgstr "Get hit while flying"
+
+msgid "Ala corazzata"
+msgstr "Armored wing"
+
+msgid "Rane"
+msgstr "Frogs"
+
+msgid "Cinque tane"
+msgstr "Five dens"
+
+msgid "Raggiungi la tana 5"
+msgstr "Reach den 5"
+
+msgid "Raganella"
+msgstr "Tree frog"
+
+msgid "Planata lunga"
+msgstr "Long glide"
+
+msgid "Plana 50 m in un solo volo"
+msgstr "Glide 50 m in a single flight"
+
+msgid "Paracadutista"
+msgstr "Skydiver"
+
+msgid "A bracciate"
+msgstr "Stroke by stroke"
+
+msgid "Nuota 100 m in una run"
+msgstr "Swim 100 m in one run"
+
+msgid "Rana di fiume"
+msgstr "River frog"
+
+msgid "Rimorchio"
+msgstr "Tow"
+
+msgid "Fatti trascinare dalla lingua per 40 m"
+msgstr "Get pulled 40 m by your tongue"
+
+msgid "Camaleonte"
+msgstr "Chameleon"
+
+msgid "Pacifista"
+msgstr "Pacifist"
+
+msgid "Raggiungi la tana 3 senza usare il pugno"
+msgstr "Reach den 3 without punching"
+
+msgid "Rospo"
+msgstr "Toad"
+
+msgid "Fusioni e gettoni"
+msgstr "Fusions and tokens"
+
+msgid "Fuochi d'artificio"
+msgstr "Fireworks"
+
+msgid "Un'auto esplosa ne distrugge altre tre"
+msgstr "An exploding car wrecks three others"
+
+msgid "Scossa"
+msgstr "Tremor"
+
+msgid "Uno schianto ribalta 5 auto"
+msgstr "A slam flips 5 cars"
+
+msgid "Consegna"
+msgstr "Delivery"
+
+msgid "Un container cade su un'auto"
+msgstr "A container falls on a car"
+
+msgid "Gettone Rilancia"
+msgstr "Reroll token"
+
+msgid "Per un pelo"
+msgstr "By a hair"
+
+msgid "Raggiungi una tana col fuoco a meno di 5 m"
+msgstr "Reach a den with the fire less than 5 m behind"
+
+msgid "Gettone Salta"
+msgstr "Skip token"
+
+msgid "Maratona"
+msgstr "Marathon"
+
+msgid "Sopravvivi 15 minuti"
+msgstr "Survive 15 minutes"
+
+msgid "Gettone Esilia"
+msgstr "Banish token"
+
+msgid "Traguardi"
+msgstr "Milestones"
+
+msgid "Duemila metri"
+msgstr "Two thousand meters"
+
+msgid "Fai 2000 m in una run"
+msgstr "Go 2000 m in one run"
+
+msgid "Uno stile grafico nuovo"
+msgstr "A new graphics style"
+
+msgid "Incandescente"
+msgstr "Red hot"
+
+msgid "Resta 2 minuti al livello 5 di calore"
+msgstr "Stay 2 minutes at heat level 5"
+
+msgid "Rana incandescente"
+msgstr "Red-hot frog"
+
+msgid "Segrete"
+msgstr "Secret"
+
+msgid "Arrosto"
+msgstr "Roasted"
+
+msgid "Muori bruciata dall'incendio"
+msgstr "Get burned by the wildfire"
+
+msgid "Rana carbonizzata"
+msgstr "Charred frog"
+
+msgid "Lavori in corso"
+msgstr "Under construction"
+
+msgid "Fatti schiacciare da un container"
+msgstr "Get squashed by a container"
+
+msgid "Elmetto da cantiere"
+msgstr "Hard hat"
+
+msgid "Esca"
+msgstr "Bait"
+
+msgid "Fatti mordere da un coccodrillo mentre sei appesa alla lingua"
+msgstr "Get bitten by a crocodile while hanging from your tongue"
+
+msgid "Rana di coccodrillo"
+msgstr "Crocodile frog"
+
+msgid "Copilota"
+msgstr "Copilot"
+
+msgid "Arriva al bordo seduta sull'ala di un aereo"
+msgstr "Ride a plane's wing to the edge"
+
+msgid "Occhiali da pilota"
+msgstr "Pilot goggles"
+
+msgid "Fatta"
+msgstr "Done"
+
+msgid "Impresa segreta: si scopre facendola"
+msgstr "Secret feat: you find it by doing it"
+
+msgid "Sblocca: %s"
+msgstr "Unlocks: %s"
+
+msgid "Arriva più avanti nello sviluppo"
+msgstr "Coming later in development"
+
+msgid "Imprese"
+msgstr "Feats"
+
+msgid "Ogni impresa sblocca una cosa: una carta che entra nelle tane, una rana, un gettone o qualcosa da vedere. Si fanno giocando, anche morendo."
+msgstr "Every feat unlocks one thing: a card for the dens, a frog, a token or something to show off. You get them by playing, even by dying."
+
+msgid "Impresa: %s"
+msgstr "Feat: %s"
+
+msgid "Sbloccata: %s"
+msgstr "Unlocked: %s"
+
+msgid "Sbloccata (arriva più avanti): %s"
+msgstr "Unlocked (coming later): %s"

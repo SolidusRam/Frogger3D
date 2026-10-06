@@ -288,6 +288,7 @@ func _burn(delta: float) -> void:
 		for body in area.get_overlapping_bodies():
 			var distance: float = (body.global_position - area.global_position).dot(backward) + FLAME_LENGTH / 2.0
 			if body is Frog and distance <= FLAME_LENGTH + 0.5:
+				Feats.note(&"engine_flame")
 				body.burn(FLAME_BURN, delta)
 
 

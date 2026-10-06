@@ -82,6 +82,11 @@ var _record_distance := 0.0
 var _hint: PanelContainer
 var _hint_text: RichTextLabel
 var _hint_tween: Tween
+## L'impresa appena fatta: un riquadro d'oro in alto al centro.
+var _feat: PanelContainer
+var _feat_title: Label
+var _feat_reward: Label
+var _feat_tween: Tween
 ## Alla fine della corsa: lo stagno messo in evidenza.
 var _pond_button: Button
 var _pond_note: Label
@@ -104,6 +109,7 @@ func _ready() -> void:
 	_build_fire()
 	_build_chain_label()
 	_build_hint()
+	_build_feat()
 	_build_offer()
 	_build_equipment()
 	_build_game_over()
@@ -775,6 +781,49 @@ func highlight_pond(note: String) -> void:
 	_pond_tween = create_tween().set_ignore_time_scale(true).set_loops()
 	_pond_tween.tween_property(_pond_button, "modulate", Color(1.5, 1.25, 0.6), 0.5)
 	_pond_tween.tween_property(_pond_button, "modulate", Color.WHITE, 0.5)
+
+
+## Un'impresa fatta: scende dall'alto, resta qualche secondo e risale. Non
+## ferma il gioco. ready: quello che sblocca c'è già nel gioco.
+func show_feat(title: String, reward: String, ready: bool) -> void:
+	_feat_title.text = tr("Impresa: %s") % title
+	_feat_reward.text = (tr("Sbloccata: %s") if ready else tr("Sbloccata (arriva più avanti): %s")) % reward
+	_feat.reset_size()
+	_feat.position.x = (_root.size.x - _feat.size.x) / 2.0
+	if _feat_tween:
+		_feat_tween.kill()
+	_feat.visible = true
+	_feat.position.y = -_feat.size.y
+	_feat_tween = create_tween().set_ignore_time_scale(true)
+	_feat_tween.tween_property(_feat, "position:y", 150.0, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_feat_tween.tween_interval(3.2)
+	_feat_tween.tween_property(_feat, "position:y", -_feat.size.y, 0.3).set_ease(Tween.EASE_IN)
+	_feat_tween.tween_callback(func() -> void: _feat.visible = false)
+	Sfx.play(&"ui_record")
+
+
+func feat_text() -> String:
+	return "%s\n%s" % [_feat_title.text, _feat_reward.text] if _feat.visible else ""
+
+
+func _build_feat() -> void:
+	_feat = PanelContainer.new()
+	_feat.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var box := UiTheme.box(Color(UiTheme.INK, 0.92), UiTheme.GOLD, 3, 12)
+	box.set_content_margin_all(14)
+	box.content_margin_left = 26
+	box.content_margin_right = 26
+	_feat.add_theme_stylebox_override("panel", box)
+	_feat.visible = false
+	_root.add_child(_feat)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 2)
+	_feat.add_child(column)
+	_feat_title = _text("Header")
+	_feat_title.add_theme_color_override("font_color", UiTheme.GOLD)
+	column.add_child(_feat_title)
+	_feat_reward = _text("Strong")
+	column.add_child(_feat_reward)
 
 
 func _hint_rest_y() -> float:

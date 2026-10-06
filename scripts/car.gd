@@ -172,6 +172,7 @@ var _yank_blow := Vector3.ZERO
 
 
 func _ready() -> void:
+	add_to_group("cars")
 	size = TYPES[model_type].size
 	hit_damage = TYPES[model_type].damage
 	collision_layer = 4 # veicoli
@@ -261,6 +262,8 @@ func lose_control() -> void:
 
 ## Il pugno della rana: il veicolo diventa un rottame e vola via.
 func receive_punch(impulse: Vector3, explosive := false) -> void:
+	# Per l'impresa "Boomerang": quest'auto l'ha colpita la rana.
+	set_meta("punched", true)
 	_quiet_wreck = true
 	become_wreck()
 	_frog_grace = 0.5
@@ -312,6 +315,7 @@ func explode() -> void:
 			_frog.camera_rig.shake(0.4, 0.35)
 	_emit_explosion()
 	Sfx.play_at(&"car_explode", center, 0.0, 1.0, 2.0)
+	Feats.note(&"explosion", wrecked)
 	# Maestria dei guantoni esplosivi.
 	Progress.trial_add("explosive_gloves", 0, wrecked)
 	Progress.trial_best("explosive_gloves", 1, wrecked)
@@ -420,6 +424,7 @@ func _hit_overlapping_frogs() -> void:
 		var own_speed := velocity.dot(toward_frog)
 		var closing_speed := (velocity - frog.velocity).dot(toward_frog)
 		if own_speed >= min_harmful_speed and closing_speed >= min_harmful_speed:
+			Feats.note(&"car_hit", 1.0 if has_meta("punched") else 0.0)
 			frog.take_hit(hit_damage, _knockback_for(frog, velocity))
 
 

@@ -12,7 +12,7 @@ const DEV_SCRIPTS := ["test_mode.gd", "perf_overlay.gd"]
 const SKIP := ["", "Frogger 3D", "Esc", "A", "B", "X", "Y", "LB", "RB", "LT", "RT", "L1", "R1",
 	"L2", "R2", "L3", "R3", "Start", "Back", "Select", "Options", "Tab", "Alt", "Ctrl", "Super",
 	"PS1", "Arcade", "Controller", "Menu", "Mouse 4", "Mouse 5", "Home", "Backspace", "%d/%d",
-	"Lingua · Language", "Italiano", "English"]
+	"Lingua · Language", "Italiano", "English", "???"]
 
 var t := Lib.new()
 var main: Node
@@ -80,6 +80,10 @@ func _texts() -> Dictionary:
 	for style in root.get_node("Style").styles:
 		texts[style.name] = "stili"
 	texts["Nessuno"] = "opzioni"
+	var feats: Dictionary = load("res://scripts/feats.gd").ALL
+	for id in feats:
+		for key in ["name", "text", "reward_name", "group"]:
+			texts[feats[id][key]] = "imprese"
 	for text in SKIP:
 		texts.erase(text)
 	return texts

@@ -54,6 +54,9 @@ func _physics_process(_delta: float) -> bool:
 				t.check(absf(fire.distance() - fire.max_gap) < 1.0, "l'incendio parte a %.0f m dietro la rana (%.1f)" % [fire.max_gap, fire.distance()])
 				# Tolto il limite, per misurare la velocità vera.
 				fire.max_gap = 1000.0
+				# Il rallentatore delle catene (in tempo reale) cambierebbe la
+				# misura: qui conta solo il fuoco, non il traffico intorno.
+				main.chain_size = 1000
 				_next(1)
 				m.z = fire.front_z
 		1: # velocità a calore zero e al massimo

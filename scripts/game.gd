@@ -101,6 +101,7 @@ func _ready() -> void:
 	else:
 		add_child(TestMode.new())
 		start_hints()
+		_start_feats()
 
 
 ## Lo sfondo del menu: il traffico passa, la telecamera gira attorno alla
@@ -130,6 +131,7 @@ func start_run() -> void:
 	frog.camera_rig.end_orbit(start_seconds)
 	add_child(TestMode.new())
 	start_hints()
+	_start_feats()
 
 
 ## I suggerimenti, se le opzioni li vogliono. Una run di prova avviata da
@@ -141,6 +143,14 @@ func start_hints() -> void:
 	hints.name = "Hints"
 	add_child(hints)
 	hints.setup(self)
+
+
+## Le imprese si guardano in ogni run vera (vedi FeatTracker).
+func _start_feats() -> void:
+	var tracker := FeatTracker.new()
+	tracker.name = "Feats"
+	add_child(tracker)
+	tracker.setup(self)
 
 
 func _process(delta: float) -> void:

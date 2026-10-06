@@ -164,7 +164,7 @@ func make_offer(count := -1) -> Array[String]:
 	for id: String in CATALOG:
 		var item: Dictionary = CATALOG[id]
 		if item.slot == "fusion":
-			if fusion_ready(id):
+			if fusion_ready(id) and Feats.card_available(id):
 				fusions.append(id)
 			continue
 		# Lo slot è occupato per tutta la run (l'attrezzo semplice no: una
@@ -174,6 +174,9 @@ func make_offer(count := -1) -> Array[String]:
 		if item.slot == "" and stacks.get(id, 0) >= item.max:
 			continue
 		if NEEDS.has(id) and not has_tool(NEEDS[id]):
+			continue
+		# Le carte da sbloccare restano fuori finché la loro impresa non è fatta.
+		if not Feats.card_available(id):
 			continue
 		pool.append(id)
 	pool.shuffle()

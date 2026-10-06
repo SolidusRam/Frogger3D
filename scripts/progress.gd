@@ -90,6 +90,8 @@ static var run_trials := {}
 ## I suggerimenti del primo minuto: in quante run ognuno è stato eseguito
 ## (vedi Hints). Dopo due, non compare più.
 static var hints := {}
+## Le imprese fatte (vedi Feats): id → true.
+static var feats := {}
 
 
 static func load_from(file_path: String) -> void:
@@ -102,6 +104,7 @@ static func load_from(file_path: String) -> void:
 	card_active = config.get_value("stagno", "carte_attive", {}) if ok else {}
 	trials = config.get_value("stagno", "prove", {}) if ok else {}
 	hints = config.get_value("suggerimenti", "fatti", {}) if ok else {}
+	feats = config.get_value("imprese", "fatte", {}) if ok else {}
 	run_trials = {}
 
 
@@ -113,6 +116,7 @@ static func save() -> void:
 	config.set_value("stagno", "carte_attive", card_active)
 	config.set_value("stagno", "prove", trials)
 	config.set_value("suggerimenti", "fatti", hints)
+	config.set_value("imprese", "fatte", feats)
 	config.save(path)
 
 
@@ -242,4 +246,12 @@ static func hint_done(id: String) -> void:
 ## "Rivedi i suggerimenti", dalle opzioni.
 static func reset_hints() -> void:
 	hints = {}
+	save()
+
+
+# --- Le imprese ---------------------------------------------------------------
+
+## Un'impresa fatta: si salva subito (anche se poi la run si abbandona).
+static func feat_done(id: String) -> void:
+	feats[id] = true
 	save()

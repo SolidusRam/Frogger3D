@@ -34,6 +34,7 @@ func _physics_process(delta: float) -> void:
 				# alla stessa velocità dell'acqua, la raggiungerebbe di nuovo.
 				var side := drift_velocity.normalized().cross(Vector3.UP)
 				var side_sign := 1.0 if (body.global_position - global_position).dot(side) >= 0.0 else -1.0
+				Feats.note(&"croc_bite")
 				body.take_hit(bite_damage, side * side_sign * 6.0 + Vector3.UP * 6.0)
 
 

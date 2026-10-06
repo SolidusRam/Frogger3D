@@ -27,7 +27,9 @@ Due carte per slot dalla prima run, le altre due si sbloccano con le imprese (ve
 - **Si scoprono nel momento in cui succedono**: un riquadro durante la run, che non ferma il gioco; anche la morte che sblocca qualcosa diventa una festa (proposta).
 - **La curva** (proposta): il primo sblocco entro la seconda o terza run, 3-4 nella prima ora, gli ultimi verso le 10-15 ore. Nella colonna "Quando": subito (prime run), presto (prima ora), medio, tardi.
 
-## Imprese (bozza del 6 ottobre 2026, da rivedere)
+## Imprese (6 ottobre 2026; nel gioco: scripts/feats.gd)
+
+Nel gioco alcuni testi sono diventati inviti ("Fatti investire da un'auto che hai colpito tu", "Fatti schiacciare da un container", "Fatti mordere da un coccodrillo..."), e "Un rottame ferma una coda di 5 auto" è diventata "Ferma una coda di 5 auto" (conta qualsiasi coda di 5 auto ferme nella stessa corsia). Si riconoscono così (scripts/feat_tracker.gd): "4 corsie" vuol dire almeno 16 m di strada attraversati senza scendere sotto 1 m/s; "sopravvivi alla fiamma" vuol dire essere ancora vive 1,5 s dopo esserci passate; "sopra il treno" è un treno entro 30 m sotto la rana che plana.
 
 **Le carte da sbloccare** (dieci)
 
