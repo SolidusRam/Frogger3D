@@ -200,7 +200,8 @@ Decisa il 4 ottobre 2026.
 - **Un mondo dura parecchio**: più tane per mondo.
 - **Mondi**: il primo è il mondo di oggi, la terra (strade, fiumi, ferrovie, aeroporti, porti); dopo, ipotizzati, cielo, fogne, inferno, Olimpo.
 - **Gli stessi biomi in ogni mondo, cambiano soprattutto le skin dei pericoli.** Esempi dell'utente: in cielo non c'è l'acqua, la rana cade giù; nelle fogne l'acqua diventa melma, con slime che attaccano la rana.
-- Da decidere: l'ordine, se la run da 15-20 minuti resta un obiettivo (col teletrasporto l'incendio non la chiude più da solo) e cosa chiude allora le run lunghe, cosa rende più difficile il secondo giro (il calore è già al massimo), cosa diventa l'incendio in ogni mondo.
+- **Cosa chiude la run** (7 ottobre 2026): **ogni mondo ha un inseguitore più veloce** del precedente (parte più vicino o accelera di più; al secondo giro ancora di più), e **ogni giro alza la Siccità di un livello** per quella run. **Le run lunghe si accettano**: la run da 15-20 minuti non è più un limite, e il giocatore può allungarla apposta per migliorare il punteggio. Conseguenze da fare: salvare ed uscire a metà run, i prezzi dello stagno rispetto alle mosche di una run lunga, cosa misura il punteggio (oggi c'è solo la distanza).
+- Da decidere: l'ordine, cosa diventa l'incendio in ogni mondo.
 
 Dopo la fase 1, o quando servono: **reazioni del mondo** (auto che danno la caccia, coccodrilli aggressivi), **altri biomi** (lago ghiacciato, città con semafori, palude) e forse il bivio nella tana. Il **multiplayer** cooperativo solo dopo l'uscita, se lo facciamo.
 
