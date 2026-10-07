@@ -31,7 +31,7 @@ Il 4 ottobre 2026 l'utente ha deciso che, per ora, il caos non dà forza: la for
 
 ## Il caos senza ricompensa: perché provocarlo?
 
-Se il caos non dà forza, deve servire a passare, altrimenti la strategia migliore è evitarlo. Oggi serve già in parte: un'auto ribaltata blocca una corsia, un rottame fa da zattera, il fumo solleva il deltaplano (correnti calde), un'esplosione svuota la strada (guantoni esplosivi). Da tenere d'occhio nelle prove: il giocatore usa il pugno per passare, o lo evita perché scalda? I power-up nuovi dovrebbero dare al caos sempre più usi.
+Se il caos non dà forza, deve servire a passare, altrimenti la strategia migliore è evitarlo. Oggi serve già in parte: un'auto ribaltata blocca una corsia, un rottame fa da zattera, il fumo solleva il deltaplano (correnti calde), un'esplosione svuota la strada (guantoni esplosivi). Da tenere d'occhio nelle prove: il giocatore usa il pugno per passare, o lo evita perché scalda? I power-up nuovi dovrebbero dare al caos sempre più usi. Risposta del 7 ottobre 2026, coi mondi: il caos fa **punti** (non forza), moltiplicati restando a lungo nello stesso mondo (regole-design.md, "Dopo la fase 1: i mondi").
 
 ## Meta-progressione del roguelite
 
