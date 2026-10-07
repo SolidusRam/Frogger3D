@@ -198,7 +198,7 @@ Decisa il 4 ottobre 2026.
 - **La run resta infinita, e i mondi girano come in Risk of Rain 2**: finito l'ultimo mondo si ricomincia dal primo, più difficile.
 - **Il passaggio da un mondo all'altro si fa come in Risk of Rain**, in ogni caso. Da definire cosa se ne prende (il teletrasporto da attivare e difendere, l'evento col boss, l'arrivo nel mondo nuovo).
 - **Un mondo dura parecchio**: più tane per mondo.
-- **Mondi ipotizzati**: cielo, fogne, inferno, Olimpo. Da chiarire se il mondo di oggi (strade, fiumi, ferrovie, aeroporti, porti) è il primo.
+- **Mondi**: il primo è il mondo di oggi, la terra (strade, fiumi, ferrovie, aeroporti, porti); dopo, ipotizzati, cielo, fogne, inferno, Olimpo.
 - **Gli stessi biomi in ogni mondo, cambiano soprattutto le skin dei pericoli.** Esempi dell'utente: in cielo non c'è l'acqua, la rana cade giù; nelle fogne l'acqua diventa melma, con slime che attaccano la rana.
 - Da decidere: l'ordine, quanto dura un mondo rispetto alla run da 15-20 minuti chiusa dall'incendio, cosa rende più difficile il secondo giro (il calore è già al massimo), cosa diventa l'incendio in ogni mondo.
 
