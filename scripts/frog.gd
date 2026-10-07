@@ -466,12 +466,13 @@ func cheer() -> void:
 ## Nel menu (lo stagno): la rana mostra un attrezzo, girata verso la
 ## telecamera. group: lo slot ("gloves", "springs", "wing", "tongue", "body";
 ## "" un gracidio). Non più di una volta ogni DEMO_GAP secondi.
-func demo(group: String) -> void:
+## facing: verso dove si gira (NAN: verso la telecamera del gioco).
+func demo(group: String, facing := NAN) -> void:
 	var now := Time.get_ticks_msec()
 	if now < _demo_ready_at or not is_on_floor():
 		return
 	_demo_ready_at = now + roundi(DEMO_GAP * 1000.0)
-	visual.rotation.y = camera_rig.rotation.y + PI
+	visual.rotation.y = camera_rig.rotation.y + PI if is_nan(facing) else facing
 	match group:
 		"gloves":
 			punch_power._throw_glove()
@@ -488,8 +489,8 @@ func demo(group: String) -> void:
 			get_tree().create_timer(0.25).timeout.connect(glider_power._unfold)
 			Sfx.play(&"glider_open", 0.0, 1.0, true)
 		"tongue":
-			var toward := (camera_rig.camera.global_position - global_position) * Vector3(1, 0, 1)
-			tongue_power._flick_to = mouth_position() + toward.normalized() * 2.5
+			var toward := Basis(Vector3.UP, visual.rotation.y) * Vector3.FORWARD
+			tongue_power._flick_to = mouth_position() + toward * 2.5
 			tongue_power._flick_left = 0.35
 			Sfx.play(&"tongue_shoot", 0.0, 1.0, true)
 		"body":

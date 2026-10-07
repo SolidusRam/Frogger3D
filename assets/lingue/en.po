@@ -1499,3 +1499,9 @@ msgstr "Level %d of %d"
 
 msgid "Miglioramenti attivi: %d di 2"
 msgstr "Upgrades active: %d of 2"
+
+msgid "Passa su una tessera: la rana te la mostra."
+msgstr "Hover a tile: the frog shows it to you."
+
+msgid "Ancora chiusa"
+msgstr "Still locked"

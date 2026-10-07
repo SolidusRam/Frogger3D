@@ -10,13 +10,13 @@ signal closed
 ## Scelta una rana (il menu la mostra subito sullo sfondo).
 signal chosen(id: String)
 ## Il puntatore (o la selezione col controller) è su una rana: il menu la
-## mostra sullo sfondo, a destra; chiusa, come silhouette.
+## mostra nella vetrina; chiusa, come silhouette.
 signal previewed(id: String)
 
-const COLUMNS := 2
-## Il pannello copre la sinistra dello schermo: a destra, sullo sfondo, la
-## rana in anteprima.
-const WIDTH := 0.6
+const COLUMNS := 3
+
+## La vetrina in alto a destra (vedi Showcase): la rana sotto il puntatore.
+var showcase: Showcase
 ## L'icona dell'attrezzo iniziale di ogni rana.
 const ICONS := {"comune": "gloves", "raganella": "springs", "paracadutista": "wing", "fiume": "body", "camaleonte": "tongue", "rospo": ""}
 
@@ -33,17 +33,24 @@ var _esc_label: Label
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	anchor_right = WIDTH
-	offset_right = 0.0
 	theme = UiTheme.get_theme()
 	theme_type_variation = "Backdrop"
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 12)
 	add_child(box)
-	box.add_child(_label("Le rane", "Title"))
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 20)
+	box.add_child(top)
+	var intro := VBoxContainer.new()
+	intro.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	intro.add_theme_constant_override("separation", 12)
+	top.add_child(intro)
+	showcase = Showcase.new()
+	top.add_child(showcase)
+	intro.add_child(_label("Le rane", "Title"))
 	var note := _label("Ogni rana parte con un solo attrezzo: gli altri arrivano dalle carte delle tane.", "Note")
 	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	box.add_child(note)
+	intro.add_child(note)
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED

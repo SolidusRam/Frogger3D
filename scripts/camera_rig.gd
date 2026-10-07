@@ -23,9 +23,6 @@ extends Node3D
 @export var orbit_pitch_degrees := -10.0
 @export var orbit_length := 7.5
 @export var orbit_offset := -2.6
-## Nella scelta delle rane: più vicina, la rana più a destra.
-@export var preview_length := 4.2
-@export var preview_offset := -3.1
 
 @onready var pitch: Node3D = $Pitch
 @onready var spring_arm: SpringArm3D = $Pitch/SpringArm3D
@@ -108,14 +105,6 @@ func start_orbit() -> void:
 	spring_arm.spring_length = orbit_length
 	camera.h_offset = orbit_offset
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-
-
-## La scelta delle rane, nel menu: la telecamera si avvicina e porta la rana
-## nella parte destra dello schermo, libera dal pannello. false torna com'era.
-func frame_preview(on: bool) -> void:
-	var tween := create_tween().set_parallel().set_ease(Tween.EASE_IN_OUT).set_trans(Tween.TRANS_CUBIC)
-	tween.tween_property(spring_arm, "spring_length", preview_length if on else orbit_length, 0.4)
-	tween.tween_property(camera, "h_offset", preview_offset if on else orbit_offset, 0.4)
 
 
 ## Dal menu al gioco: la telecamera torna dietro la rana in duration secondi.

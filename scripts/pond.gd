@@ -12,9 +12,9 @@ extends PanelContainer
 ## RB cambiano scheda.
 
 signal closed
-## Il puntatore (o la selezione col controller) è su una tessera: chi apre lo
-## stagno (il menu) fa vedere l'attrezzo sulla rana dello sfondo. group: lo
-## slot ("" per le statistiche generali); title e detail: cosa scrivere.
+## Il puntatore (o la selezione col controller) è su una tessera: la vetrina
+## fa vedere l'attrezzo sulla rana. group: lo slot ("" per le statistiche
+## generali); title e detail: cosa scrivere.
 signal previewed(group: String, title: String, detail: String)
 
 ## L'attrezzo di ogni statistica: colore e icona della tessera ("" per quelle
@@ -26,10 +26,12 @@ const STAT_GROUPS := {
 	"magnet": "tongue", "greed": "tongue", "luck": "tongue",
 	"cooldown": "", "calm": "", "fire": "", "choice": "", "revival": "", "eye": "",
 }
-const COLUMNS := 2
-## Lo stagno copre la sinistra: a destra, sullo sfondo, la rana mostra
-## l'attrezzo della tessera sotto il puntatore (dal menu).
-const WIDTH := 0.62
+const COLUMNS := 3
+
+## La vetrina in alto a destra (vedi Showcase): la rana mostra l'attrezzo
+## della tessera sotto il puntatore. Senza una rana (la fine della corsa) non
+## c'è.
+var showcase: Showcase
 
 var _flies_label: Label
 var _golden_label: Label
@@ -45,16 +47,25 @@ var _refund_armed := false
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	anchor_right = WIDTH
-	offset_right = 0.0
 	theme = UiTheme.get_theme()
 	theme_type_variation = "PondBackdrop"
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 12)
 	add_child(box)
+	# In alto: a sinistra titolo, mosche e spiegazione, a destra la vetrina.
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 20)
+	box.add_child(top)
+	var intro := VBoxContainer.new()
+	intro.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	intro.add_theme_constant_override("separation", 12)
+	top.add_child(intro)
+	showcase = Showcase.new()
+	top.add_child(showcase)
+	previewed.connect(_show_in_showcase)
 	var header := HBoxContainer.new()
 	header.add_theme_constant_override("separation", 10)
-	box.add_child(header)
+	intro.add_child(header)
 	var title := _label("Lo stagno", "Title")
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
@@ -67,7 +78,9 @@ func _ready() -> void:
 	header.add_child(SlotIcon.make("golden", 36.0))
 	_golden_label = _label("", "Money")
 	header.add_child(_golden_label)
-	box.add_child(_label("Le mosche comprano statistiche; le mosche d'oro attivano i miglioramenti delle carte, una volta superata la loro prova.", "Note"))
+	var note := _label("Le mosche comprano statistiche; le mosche d'oro attivano i miglioramenti delle carte, una volta superata la loro prova.", "Note")
+	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	intro.add_child(note)
 
 	_tabs = TabContainer.new()
 	_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -144,8 +157,17 @@ func _notification(what: int) -> void:
 		refresh()
 
 
+## La vetrina: la rana si gira e mostra l'attrezzo, sotto nome e livello.
+func _show_in_showcase(group: String, title: String, detail: String) -> void:
+	if showcase.target == null:
+		return
+	showcase.face_target()
+	showcase.target.demo(group, 0.0)
+	showcase.caption(title, detail)
+
+
 ## Passando su una tessera (o su un suo pulsante col controller), la rana
-## dello sfondo mostra l'attrezzo.
+## della vetrina mostra l'attrezzo.
 func _preview_on(tile: Control, group: String, title: String, detail: String) -> void:
 	tile.mouse_entered.connect(previewed.emit.bind(group, title, detail))
 	for button in tile.find_children("*", "Button", true, false):

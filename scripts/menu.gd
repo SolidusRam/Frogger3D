@@ -25,9 +25,6 @@ var _feats: FeatsPanel
 var _frogs: FrogsPanel
 var _frog_button: Button
 var _unlocked_label: Label
-## Il nome della rana in anteprima, a destra sopra lo sfondo.
-var _preview_label: Label
-var _preview_detail: Label
 
 
 func _ready() -> void:
@@ -143,29 +140,9 @@ func _build() -> void:
 	_pond = Pond.new()
 	_pond.visible = false
 	_pond.closed.connect(_on_pond_closed)
-	_pond.previewed.connect(_on_pond_previewed)
 	_ui.add_child(_pond)
-
-	_preview_label = _label("", "Title")
-	_preview_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	_preview_label.offset_left = -500
-	_preview_label.offset_right = -40
-	# Sopra la riga del dettaglio e la scritta di F2.
-	_preview_label.offset_top = -150
-	_preview_label.offset_bottom = -92
-	_preview_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_preview_label.add_theme_constant_override("outline_size", 10)
-	_preview_label.visible = false
-	_ui.add_child(_preview_label)
-	_preview_detail = _label("", "Strong")
-	_preview_detail.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	_preview_detail.offset_left = -500
-	_preview_detail.offset_right = -40
-	_preview_detail.offset_top = -90
-	_preview_detail.offset_bottom = -62
-	_preview_detail.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	_preview_detail.visible = false
-	_ui.add_child(_preview_detail)
+	# La vetrina dello stagno riprende la rana del menu.
+	_pond.showcase.target = _game.frog
 
 	_frogs = FrogsPanel.new()
 	_frogs.visible = false
@@ -174,6 +151,7 @@ func _build() -> void:
 	_frogs.previewed.connect(_on_frog_previewed)
 	_frogs.closed.connect(_end_frog_preview)
 	_ui.add_child(_frogs)
+	_frogs.showcase.target = _game.frog
 
 	_feats = FeatsPanel.new()
 	_feats.visible = false
@@ -221,17 +199,7 @@ func _play() -> void:
 func _open_pond() -> void:
 	_pond.refresh()
 	_pond.visible = true
-	_game.frog.camera_rig.frame_preview(true)
-
-
-## Lo stagno: la rana sullo sfondo mostra l'attrezzo della tessera, e a destra
-## il nome e il livello.
-func _on_pond_previewed(group: String, title: String, detail: String) -> void:
-	_game.frog.demo(group)
-	_preview_label.text = title
-	_preview_detail.text = detail
-	_preview_label.visible = true
-	_preview_detail.visible = true
+	_pond.showcase.caption(tr("Lo stagno"), tr("Passa su una tessera: la rana te la mostra."))
 
 
 ## Acceso o spento "Tutto sbloccato": la scritta, e la rana scelta che magari
@@ -244,22 +212,19 @@ func _on_settings_changed() -> void:
 
 func _open_frogs() -> void:
 	_frogs.open()
-	_game.frog.camera_rig.frame_preview(true)
 
 
-## Anteprima: la rana sotto il puntatore compare sullo sfondo; se è chiusa,
-## come silhouette, col suo nome e un punto di domanda.
+## Anteprima nella vetrina: la rana sotto il puntatore; se è chiusa, come
+## silhouette, col suo nome e un punto di domanda.
 func _on_frog_previewed(id: String) -> void:
 	var open_frog := Frogs.unlocked(id)
 	_game.preview_frog(id, not open_frog)
-	_preview_label.text = tr(Frogs.ALL[id].name) + ("" if open_frog else "  ?")
-	_preview_label.visible = true
+	_frogs.showcase.face_target()
+	_frogs.showcase.caption(tr(Frogs.ALL[id].name) + ("" if open_frog else "  ?"), "" if open_frog else tr("Ancora chiusa"))
 
 
-## Chiusa la scelta, sullo sfondo torna la rana scelta.
+## Chiusa la scelta, torna la rana scelta.
 func _end_frog_preview() -> void:
-	_preview_label.visible = false
-	_game.frog.camera_rig.frame_preview(false)
 	_game.preview_frog(Frogs.selected())
 
 
@@ -279,9 +244,6 @@ func _open_options() -> void:
 
 
 func _on_pond_closed() -> void:
-	_preview_label.visible = false
-	_preview_detail.visible = false
-	_game.frog.camera_rig.frame_preview(false)
 	_refresh()
 	_play_button.grab_focus()
 
