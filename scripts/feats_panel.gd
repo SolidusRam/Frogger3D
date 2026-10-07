@@ -3,10 +3,19 @@ extends PanelContainer
 ## Le imprese (vedi Feats), a tutto schermo come lo stagno: per sezione, ogni
 ## impresa col suo nome, cosa chiede e cosa sblocca. Le fatte hanno il bordo
 ## verde; le segrete non fatte non dicono niente. Esc (o B) chiude.
+## In alto a destra la vetrina (vedi Showcase): passando su un'impresa, la
+## rana del menu fa vedere la ricompensa (la rana nuova, il cappello, il
+## colore, l'attrezzo della carta).
 
 signal closed
+## Il puntatore (o la selezione col controller) è su un'impresa: il menu fa
+## vedere la ricompensa nella vetrina.
+signal previewed(id: String)
 
-const COLUMNS := 2
+const COLUMNS := 3
+
+## La vetrina in alto a destra: la rana del menu.
+var showcase: Showcase
 
 var _count: Label
 var _list: VBoxContainer
@@ -21,14 +30,24 @@ func _ready() -> void:
 	box.add_theme_constant_override("separation", 12)
 	add_child(box)
 	var header := HBoxContainer.new()
-	box.add_child(header)
+	# In alto: a sinistra titolo e spiegazione, a destra la vetrina.
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 20)
+	box.add_child(top)
+	var intro := VBoxContainer.new()
+	intro.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	intro.add_theme_constant_override("separation", 12)
+	top.add_child(intro)
+	showcase = Showcase.new()
+	top.add_child(showcase)
+	intro.add_child(header)
 	var title := _label("Imprese", "Title")
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
 	_count = _label("", "Money")
 	_count.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	header.add_child(_count)
-	box.add_child(_note("Ogni impresa sblocca una cosa: una carta che entra nelle tane, una rana, un gettone o qualcosa da vedere. Si fanno giocando, anche morendo."))
+	intro.add_child(_note("Ogni impresa sblocca una cosa: una carta che entra nelle tane, una rana, un gettone o qualcosa da vedere. Si fanno giocando, anche morendo."))
 
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -125,7 +144,28 @@ func _tile(id: String) -> PanelContainer:
 	column.add_child(reward)
 	if not hidden and not Feats.reward_ready(id):
 		column.add_child(_label(tr("Arriva più avanti nello sviluppo"), "Note"))
+	# Una tessera senza pulsanti: si seleziona anche col controller, e
+	# selezionata (o sotto il puntatore) mostra la ricompensa.
+	tile.focus_mode = Control.FOCUS_ALL
+	tile.mouse_entered.connect(previewed.emit.bind(id))
+	tile.focus_entered.connect(previewed.emit.bind(id))
+	tile.focus_entered.connect(_highlight.bind(tile, true))
+	tile.focus_exited.connect(_highlight.bind(tile, false))
 	return tile
+
+
+## La tessera selezionata col controller: bordo dorato tutto intorno.
+func _highlight(tile: PanelContainer, on: bool) -> void:
+	var box := tile.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+	var width := 3 if on else 0
+	box.border_width_top = width
+	box.border_width_right = width
+	box.border_width_bottom = width
+	if on:
+		box.border_color = UiTheme.GOLD
+	else:
+		box.border_color = UiTheme.DONE if Feats.done(tile.name) else UiTheme.LINE
+	tile.add_theme_stylebox_override("panel", box)
 
 
 func _update_esc() -> void:

@@ -156,7 +156,10 @@ func _build() -> void:
 	_feats = FeatsPanel.new()
 	_feats.visible = false
 	_feats.closed.connect(_play_button.grab_focus)
+	_feats.closed.connect(_end_frog_preview)
+	_feats.previewed.connect(_on_feat_previewed)
 	_ui.add_child(_feats)
+	_feats.showcase.target = _game.frog
 
 	_options = OptionsPanel.new()
 	_options.visible = false
@@ -237,6 +240,37 @@ func _on_frog_chosen(id: String) -> void:
 func _open_feats() -> void:
 	_feats.refresh()
 	_feats.visible = true
+	_feats.showcase.caption(tr("Imprese"), tr("Passa su un'impresa: la rana ti mostra cosa sblocca."))
+
+
+## La ricompensa dell'impresa sotto il puntatore, sulla rana scelta (una rana
+## nuova al suo posto: silhouette finché è chiusa). Le segrete non fatte non
+## mostrano niente.
+func _on_feat_previewed(id: String) -> void:
+	var feat: Dictionary = Feats.ALL[id]
+	var done := Feats.done(id)
+	var showcase := _feats.showcase
+	var frog_id: String = feat.reward if feat.kind == "frog" else Frogs.selected()
+	var as_silhouette: bool = feat.kind == "frog" and not Frogs.unlocked(frog_id)
+	_game.preview_frog(frog_id, as_silhouette)
+	showcase.face_target()
+	if feat.get("secret", false) and not done:
+		showcase.caption("???", tr("Impresa segreta: si scopre facendola"))
+		return
+	var detail := tr("Fatta") if done else tr(feat.text)
+	match feat.kind:
+		"hat":
+			_game.frog.set_hat(feat.reward)
+		"color":
+			_game.frog.skin = Cosmetics.palette_of(feat.reward)
+		"card", "fusion":
+			var card: Dictionary = Upgrades.CATALOG[feat.reward]
+			var slot: String = card.slot
+			if slot == "fusion":
+				slot = Upgrades.CATALOG[card.parts[0]].slot
+			_game.frog.demo(slot, 0.0)
+			detail = tr(card.text)
+	showcase.caption(tr(feat.reward_name) + ("" if done or not as_silhouette else "  ?"), detail)
 
 
 func _open_options() -> void:
@@ -244,6 +278,8 @@ func _open_options() -> void:
 
 
 func _on_pond_closed() -> void:
+	# Le prove del mercatino (cappelli, colori) se ne vanno: torna la rana com'è.
+	_game.preview_frog(Frogs.selected())
 	_refresh()
 	_play_button.grab_focus()
 

@@ -445,6 +445,8 @@ func _finish_run() -> Dictionary:
 	else:
 		Progress.add_flies(run_flies, run_golden)
 		Progress.commit_run()
+		# Il mercatino cambia a ogni run.
+		Market.refresh()
 	return {
 		"distance": distance,
 		"dens": course.dens_reached,

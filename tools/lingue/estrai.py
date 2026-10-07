@@ -35,6 +35,7 @@ BLOCKS = {
     "scripts/upgrades.gd": ["SLOT_NAMES"],
     "scripts/hud.gd": ["NEW_POWER", "TOKEN_NAMES", "RARITY_NAMES"],
     "scripts/drought.gd": ["LEVELS"],
+    "scripts/pond.gd": ["RARITY_NAMES"],
 }
 # Stringhe che non si traducono (codici, nomi propri, simboli).
 SKIP = {"", "Frogger 3D", "Esc", "A", "B", "X", "Y", "LB", "RB", "LT", "RT", "L1", "R1", "L2", "R2",

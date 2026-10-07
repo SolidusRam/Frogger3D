@@ -15,6 +15,46 @@ msgid "Occhiali da pilota"
 msgstr ""
 
 #: scripts/cosmetics.gd
+msgid "Berretta col pompon"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Berretto da baseball"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Cappello di paglia"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Cappello da cuoco"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Cappello da cowboy"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Fez"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Tricorno"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Cilindro"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Corona"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Berretto con l'elica"
+msgstr ""
+
+#: scripts/cosmetics.gd
 msgid "Rana incandescente"
 msgstr ""
 
@@ -24,6 +64,46 @@ msgstr ""
 
 #: scripts/cosmetics.gd
 msgid "Rana di coccodrillo"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Menta"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Limone"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Cioccolato"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Zucca"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Fragola"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Lavanda"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Notte"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Smeraldo"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Albina"
+msgstr ""
+
+#: scripts/cosmetics.gd
+msgid "Blu dendrobate"
 msgstr ""
 
 #: scripts/cosmetics.gd
@@ -811,6 +891,18 @@ msgid "Nessun record"
 msgstr ""
 
 #: scripts/menu.gd
+msgid "Passa su una tessera: la rana te la mostra."
+msgstr ""
+
+#: scripts/menu.gd
+msgid "Ancora chiusa"
+msgstr ""
+
+#: scripts/menu.gd
+msgid "Passa su un'impresa: la rana ti mostra cosa sblocca."
+msgstr ""
+
+#: scripts/menu.gd
 msgid "La rana scappa dall'incendio"
 msgstr ""
 
@@ -1007,6 +1099,42 @@ msgid "Prova: %s"
 msgstr ""
 
 #: scripts/pond.gd
+msgid "Cappello"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Colore"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Compra: %d mosche"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Uovo di rana"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Si schiude in un cappello o un colore a caso, fra quelli che non hai. I rari e gli epici escono meno spesso."
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Ancora da trovare: %d"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Schiudi: %d mosche"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Tuo! Lo indossa la rana scelta."
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Dall'uovo: %s!"
+msgstr ""
+
+#: scripts/pond.gd
 msgid "Rimborsa tutto (+%d, +%d d'oro)"
 msgstr ""
 
@@ -1024,6 +1152,18 @@ msgstr ""
 
 #: scripts/pond.gd
 msgid "Maestria delle carte"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Mercatino"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Raro"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Epico"
 msgstr ""
 
 #: scripts/progress.gd

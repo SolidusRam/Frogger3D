@@ -122,6 +122,9 @@ const CARD_UPGRADES := {
 }
 
 static var path := "user://progressi.cfg"
+## Il file vero del giocatore: senza schermo (i test) non si tocca mai.
+const REAL_PATH := "user://progressi.cfg"
+const TEST_PATH := "user://progressi_test.cfg"
 static var flies := 0
 ## Le mosche d'oro: servono solo ad attivare i miglioramenti delle carte.
 static var golden := 0
@@ -141,6 +144,10 @@ static var feats := {}
 static var frog := "comune"
 ## Il guardaroba (vedi Cosmetics): per rana, {"hat": id, "color": id}.
 static var wardrobe := {}
+## Cappelli e colori comprati al mercatino o usciti dalle uova: id → true.
+static var owned := {}
+## Il mercatino (vedi Market): gli oggetti esposti in questo giro.
+static var market := []
 ## La Siccità (vedi Drought): per rana, il livello scelto e il più alto
 ## superato.
 static var drought_level := {}
@@ -148,7 +155,7 @@ static var drought_best := {}
 
 
 static func load_from(file_path: String) -> void:
-	path = file_path
+	path = _safe(file_path)
 	var config := ConfigFile.new()
 	var ok := config.load(path) == OK
 	flies = config.get_value("stagno", "mosche", 0) if ok else 0
@@ -160,12 +167,20 @@ static func load_from(file_path: String) -> void:
 	feats = config.get_value("imprese", "fatte", {}) if ok else {}
 	frog = config.get_value("rana", "scelta", "comune") if ok else "comune"
 	wardrobe = config.get_value("guardaroba", "scelte", {}) if ok else {}
+	owned = config.get_value("guardaroba", "posseduti", {}) if ok else {}
+	market = config.get_value("mercatino", "esposti", []) if ok else []
 	drought_level = config.get_value("siccita", "scelta", {}) if ok else {}
 	drought_best = config.get_value("siccita", "superata", {}) if ok else {}
 	run_trials = {}
 
 
+## Senza schermo (i test) il file vero diventa quello di prova.
+static func _safe(file_path: String) -> String:
+	return TEST_PATH if file_path == REAL_PATH and DisplayServer.get_name() == "headless" else file_path
+
+
 static func save() -> void:
+	path = _safe(path)
 	var config := ConfigFile.new()
 	config.set_value("stagno", "mosche", flies)
 	config.set_value("stagno", "mosche_oro", golden)
@@ -176,6 +191,8 @@ static func save() -> void:
 	config.set_value("imprese", "fatte", feats)
 	config.set_value("rana", "scelta", frog)
 	config.set_value("guardaroba", "scelte", wardrobe)
+	config.set_value("guardaroba", "posseduti", owned)
+	config.set_value("mercatino", "esposti", market)
 	config.set_value("siccita", "scelta", drought_level)
 	config.set_value("siccita", "superata", drought_best)
 	config.save(path)

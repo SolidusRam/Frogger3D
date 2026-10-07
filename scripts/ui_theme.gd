@@ -37,6 +37,11 @@ const FROG_DARK := Color(0.19, 0.4, 0.12)
 ## Il rosso del fuoco: pericolo e azioni che non si annullano.
 const DANGER := Color(0.78, 0.22, 0.12)
 const DANGER_DARK := Color(0.48, 0.12, 0.06)
+## I colori della rarità (carte, mercatino, uova).
+const RARITY := {
+	"common": Color(0.78, 0.74, 0.66), "rare": Color(0.35, 0.62, 1.0),
+	"epic": Color(0.74, 0.44, 1.0), "legendary": Color(1.0, 0.8, 0.24),
+}
 ## L'acqua scura dello stagno (il fondo della schermata dello stagno).
 const POND := Color(0.05, 0.11, 0.1)
 ## Le tessere dello stagno, un po' più chiare dell'acqua.

@@ -38,6 +38,9 @@ var _golden_label: Label
 var _stats_box: GridContainer
 var _cards_box: GridContainer
 var _refund_button: Button
+var _market_box: GridContainer
+## Il nome dei gradi di rarità degli oggetti.
+const RARITY_NAMES := {"common": "Comune", "rare": "Raro", "epic": "Epico"}
 var _tabs: TabContainer
 var _esc_label: Label
 ## Il rimborso chiede conferma: il primo clic lo prepara, il secondo (entro
@@ -87,6 +90,7 @@ func _ready() -> void:
 	box.add_child(_tabs)
 	_stats_box = _page(_tabs, "Statistiche")
 	_cards_box = _page(_tabs, "Maestria delle carte")
+	_market_box = _page(_tabs, "Mercatino")
 
 	var footer := HBoxContainer.new()
 	footer.add_theme_constant_override("separation", 16)
@@ -126,7 +130,7 @@ func _focused_place() -> Array:
 	var focused := get_viewport().gui_get_focus_owner() if is_inside_tree() else null
 	if focused == null:
 		return []
-	for grid in [_stats_box, _cards_box]:
+	for grid in [_stats_box, _cards_box, _market_box]:
 		for tile in grid.get_children():
 			if tile.is_ancestor_of(focused):
 				return [tile.name, tile.find_children("*", "Button", true, false).find(focused)]
@@ -138,7 +142,7 @@ func _focused_place() -> Array:
 func _restore_focus(place: Array) -> void:
 	if place.is_empty():
 		return
-	for grid in [_stats_box, _cards_box]:
+	for grid in [_stats_box, _cards_box, _market_box]:
 		var tile: Node = grid.get_node_or_null(NodePath(place[0]))
 		if tile == null:
 			continue
@@ -187,7 +191,7 @@ func refresh() -> void:
 	var focus := _focused_place()
 	# Le tessere vecchie escono subito, ma si cancellano a fine fotogramma: il
 	# pulsante appena premuto sta ancora mandando il suo segnale.
-	for grid in [_stats_box, _cards_box]:
+	for grid in [_stats_box, _cards_box, _market_box]:
 		for child in grid.get_children():
 			grid.remove_child(child)
 			child.queue_free()
@@ -195,6 +199,9 @@ func refresh() -> void:
 		_stats_box.add_child(_stat_tile(stat))
 	for card: String in Progress.CARD_UPGRADES:
 		_cards_box.add_child(_card_tile(card))
+	for item: Array in Market.stock():
+		_market_box.add_child(_market_tile(item[0], item[1]))
+	_market_box.add_child(_egg_tile())
 	_restore_focus(focus)
 	_refund_armed = false
 	_update_refund_button()
@@ -306,6 +313,93 @@ func _upgrade(card: String, index: int, color: Color) -> VBoxContainer:
 		count.add_theme_color_override("font_color", UiTheme.DONE)
 	progress.add_child(count)
 	return box
+
+
+## Un oggetto del mercatino: nome, rarità e prezzo. Passandoci sopra la rana
+## della vetrina lo indossa.
+func _market_tile(kind: String, id: String) -> PanelContainer:
+	var rarity := Cosmetics.rarity_of(id)
+	var color: Color = UiTheme.RARITY[rarity]
+	var tile := _tile(color, true)
+	tile.name = id
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 6)
+	tile.add_child(box)
+	var name_label := _label(Cosmetics.name_of(kind, id), "Header")
+	name_label.add_theme_font_size_override("font_size", 24)
+	box.add_child(name_label)
+	var what := _label(tr("Cappello") if kind == "hat" else tr("Colore"), "Note")
+	box.add_child(what)
+	var tag := _label(tr(RARITY_NAMES[rarity]), "Strong")
+	tag.add_theme_color_override("font_color", color)
+	box.add_child(tag)
+	var gap := Control.new()
+	gap.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	box.add_child(gap)
+	var cost := Market.price(id)
+	var buy := _button(tr("Compra: %d mosche") % cost, _buy_item.bind(kind, id), "PrimaryButton")
+	buy.disabled = cost > Progress.flies
+	box.add_child(buy)
+	var preview := func() -> void: _wear_preview(kind, id, Cosmetics.name_of(kind, id), tr(RARITY_NAMES[rarity]))
+	tile.mouse_entered.connect(preview)
+	buy.mouse_entered.connect(preview)
+	buy.focus_entered.connect(preview)
+	return tile
+
+
+## L'uovo di rana: a prezzo fisso, un oggetto a caso fra quelli che mancano.
+func _egg_tile() -> PanelContainer:
+	var tile := _tile(UiTheme.GOLD, true)
+	tile.name = "egg"
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 6)
+	tile.add_child(box)
+	var name_label := _label(tr("Uovo di rana"), "Header")
+	name_label.add_theme_font_size_override("font_size", 24)
+	box.add_child(name_label)
+	var text := _label(tr("Si schiude in un cappello o un colore a caso, fra quelli che non hai. I rari e gli epici escono meno spesso."))
+	text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	text.add_theme_font_size_override("font_size", 16)
+	box.add_child(text)
+	var left := Cosmetics.missing_items().size()
+	box.add_child(_label(tr("Ancora da trovare: %d") % left, "Note"))
+	var hatch := _button(tr("Schiudi: %d mosche") % Market.EGG_PRICE, _hatch, "PrimaryButton")
+	hatch.disabled = not Market.egg_ready()
+	box.add_child(hatch)
+	return tile
+
+
+## La rana della vetrina indossa l'oggetto, per vederlo.
+func _wear_preview(kind: String, id: String, title: String, detail: String) -> void:
+	if showcase.target == null:
+		return
+	showcase.face_target()
+	if kind == "hat":
+		showcase.target.set_hat(id)
+	else:
+		showcase.target.skin = Cosmetics.palette_of(id)
+	showcase.caption(title, detail)
+
+
+func _buy_item(kind: String, id: String) -> void:
+	if not Market.buy(id):
+		return
+	Sfx.play(&"ui_buy")
+	# Comprato: lo indossa la rana scelta.
+	Cosmetics.choose(Frogs.selected(), kind, id)
+	refresh()
+	_wear_preview(kind, id, Cosmetics.name_of(kind, id), tr("Tuo! Lo indossa la rana scelta."))
+
+
+func _hatch() -> void:
+	var item := Market.hatch()
+	if item.is_empty():
+		return
+	Sfx.play(&"ui_record")
+	Cosmetics.choose(Frogs.selected(), item[0], item[1])
+	refresh()
+	var rarity := Cosmetics.rarity_of(item[1])
+	_wear_preview(item[0], item[1], tr("Dall'uovo: %s!") % Cosmetics.name_of(item[0], item[1]), tr(RARITY_NAMES[rarity]))
 
 
 ## Il fondo di una tessera: colore dell'attrezzo a sinistra (statistiche) o

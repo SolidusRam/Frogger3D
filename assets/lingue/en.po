@@ -1505,3 +1505,102 @@ msgstr "Hover a tile: the frog shows it to you."
 
 msgid "Ancora chiusa"
 msgstr "Still locked"
+
+msgid "Berretta col pompon"
+msgstr "Bobble hat"
+
+msgid "Berretto da baseball"
+msgstr "Baseball cap"
+
+msgid "Cappello di paglia"
+msgstr "Straw hat"
+
+msgid "Cappello da cuoco"
+msgstr "Chef's hat"
+
+msgid "Cappello da cowboy"
+msgstr "Cowboy hat"
+
+msgid "Fez"
+msgstr "Fez"
+
+msgid "Tricorno"
+msgstr "Tricorne"
+
+msgid "Cilindro"
+msgstr "Top hat"
+
+msgid "Corona"
+msgstr "Crown"
+
+msgid "Berretto con l'elica"
+msgstr "Propeller beanie"
+
+msgid "Menta"
+msgstr "Mint"
+
+msgid "Limone"
+msgstr "Lemon"
+
+msgid "Cioccolato"
+msgstr "Chocolate"
+
+msgid "Zucca"
+msgstr "Pumpkin"
+
+msgid "Fragola"
+msgstr "Strawberry"
+
+msgid "Lavanda"
+msgstr "Lavender"
+
+msgid "Notte"
+msgstr "Night"
+
+msgid "Smeraldo"
+msgstr "Emerald"
+
+msgid "Albina"
+msgstr "Albino"
+
+msgid "Blu dendrobate"
+msgstr "Dart-frog blue"
+
+msgid "Cappello"
+msgstr "Hat"
+
+msgid "Colore"
+msgstr "Color"
+
+msgid "Compra: %d mosche"
+msgstr "Buy: %d flies"
+
+msgid "Uovo di rana"
+msgstr "Frog egg"
+
+msgid "Si schiude in un cappello o un colore a caso, fra quelli che non hai. I rari e gli epici escono meno spesso."
+msgstr "Hatches into a random hat or color you don't have yet. Rare and epic ones come out less often."
+
+msgid "Ancora da trovare: %d"
+msgstr "Still to find: %d"
+
+msgid "Schiudi: %d mosche"
+msgstr "Hatch: %d flies"
+
+msgid "Tuo! Lo indossa la rana scelta."
+msgstr "Yours! The chosen frog is wearing it."
+
+msgid "Dall'uovo: %s!"
+msgstr "From the egg: %s!"
+
+msgid "Mercatino"
+msgstr "Market"
+
+msgid "Raro"
+msgstr "Rare"
+
+msgid "Epico"
+msgstr "Epic"
+
+msgid "Passa su un'impresa: la rana ti mostra cosa sblocca."
+msgstr "Hover a feat: the frog shows you what it unlocks."

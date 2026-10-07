@@ -56,7 +56,9 @@ PREVIEW = {
     "log": (0.45, 0.3, 0.15, 1), "log_end": (0.78, 0.62, 0.4, 1),
     "leather": (0.45, 0.28, 0.15, 1), "lens": (0.3, 0.6, 0.85, 1), "scarf": (0.85, 0.15, 0.15, 1),
     "flipper": (0.98, 0.6, 0.1, 1), "eye_red": (0.9, 0.15, 0.1, 1), "wart": (0.36, 0.27, 0.15, 1),
-    "hard_hat": (1.0, 0.8, 0.1, 1),
+    "hard_hat": (1.0, 0.8, 0.1, 1), "straw": (0.9, 0.78, 0.45, 1), "felt_black": (0.12, 0.11, 0.12, 1),
+    "felt_blue": (0.2, 0.35, 0.8, 1), "felt_green": (0.25, 0.6, 0.3, 1), "felt_purple": (0.55, 0.3, 0.75, 1),
+    "gold": (0.95, 0.75, 0.2, 1), "sign_white": (0.95, 0.95, 0.92, 1),
     "croc": (0.2, 0.4, 0.2, 1), "croc_dark": (0.16, 0.32, 0.16, 1), "croc_eye": (0.95, 0.85, 0.2, 1),
 }
 
@@ -544,6 +546,116 @@ def build_hat_goggles():
         goggles.append(cylinder("lens_%d" % side, 0.075, 0.07, (side * 0.13, 0.07, 0.76), "lens", sides=8, axis="Y"))
     attach("Head", "hat", goggles)
     save("hat_goggles")
+
+
+# I cappelli del mercatino e delle uova (scripts/cosmetics.gd). Tutti appesi
+# alla testa, dietro gli occhi (la calotta della testa sta attorno a
+# (0, 0.06, 0.6)). Mai il materiale "glove": cambia con le carte dei guantoni.
+HAT_CENTER = (0, 0.06)
+
+
+def hat_cylinder(name, radius, depth, z, mat, sides=8):
+    return cylinder(name, radius, depth, (HAT_CENTER[0], HAT_CENTER[1], z), mat, sides=sides, axis="Z")
+
+
+def build_hat_straw():
+    """Il cappello di paglia, con la fascia rossa."""
+    reset()
+    attach("Head", "hat", [hat_cylinder("brim", 0.42, 0.03, 0.64, "straw", sides=10),
+                           hat_cylinder("crown", 0.2, 0.16, 0.73, "straw"),
+                           hat_cylinder("band", 0.205, 0.045, 0.68, "scarf")])
+    save("hat_straw")
+
+
+def build_hat_cap():
+    """Il berretto da baseball, con la visiera sopra gli occhi."""
+    reset()
+    attach("Head", "hat", [ico("dome", 0.25, (0, 0.04, 0.66), "felt_blue", scale=(1, 1.05, 0.62)),
+                           box("visor", -0.17, 0.17, 0.2, 0.44, 0.66, 0.69, "felt_blue"),
+                           ico("button", 0.035, (0, 0.04, 0.82), "sign_white")])
+    save("hat_cap")
+
+
+def build_hat_top_hat():
+    """Il cilindro, alto e nero, con la fascia rossa."""
+    reset()
+    attach("Head", "hat", [hat_cylinder("brim", 0.3, 0.03, 0.66, "felt_black", sides=10),
+                           hat_cylinder("pipe", 0.19, 0.38, 0.86, "felt_black"),
+                           hat_cylinder("band", 0.195, 0.055, 0.71, "scarf")])
+    save("hat_top_hat")
+
+
+def build_hat_crown():
+    """La corona d'oro, con le punte e una gemma davanti."""
+    reset()
+    parts = [hat_cylinder("ring", 0.21, 0.11, 0.71, "gold")]
+    for i in range(5):
+        angle = i * 2 * math.pi / 5 + math.pi / 2
+        parts.append(cone("spike_%d" % i, 0.05, 0.13, (HAT_CENTER[0] + 0.18 * math.cos(angle), HAT_CENTER[1] + 0.18 * math.sin(angle), 0.82), "gold", sides=4))
+    parts.append(ico("gem", 0.045, (0, HAT_CENTER[1] + 0.21, 0.71), "scarf"))
+    attach("Head", "hat", parts)
+    save("hat_crown")
+
+
+def build_hat_cowboy():
+    """Il cappello da cowboy: tesa larga, calotta col solco, fascia scura."""
+    reset()
+    crown = block("crown",
+                  [(-0.19, -0.12, 0.66), (0.19, -0.12, 0.66), (0.19, 0.24, 0.66), (-0.19, 0.24, 0.66)],
+                  [(-0.14, -0.08, 0.86), (0.14, -0.08, 0.86), (0.14, 0.2, 0.84), (-0.14, 0.2, 0.84)],
+                  "leather")
+    attach("Head", "hat", [hat_cylinder("brim", 0.46, 0.03, 0.65, "leather", sides=10), crown,
+                           hat_cylinder("band", 0.2, 0.04, 0.69, "tire")])
+    save("hat_cowboy")
+
+
+def build_hat_beanie():
+    """La berretta di lana col risvolto e il pompon."""
+    reset()
+    attach("Head", "hat", [ico("dome", 0.26, (0, 0.05, 0.66), "felt_green", scale=(1, 1, 0.78)),
+                           hat_cylinder("cuff", 0.255, 0.08, 0.63, "sign_white"),
+                           ico("pompon", 0.085, (0, 0.05, 0.88), "sign_white")])
+    save("hat_beanie")
+
+
+def build_hat_chef():
+    """Il cappello da cuoco: la fascia e lo sbuffo bianco."""
+    reset()
+    parts = [hat_cylinder("band", 0.2, 0.12, 0.69, "sign_white")]
+    for i, (x, y) in enumerate([(-0.08, 0.02), (0.08, 0.02), (0.0, 0.14), (0.0, -0.08)]):
+        parts.append(ico("puff_%d" % i, 0.15, (x, HAT_CENTER[1] + y, 0.84), "sign_white"))
+    attach("Head", "hat", parts)
+    save("hat_chef")
+
+
+def build_hat_pirate():
+    """Il tricorno del pirata, con un teschio bianco davanti."""
+    reset()
+    cy = HAT_CENTER[1]
+    brim = prism("brim", [(0, cy + 0.42), (-0.38, cy - 0.22), (0.38, cy - 0.22)], 0.62, 0.72, "felt_black")
+    attach("Head", "hat", [brim, ico("dome", 0.2, (0, cy, 0.74), "felt_black", scale=(1, 1, 0.65)),
+                           box("skull", -0.04, 0.04, cy + 0.3, cy + 0.34, 0.67, 0.71, "sign_white")])
+    save("hat_pirate")
+
+
+def build_hat_fez():
+    """Il fez rosso con la nappa d'oro."""
+    reset()
+    attach("Head", "hat", [cylinder("fez", 0.15, 0.2, (0, HAT_CENTER[1], 0.76), "scarf", sides=8, axis="Z"),
+                           tube("cord", (0, HAT_CENTER[1], 0.86), (0.15, HAT_CENTER[1] - 0.04, 0.74), 0.015, "gold"),
+                           ico("tassel", 0.035, (0.15, HAT_CENTER[1] - 0.04, 0.72), "gold")])
+    save("hat_fez")
+
+
+def build_hat_propeller():
+    """Il berretto con l'elica in cima."""
+    reset()
+    cy = HAT_CENTER[1]
+    attach("Head", "hat", [ico("dome", 0.25, (0, cy, 0.66), "felt_purple", scale=(1, 1, 0.7)),
+                           cylinder("stem", 0.02, 0.1, (0, cy, 0.86), "metal", sides=6, axis="Z"),
+                           box("blade_a", -0.22, 0.22, cy - 0.035, cy + 0.035, 0.9, 0.92, "scarf"),
+                           box("blade_b", -0.035, 0.035, cy - 0.22, cy + 0.22, 0.9, 0.92, "felt_blue")])
+    save("hat_propeller")
 
 
 # --- La tana ----------------------------------------------------------------
@@ -1151,6 +1263,10 @@ BUILDERS = {
     "frog_raganella": build_frog_raganella, "frog_paracadutista": build_frog_paracadutista,
     "frog_fiume": build_frog_fiume, "frog_camaleonte": build_frog_camaleonte,
     "frog_rospo": build_frog_rospo, "hat_hard_hat": build_hat_hard_hat, "hat_goggles": build_hat_goggles,
+    "hat_straw": build_hat_straw, "hat_cap": build_hat_cap, "hat_top_hat": build_hat_top_hat,
+    "hat_crown": build_hat_crown, "hat_cowboy": build_hat_cowboy, "hat_beanie": build_hat_beanie,
+    "hat_chef": build_hat_chef, "hat_pirate": build_hat_pirate, "hat_fez": build_hat_fez,
+    "hat_propeller": build_hat_propeller,
 }
 
 if __name__ == "__main__":
