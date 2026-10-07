@@ -25,7 +25,7 @@ extends Node3D
 @export var orbit_offset := -2.6
 ## Nella scelta delle rane: più vicina, la rana più a destra.
 @export var preview_length := 4.2
-@export var preview_offset := -2.2
+@export var preview_offset := -3.1
 
 @onready var pitch: Node3D = $Pitch
 @onready var spring_arm: SpringArm3D = $Pitch/SpringArm3D

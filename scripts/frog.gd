@@ -191,6 +191,9 @@ var _shell_mesh: MeshInstance3D
 ## Gli accessori della rana scelta (vedi set_look).
 var _look_nodes: Array[Node] = []
 var _look_palette := {}
+## La dimostrazione nello stagno (vedi demo).
+const DEMO_GAP := 0.7
+var _demo_ready_at := 0
 var _hat: Node3D
 ## Anteprima di una rana ancora chiusa, nel menu: solo la sagoma nera.
 var silhouette := false:
@@ -458,6 +461,42 @@ func cheer() -> void:
 		launch(Vector3(0.0, 5.0, 0.0))
 	animator.cheer(1.6)
 	Sfx.play(&"frog_cheer", 0.0, 1.0, true)
+
+
+## Nel menu (lo stagno): la rana mostra un attrezzo, girata verso la
+## telecamera. group: lo slot ("gloves", "springs", "wing", "tongue", "body";
+## "" un gracidio). Non più di una volta ogni DEMO_GAP secondi.
+func demo(group: String) -> void:
+	var now := Time.get_ticks_msec()
+	if now < _demo_ready_at or not is_on_floor():
+		return
+	_demo_ready_at = now + roundi(DEMO_GAP * 1000.0)
+	visual.rotation.y = camera_rig.rotation.y + PI
+	match group:
+		"gloves":
+			punch_power._throw_glove()
+			squash(Vector3(0.9, 0.9, 1.2), 0.15)
+			get_tree().create_timer(0.18).timeout.connect(punch_power._throw_glove)
+			Sfx.play(&"punch_swing", 0.0, 1.0, true)
+		"springs":
+			launch(Vector3(0.0, 8.0, 0.0))
+			squash(Vector3(1.4, 0.55, 1.4), 0.2)
+			Sfx.play(&"super_jump", 0.0, 1.0, true)
+		"wing":
+			launch(Vector3(0.0, 7.0, 0.0))
+			# In aria si apre l'ala; atterrando si richiude da sola.
+			get_tree().create_timer(0.25).timeout.connect(glider_power._unfold)
+			Sfx.play(&"glider_open", 0.0, 1.0, true)
+		"tongue":
+			var toward := (camera_rig.camera.global_position - global_position) * Vector3(1, 0, 1)
+			tongue_power._flick_to = mouth_position() + toward.normalized() * 2.5
+			tongue_power._flick_left = 0.35
+			Sfx.play(&"tongue_shoot", 0.0, 1.0, true)
+		"body":
+			cheer()
+		_:
+			squash(Vector3(1.2, 0.8, 1.2), 0.25)
+			Sfx.play(&"frog_croak", 0.0, 1.0, true)
 
 
 ## A che punto è il saltello mentre cammina, da 0 a 1.

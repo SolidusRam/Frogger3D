@@ -987,6 +987,14 @@ msgid "%d mosche"
 msgstr ""
 
 #: scripts/pond.gd
+msgid "Livello %d di %d"
+msgstr ""
+
+#: scripts/pond.gd
+msgid "Miglioramenti attivi: %d di 2"
+msgstr ""
+
+#: scripts/pond.gd
 msgid "Attivo"
 msgstr ""
 

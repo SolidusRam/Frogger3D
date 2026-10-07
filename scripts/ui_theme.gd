@@ -12,7 +12,7 @@ extends RefCounted
 ## Varianti:
 ##   Label:  Logo, Title, Header, Strong, Note, Money, HudLabel, HudBig
 ##   Button: PrimaryButton, DangerButton, FlatButton
-##   PanelContainer: Backdrop (a tutto schermo, opaco)
+##   PanelContainer: Backdrop (a tutto schermo, opaco), PondBackdrop (lo stagno)
 ## I riquadri fatti da codice altrove (carte, tessere, poteri) passano da
 ## UiTheme.box, così hanno tutti gli stessi angoli smussati.
 
@@ -37,6 +37,10 @@ const FROG_DARK := Color(0.19, 0.4, 0.12)
 ## Il rosso del fuoco: pericolo e azioni che non si annullano.
 const DANGER := Color(0.78, 0.22, 0.12)
 const DANGER_DARK := Color(0.48, 0.12, 0.06)
+## L'acqua scura dello stagno (il fondo della schermata dello stagno).
+const POND := Color(0.05, 0.11, 0.1)
+## Le tessere dello stagno, un po' più chiare dell'acqua.
+const POND_TILE := Color(0.1, 0.18, 0.17)
 ## Riuscito (una prova superata).
 const DONE := Color(0.55, 0.9, 0.45)
 
@@ -164,6 +168,15 @@ static func _build() -> Theme:
 	backdrop.bg_color = INK
 	backdrop.set_content_margin_all(32)
 	theme.set_stylebox("panel", "Backdrop", backdrop)
+	# Lo stagno: lo stesso fondo, ma d'acqua scura, col bordo verde delle
+	# ninfee verso il mondo.
+	theme.set_type_variation("PondBackdrop", "PanelContainer")
+	var pond := StyleBoxFlat.new()
+	pond.bg_color = POND
+	pond.border_color = FROG_DARK
+	pond.border_width_right = 4
+	pond.set_content_margin_all(32)
+	theme.set_stylebox("panel", "PondBackdrop", pond)
 
 	# Le schede (lo stagno).
 	theme.set_font("font", "TabContainer", DISPLAY_FONT)

@@ -50,6 +50,8 @@ func _process(_d: float) -> bool:
 		match scene:
 			"stagno", "maestria":
 				current_scene._open_pond()
+				# Come col puntatore sulla tessera "Pugno": la rana lo mostra.
+				current_scene._on_pond_previewed("gloves", "Pugno", "Livello 1 di 3")
 				if scene == "maestria":
 					var tabs: TabContainer = current_scene._pond.find_children("*", "TabContainer", true, false)[0]
 					tabs.current_tab = 1

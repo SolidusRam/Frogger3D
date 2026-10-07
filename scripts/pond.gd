@@ -12,6 +12,10 @@ extends PanelContainer
 ## RB cambiano scheda.
 
 signal closed
+## Il puntatore (o la selezione col controller) è su una tessera: chi apre lo
+## stagno (il menu) fa vedere l'attrezzo sulla rana dello sfondo. group: lo
+## slot ("" per le statistiche generali); title e detail: cosa scrivere.
+signal previewed(group: String, title: String, detail: String)
 
 ## L'attrezzo di ogni statistica: colore e icona della tessera ("" per quelle
 ## che non riguardano un attrezzo). Le tessere seguono quest'ordine.
@@ -22,7 +26,10 @@ const STAT_GROUPS := {
 	"magnet": "tongue", "greed": "tongue", "luck": "tongue",
 	"cooldown": "", "calm": "", "fire": "", "choice": "", "revival": "", "eye": "",
 }
-const COLUMNS := 3
+const COLUMNS := 2
+## Lo stagno copre la sinistra: a destra, sullo sfondo, la rana mostra
+## l'attrezzo della tessera sotto il puntatore (dal menu).
+const WIDTH := 0.62
 
 var _flies_label: Label
 var _golden_label: Label
@@ -38,8 +45,10 @@ var _refund_armed := false
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	anchor_right = WIDTH
+	offset_right = 0.0
 	theme = UiTheme.get_theme()
-	theme_type_variation = "Backdrop"
+	theme_type_variation = "PondBackdrop"
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 12)
 	add_child(box)
@@ -135,6 +144,15 @@ func _notification(what: int) -> void:
 		refresh()
 
 
+## Passando su una tessera (o su un suo pulsante col controller), la rana
+## dello sfondo mostra l'attrezzo.
+func _preview_on(tile: Control, group: String, title: String, detail: String) -> void:
+	tile.mouse_entered.connect(previewed.emit.bind(group, title, detail))
+	for button in tile.find_children("*", "Button", true, false):
+		button.focus_entered.connect(previewed.emit.bind(group, title, detail))
+		button.mouse_entered.connect(previewed.emit.bind(group, title, detail))
+
+
 func _update_esc() -> void:
 	_esc_label.text = Settings.ui_name("ui_cancel")
 
@@ -190,6 +208,7 @@ func _stat_tile(stat: String) -> PanelContainer:
 	buy.disabled = cost < 0 or cost > Progress.flies
 	buy.add_theme_font_size_override("font_size", 20)
 	box.add_child(buy)
+	_preview_on(tile, group, tr(info.name), tr("Livello %d di %d") % [Progress.level(stat), info.max])
 	return tile
 
 
@@ -214,6 +233,8 @@ func _card_tile(card: String) -> PanelContainer:
 	for index in Progress.CARD_UPGRADES[card].size():
 		box.add_child(HSeparator.new())
 		box.add_child(_upgrade(card, index, color))
+	var active := [0, 1].filter(func(index: int) -> bool: return Progress.upgrade_active(card, index)).size()
+	_preview_on(tile, slot, tr(Upgrades.CATALOG[card].name), tr("Miglioramenti attivi: %d di 2") % active)
 	return tile
 
 
@@ -270,7 +291,7 @@ func _upgrade(card: String, index: int, color: Color) -> VBoxContainer:
 func _tile(color: Color, top: bool) -> PanelContainer:
 	var tile := PanelContainer.new()
 	tile.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var box := UiTheme.box(UiTheme.INK_LIGHT, color, 0, 10)
+	var box := UiTheme.box(UiTheme.POND_TILE, color, 0, 10)
 	if top:
 		box.border_width_top = 5
 	else:

@@ -100,6 +100,7 @@ var _feat_reward: Label
 var _feat_tween: Tween
 ## Alla fine della corsa: lo stagno messo in evidenza.
 var _pond_button: Button
+var _game_over_build: HFlowContainer
 var _pond_note: Label
 var _pond_tween: Tween
 var _last_heat_level := 0
@@ -209,9 +210,39 @@ func show_game_over(stats: Dictionary) -> void:
 	else:
 		_game_over_flies.text = tr("+%d mosche, +%d d'oro   (in tutto %d e %d)") % [
 			stats.flies, stats.golden, stats.total_flies, stats.total_golden]
+	_fill_build()
 	_game_over.visible = true
 	# Selezionato, così col controller ci si sposta su Stagno e Menu.
 	_restart_button.grab_focus()
+
+
+## La build della run: ogni attrezzo (con la sua carta) e i numerici.
+func _fill_build() -> void:
+	for child in _game_over_build.get_children():
+		child.queue_free()
+	if _upgrades == null:
+		return
+	var shown := {}
+	for slot: String in _upgrades.slots:
+		var held: String = _upgrades.slots[slot]
+		if held == "" or shown.has(held):
+			continue
+		shown[held] = true
+		var name: String = Upgrades.SLOT_NAMES[slot] if held == Upgrades.BASE else Upgrades.CATALOG[held].name
+		var icon: String = "fusion" if held != Upgrades.BASE and Upgrades.CATALOG[held].slot == "fusion" else slot
+		_game_over_build.add_child(_build_chip(icon, tr(name)))
+	for id: String in _upgrades.stacks:
+		_game_over_build.add_child(_build_chip("", "%s ×%d" % [tr(Upgrades.CATALOG[id].name), _upgrades.stacks[id]]))
+
+
+func _build_chip(slot: String, text: String) -> HBoxContainer:
+	var chip := HBoxContainer.new()
+	chip.add_theme_constant_override("separation", 4)
+	chip.add_child(SlotIcon.make(slot, 22.0))
+	var label := _text("Note", text)
+	label.add_theme_color_override("font_color", UiTheme.SLOT_COLORS[slot])
+	chip.add_child(label)
+	return chip
 
 
 ## Tutte le scritte della schermata di fine, per i test.
@@ -749,6 +780,12 @@ func _build_game_over() -> void:
 	_game_over_flies = _text("Strong")
 	_game_over_flies.add_theme_color_override("font_color", UiTheme.GOLD)
 	flies.add_child(_game_over_flies)
+	# La build della run: gli attrezzi e le carte, coi loro colori.
+	_game_over_build = HFlowContainer.new()
+	_game_over_build.alignment = FlowContainer.ALIGNMENT_CENTER
+	_game_over_build.add_theme_constant_override("h_separation", 12)
+	_game_over_build.add_theme_constant_override("v_separation", 6)
+	box.add_child(_game_over_build)
 	var gap := Control.new()
 	gap.custom_minimum_size.y = 6
 	box.add_child(gap)

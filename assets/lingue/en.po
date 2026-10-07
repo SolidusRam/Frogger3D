@@ -1493,3 +1493,9 @@ msgstr "Keen eye"
 
 msgid "Carte rare ed epiche più frequenti nelle tane"
 msgstr "Rare and epic cards show up more often in dens"
+
+msgid "Livello %d di %d"
+msgstr "Level %d of %d"
+
+msgid "Miglioramenti attivi: %d di 2"
+msgstr "Upgrades active: %d of 2"
