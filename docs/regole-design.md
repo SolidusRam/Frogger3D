@@ -1,6 +1,6 @@
 # Frogger 3D — Regole di design
 
-Ultimo aggiornamento: 2026-10-04
+Ultimo aggiornamento: 2026-10-07
 
 ## Visione
 
@@ -185,7 +185,7 @@ Decisa il 4 ottobre 2026.
 4. **Power-up e fusioni** (primo gruppo fatto il 4 ottobre 2026: lingua-rampino, schianto sismico, montante, guantone a molla, molle-trampolino, ala a reazione, pelle impermeabile; fusioni Napalm e Terremoto). Niente livelli per ora. **Il 6 ottobre 2026 deciso il mazzo completo** (riga "Mazzo deciso"): quattro carte per slot, venti modificatori, **tutti nel gioco dal 6 ottobre**; e gli attrezzi iniziali (riga "Attrezzi iniziali"): ogni rana parte con un solo attrezzo base. Da fare a lotti, partendo dalle carte del mazzo iniziale.
 5. **Mosche e stagno** (fatto il 4 ottobre 2026): le mosche sopra le cose che si muovono, lo stagno con le statistiche, la maestria delle carte (miglioramenti speciali sbloccati da prove e attivati con le mosche d'oro), il menu iniziale. Dettagli in docs/imprese.md.
 6. **Sblocchi a imprese e rane diverse** (fatto il 6 ottobre 2026: imprese, mazzo ridotto, rane con aspetto proprio, gettoni, guardaroba e stile Game Boy; righe "Imprese", "Rane", "Gettoni della tana", "Guardaroba"): deciso il mazzo delle tane che parte ridotto e si allarga con le imprese, e le rane con un pro e un contro. Le imprese, gli sblocchi e le rane li scrive il giocatore in docs/imprese.md; poi si implementano (salvataggio dei progressi, schermata iniziale minima per scegliere la rana e vedere le imprese). Nel frattempo tutte le carte restano nel mazzo, e la modalità prova equipaggia qualsiasi power-up per provare il gioco completo.
-7. **La cornice** (completa il 5 ottobre 2026): opzioni (fatte il 5 ottobre 2026: audio, grafica, tasti; riga "Opzioni"), controller (fatto il 5 ottobre 2026; riga "Controller"), testi in inglese (fatti il 5 ottobre 2026; riga "Lingue"), un tutorial per il primo minuto (fatto il 5 ottobre 2026 come suggerimenti nella run vera; riga "Suggerimenti") (il menu iniziale e la pausa ci sono già). Il tema unico e l'adattamento alla risoluzione sono fatti (riga "Interfaccia"); fatti anche il menu sopra il gioco vivo, le carte e lo stagno coi colori degli attrezzi e l'HUD ripulito. Interfaccia decisa il 4 ottobre 2026: menu sopra il gioco vivo, gli attrezzi della rana come codice di colori e icone (guantoni rossi, molle verdi, ala arancione, corpo verde acqua, lingua rosa) in carte, stagno, maestria e HUD, la segnaletica solo per avvisi e pericoli; un tema unico e l'interfaccia che si adatta alla risoluzione.
+7. **La cornice** (completa il 5 ottobre 2026): opzioni (fatte il 5 ottobre 2026: audio, grafica, tasti; riga "Opzioni"), controller (fatto il 5 ottobre 2026; riga "Controller"), testi in inglese (fatti il 5 ottobre 2026; riga "Lingue"), un tutorial per il primo minuto (fatto il 5 ottobre 2026 come suggerimenti nella run vera; riga "Suggerimenti") (il menu iniziale e la pausa ci sono già). Il tema unico e l'adattamento alla risoluzione sono fatti (riga "Interfaccia"); fatti anche il menu sopra il gioco vivo, le carte e lo stagno coi colori degli attrezzi e l'HUD ripulito. Interfaccia decisa il 4 ottobre 2026: menu sopra il gioco vivo, gli attrezzi della rana come codice di colori e icone (guantoni rossi, molle verdi, ala arancione, corpo verde acqua, lingua rosa) in carte, stagno, maestria e HUD, la segnaletica solo per avvisi e pericoli; un tema unico e l'interfaccia che si adatta alla risoluzione. **Da rifare (7 ottobre 2026):** i menu non sono ancora belli come l'utente li voleva: vanno cambiate le icone e il tipo di menu.
 8. **Suono**, per ultimo (deciso il 5 ottobre 2026) e con uno studio dedicato prima di cominciare (cominciato il 5 ottobre 2026: docs/studio-suono.md, con le domande da decidere). **Gli effetti sono fatti** (5 ottobre 2026, riga "Suono"), da provare giocando; resta la musica: effetti in stile retrò (generati con strumenti come sfxr, o da librerie CC0), poi musica CC0 o con solo il credito.
 9. **Prova esterna** con 5-10 persone. Il pacchetto per i tester (esportazione, build) è rimandato (deciso il 6 ottobre 2026); "Tutto sbloccato" resta, serve all'utente per provare.
 
@@ -193,7 +193,14 @@ Decisa il 4 ottobre 2026.
 
 **L'aeroporto, rifatto il 5 ottobre 2026** (riga "Aeroporto"): gli aerei atterrano, a terra sotto di loro si passa e in volo no, dal livello 3 atterrano di pancia. Da provare giocando. La proposta precedente ("la strada dei giganti") resta in idee-future.md.
 
-**Dopo la fase 1: i mondi.** Ogni tot tane il mondo cambia (città, zona industriale, ...), e più avanti si sceglie fra due mondi finali come in Binding of Isaac: **il calore sceglie la strada** (calore basso: paradiso; alto: inferno). Il caos che hai provocato decide dove finisci. *Da riaprire quando si arriva ai mondi (6 ottobre 2026): niente build fredda per il paradiso, e l'utente potrebbe scegliere il mondo con altro (un bivio in tana, la distanza dal fuoco, le imprese della run).*
+**Dopo la fase 1: i mondi.** Deciso dall'utente il 7 ottobre 2026 (sostituisce il bivio paradiso/inferno scelto dal calore):
+
+- **La run resta infinita, e i mondi girano come in Risk of Rain 2**: finito l'ultimo mondo si ricomincia dal primo, più difficile.
+- **Il passaggio da un mondo all'altro si fa come in Risk of Rain**, in ogni caso. Da definire cosa se ne prende (il teletrasporto da attivare e difendere, l'evento col boss, l'arrivo nel mondo nuovo).
+- **Un mondo dura parecchio**: più tane per mondo.
+- **Mondi ipotizzati**: cielo, fogne, inferno, Olimpo. Da chiarire se il mondo di oggi (strade, fiumi, ferrovie, aeroporti, porti) è il primo.
+- **Gli stessi biomi in ogni mondo, cambiano soprattutto le skin dei pericoli.** Esempi dell'utente: in cielo non c'è l'acqua, la rana cade giù; nelle fogne l'acqua diventa melma, con slime che attaccano la rana.
+- Da decidere: l'ordine, quanto dura un mondo rispetto alla run da 15-20 minuti chiusa dall'incendio, cosa rende più difficile il secondo giro (il calore è già al massimo), cosa diventa l'incendio in ogni mondo.
 
 Dopo la fase 1, o quando servono: **reazioni del mondo** (auto che danno la caccia, coccodrilli aggressivi), **altri biomi** (lago ghiacciato, città con semafori, palude) e forse il bivio nella tana. Il **multiplayer** cooperativo solo dopo l'uscita, se lo facciamo.
 
