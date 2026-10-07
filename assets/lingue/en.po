@@ -1472,3 +1472,24 @@ msgstr "{super_jump}: the super jump, to clear what you can't cross."
 
 msgid "In aria, tieni premuto {jump}: il deltaplano, per planare sopra l'acqua."
 msgstr "In the air, hold {jump}: the glider, to glide over water."
+
+msgid "In più: vita e mosche"
+msgstr "Bonus: health and flies"
+
+msgid "In più, per questa run: %s"
+msgstr "Bonus for this run: %s"
+
+msgid "Rara"
+msgstr "Rare"
+
+msgid "Epica"
+msgstr "Epic"
+
+msgid "Leggendaria"
+msgstr "Legendary"
+
+msgid "Occhio fino"
+msgstr "Keen eye"
+
+msgid "Carte rare ed epiche più frequenti nelle tane"
+msgstr "Rare and epic cards show up more often in dens"

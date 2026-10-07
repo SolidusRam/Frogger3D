@@ -667,6 +667,14 @@ msgid "Si somma: %d di %d"
 msgstr ""
 
 #: scripts/hud.gd
+msgid "In più: vita e mosche"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "In più, per questa run: %s"
+msgstr ""
+
+#: scripts/hud.gd
 msgid "Riprendi (%s)"
 msgstr ""
 
@@ -752,6 +760,18 @@ msgstr ""
 
 #: scripts/hud.gd
 msgid "Esilia"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Rara"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Epica"
+msgstr ""
+
+#: scripts/hud.gd
+msgid "Leggendaria"
 msgstr ""
 
 #: scripts/hud.gd
@@ -1136,6 +1156,14 @@ msgstr ""
 
 #: scripts/progress.gd
 msgid "Una volta per run ti rialzi con metà vita"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Occhio fino"
+msgstr ""
+
+#: scripts/progress.gd
+msgid "Carte rare ed epiche più frequenti nelle tane"
 msgstr ""
 
 #: scripts/progress.gd

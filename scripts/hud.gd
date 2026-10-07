@@ -24,6 +24,9 @@ const HEALTH_COLOR := Color(0.4, 0.8, 0.3)
 const HEALTH_LOW_COLOR := Color(0.9, 0.25, 0.2)
 ## Sotto questa frazione la barra della vita diventa rossa e pulsa.
 const HEALTH_LOW := 0.3
+## La rarità delle carte (vedi Upgrades): nome e colore del bordo.
+const RARITY_NAMES := {"rare": "Rara", "epic": "Epica", "legendary": "Leggendaria"}
+const RARITY_COLORS := {"rare": Color(0.35, 0.62, 1.0), "epic": Color(0.74, 0.44, 1.0), "legendary": Color(1.0, 0.8, 0.24)}
 ## I gettoni della tana, nell'ordine dei pulsanti.
 const TOKEN_NAMES := {"reroll": "Rilancia", "skip": "Salta", "banish": "Esilia"}
 ## La riga della carta quando lo slot è vuoto: la carta dà l'attrezzo.
@@ -298,6 +301,26 @@ func show_offer(options: Array[String], upgrades: Upgrades) -> void:
 			slot_label.text = tr("POTENZIAMENTO")
 			tag.text = tr("Si somma: %d di %d") % [upgrades.stacks.get(id, 0) + 1, item.max]
 			tag.remove_theme_color_override("font_color")
+		# La rarità: il bordo nel suo colore, il nome accanto allo slot, e cosa
+		# porta in più.
+		var rarity: Dictionary = upgrades.current_rarity[i] if i < upgrades.current_rarity.size() else {}
+		var level: String = rarity.get("rarity", "common")
+		if level != "common":
+			color = RARITY_COLORS[level]
+			# La fusione è leggendaria e basta ("Unisce…" dice già cos'è): le due
+			# parole insieme non starebbero nella carta.
+			if level == "legendary":
+				slot_label.text = tr(RARITY_NAMES[level]).to_upper()
+			else:
+				slot_label.text += "  ·  " + tr(RARITY_NAMES[level]).to_upper()
+			slot_label.add_theme_color_override("font_color", color)
+		if level in ["rare", "epic"]:
+			if rarity.bonus:
+				tag.text = tr("In più: vita e mosche")
+			else:
+				var names: Array = rarity.upgrades.map(func(index: int) -> String: return tr(Progress.CARD_UPGRADES[id][index].name))
+				tag.text = tr("In più, per questa run: %s") % " + ".join(names)
+			tag.add_theme_color_override("font_color", color)
 		_style_card(button, color)
 		# L'entrata: dal basso, una dopo l'altra.
 		button.pivot_offset = button.custom_minimum_size / 2.0

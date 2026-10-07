@@ -9,7 +9,7 @@
 #        shot_rail  = arrivo | passaggio | tetto;
 #        shot_tour  = strada | fumo | bestiario | festa | fiume | ferrovia | tana | tana_lontano | laghetto | aeroporto | porto (la rana davanti al bioma);
 #        shot_frog  = fronte | lato | dietro | pugno | salto | caduta | boxe | guscio (la rana da vicino);
-#        shot_ui    = menu | partenza | stagno | maestria | opzioni | audio | grafica | tasti | imprese | impresa | rane | gettoni | hud | carte | pausa | fine | prova.
+#        shot_ui    = menu | partenza | stagno | maestria | opzioni | audio | grafica | tasti | imprese | impresa | rane | gettoni | rarita | hud | carte | pausa | fine | prova.
 # LINGUA=en davanti al comando: le schermate in inglese. RANA=rospo (con
 # shot_frog): quella rana.
 # WAYLAND_DISPLAY va tolto: se il display virtuale fallisse, Godot aprirebbe

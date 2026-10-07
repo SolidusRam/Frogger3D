@@ -29,6 +29,7 @@ const STATS := {
 	"luck": {"name": "Fortuna", "text": "+50% di mosche d'oro", "max": 3, "cost": 25},
 	"choice": {"name": "Più scelta", "text": "Una carta in più nelle tane", "max": 1, "cost": 150},
 	"revival": {"name": "Seconda vita", "text": "Una volta per run ti rialzi con metà vita", "max": 1, "cost": 200},
+	"eye": {"name": "Occhio fino", "text": "Carte rare ed epiche più frequenti nelle tane", "max": 3, "cost": 30},
 }
 
 ## La maestria delle carte: due miglioramenti speciali per ogni carta con

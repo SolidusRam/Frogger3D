@@ -1,6 +1,6 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
-## Screenshot delle schermate: menu | partenza | stagno | maestria | opzioni | audio | grafica | tasti | imprese | impresa | rane | gettoni | hud | carte | pausa | fine | prova.
+## Screenshot delle schermate: menu | partenza | stagno | maestria | opzioni | audio | grafica | tasti | imprese | impresa | rane | gettoni | rarita | hud | carte | pausa | fine | prova.
 ## HEAT, SHOT; LINGUA=en per le schermate in inglese.
 var frame := 0
 var main: Node
@@ -76,6 +76,16 @@ func _process(_d: float) -> bool:
 				main.get_node("Hud").show_feat("Boomerang", "Rana velenosa", false)
 			"carte":
 				main.offer_upgrade()
+			"rarita":
+				var ups: Node = main.get_node("Upgrades")
+				ups.equip_kit({"gloves": "base", "springs": "base", "wing": "base"})
+				ups.apply("explosive_gloves", false)
+				ups.apply("thermals", false)
+				ups.make_offer()
+				ups.current_offer.assign(["napalm", "uppercut", "jet_wing", "tool_wing"])
+				ups.current_rarity.assign([{"rarity": "legendary", "upgrades": [], "bonus": false}, {"rarity": "rare", "upgrades": [0], "bonus": false}, {"rarity": "epic", "upgrades": [0, 1], "bonus": false}, {"rarity": "common", "upgrades": [], "bonus": false}])
+				paused = true
+				main.get_node("Hud").show_offer(ups.current_offer, ups)
 			"gettoni":
 				load("res://scripts/feats.gd").unlock_all = true
 				main.get_node("Upgrades").reset_tokens()

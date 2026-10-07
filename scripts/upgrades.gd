@@ -20,6 +20,20 @@ extends Node
 
 signal offered(options: Array[String])
 signal equipped(id: String)
+## La rarità su una carta con la maestria già completa: vita e mosche.
+signal rarity_bonus(rarity: String)
+
+## La rarità delle carte (R3, decisa il 7 ottobre 2026): una modifica può
+## uscire rara (con uno dei suoi miglioramenti di maestria non ancora attivi,
+## per questa run) o epica (con tutti quelli che mancano); le fusioni sono
+## leggendarie. Su una carta con la maestria già completa la rarità dà vita e
+## mosche (vedi rarity_bonus). La fortuna la alzano la Siccità e la statistica
+## dello stagno "Occhio fino" (update_luck).
+const RARE_CHANCE := 0.2
+const EPIC_CHANCE := 0.05
+## In più per ogni livello di Siccità e di Occhio fino.
+const DROUGHT_LUCK := Vector2(0.03, 0.01)
+const EYE_LUCK := Vector2(0.04, 0.015)
 
 ## I gettoni della tana (docs/imprese.md): Rilancia (carte nuove), Salta (niente
 ## carta, qualche mosca), Esilia (una carta esce dal mazzo per la run). Ognuno
@@ -160,6 +174,13 @@ var slots := {"gloves": "", "springs": "", "wing": "", "body": "", "tongue": ""}
 ## Quante volte è stato preso ogni potenziamento numerico.
 var stacks := {}
 var current_offer: Array[String] = []
+## La rarità di ogni carta dell'offerta: {"rarity", "upgrades": [indici dei
+## miglioramenti per la run], "bonus": vero se dà vita e mosche}.
+var current_rarity: Array[Dictionary] = []
+## I miglioramenti di maestria avuti dalla rarità in questa run, per carta.
+var run_specials := {}
+var rare_chance := RARE_CHANCE
+var epic_chance := EPIC_CHANCE
 ## Gettoni rimasti in questa run, e le carte esiliate.
 var tokens := {"reroll": 0, "skip": 0, "banish": 0}
 var banished: Array[String] = []
@@ -286,6 +307,9 @@ func make_offer(count := -1) -> Array[String]:
 	var tools := pool.filter(func(id: String) -> bool: return CATALOG[id].get("tool", false))
 	if not tools.is_empty() and not offer.any(func(id: String) -> bool: return id in tools) and offer.size() > fusions.size():
 		offer[offer.size() - 1] = tools[0]
+	current_rarity.clear()
+	for id: String in offer:
+		current_rarity.append(_roll_rarity(id))
 	current_offer.assign(offer)
 	offered.emit(current_offer)
 	return current_offer
@@ -295,8 +319,42 @@ func choose(index: int) -> void:
 	if index < 0 or index >= current_offer.size():
 		return
 	var id := current_offer[index]
+	var rarity: Dictionary = current_rarity[index] if index < current_rarity.size() else {}
 	current_offer.clear()
+	current_rarity.clear()
+	# I miglioramenti della rarità valgono da subito, per questa run.
+	for upgrade: int in rarity.get("upgrades", []):
+		var specials: Array = run_specials.get(id, [false, false])
+		specials[upgrade] = true
+		run_specials[id] = specials
 	apply(id)
+	if rarity.get("bonus", false):
+		rarity_bonus.emit(rarity.rarity)
+
+
+## La fortuna: base, più Siccità e Occhio fino.
+func update_luck(eye_level: int, drought_level: int) -> void:
+	rare_chance = RARE_CHANCE + DROUGHT_LUCK.x * drought_level + EYE_LUCK.x * eye_level
+	epic_chance = EPIC_CHANCE + DROUGHT_LUCK.y * drought_level + EYE_LUCK.y * eye_level
+
+
+## La rarità di una carta dell'offerta. Attrezzi semplici e numerici sono
+## sempre comuni, le fusioni leggendarie.
+func _roll_rarity(id: String) -> Dictionary:
+	var item: Dictionary = CATALOG[id]
+	if item.slot == "fusion":
+		return {"rarity": "legendary", "upgrades": [], "bonus": false}
+	if item.get("tool", false) or item.slot == "" or not Progress.CARD_UPGRADES.has(id):
+		return {"rarity": "common", "upgrades": [], "bonus": false}
+	var roll := randf()
+	var rarity := "epic" if roll < epic_chance else ("rare" if roll < epic_chance + rare_chance else "common")
+	if rarity == "common":
+		return {"rarity": rarity, "upgrades": [], "bonus": false}
+	var missing: Array = [0, 1].filter(func(index: int) -> bool: return not Progress.upgrade_active(id, index))
+	if missing.is_empty():
+		return {"rarity": rarity, "upgrades": [], "bonus": true}
+	missing.shuffle()
+	return {"rarity": rarity, "upgrades": missing if rarity == "epic" else [missing[0]], "bonus": false}
 
 
 func apply(id: String, announce := true) -> void:
@@ -367,8 +425,10 @@ func _set_tool(slot: String, on: bool) -> void:
 ## Accende o spegne un modificatore. I miglioramenti speciali della carta
 ## (Progress.upgrade_active, attivati allo stagno) valgono solo da accesa.
 func _set_modifier(id: String, on: bool) -> void:
-	var first := on and Progress.CARD_UPGRADES.has(id) and Progress.upgrade_active(id, 0)
-	var second := on and Progress.CARD_UPGRADES.has(id) and Progress.upgrade_active(id, 1)
+	# I miglioramenti attivi: quelli dello stagno, più quelli della rarità.
+	var specials: Array = run_specials.get(id, [false, false])
+	var first: bool = on and Progress.CARD_UPGRADES.has(id) and (Progress.upgrade_active(id, 0) or specials[0])
+	var second: bool = on and Progress.CARD_UPGRADES.has(id) and (Progress.upgrade_active(id, 1) or specials[1])
 	match id:
 		"explosive_gloves":
 			frog.punch_power.set_explosive(on)

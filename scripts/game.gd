@@ -112,6 +112,7 @@ func _ready() -> void:
 	hud.menu_requested.connect(to_menu)
 	hud.abandon_requested.connect(abandon)
 	upgrades.equipped.connect(_on_equipped)
+	upgrades.rarity_bonus.connect(_on_rarity_bonus)
 	hud.token_used.connect(_on_token_used)
 	frog.revived.connect(func() -> void: hud.announce(tr("Seconda vita!")))
 	frog.insured.connect(func() -> void: hud.announce(tr("L'assicurazione paga!")))
@@ -489,6 +490,14 @@ func _apply_frog_mods() -> void:
 func _apply_drought() -> void:
 	drought = Drought.selected(frog_kind)
 	Drought.apply(self, drought)
+	upgrades.update_luck(Progress.level("eye"), drought)
+
+
+## Una carta rara o epica con la maestria già completa: vita e mosche.
+func _on_rarity_bonus(rarity: String) -> void:
+	var epic := rarity == "epic"
+	frog.heal(frog.max_health if epic else roundi(frog.max_health * 0.25))
+	add_flies(10 if epic else 5)
 
 
 ## Le statistiche comprate allo stagno, all'inizio di ogni run.

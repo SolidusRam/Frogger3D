@@ -33,7 +33,7 @@ PATTERNS = [
 BLOCKS = {
     "scripts/settings.gd": ["ACTIONS", "KEY_NAMES", "MOUSE_NAMES", "PAD_NAMES", "TRIGGER_NAMES", "UI_NAMES", "WINDOW_MODES"],
     "scripts/upgrades.gd": ["SLOT_NAMES"],
-    "scripts/hud.gd": ["NEW_POWER", "TOKEN_NAMES"],
+    "scripts/hud.gd": ["NEW_POWER", "TOKEN_NAMES", "RARITY_NAMES"],
     "scripts/drought.gd": ["LEVELS"],
 }
 # Stringhe che non si traducono (codici, nomi propri, simboli).

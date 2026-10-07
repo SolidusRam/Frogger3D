@@ -20,7 +20,7 @@ const STAT_GROUPS := {
 	"speed": "springs", "jump": "springs", "super_jump": "springs",
 	"punch": "gloves", "glide": "wing",
 	"magnet": "tongue", "greed": "tongue", "luck": "tongue",
-	"cooldown": "", "calm": "", "fire": "", "choice": "", "revival": "",
+	"cooldown": "", "calm": "", "fire": "", "choice": "", "revival": "", "eye": "",
 }
 const COLUMNS := 3
 
