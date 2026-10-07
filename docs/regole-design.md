@@ -196,11 +196,11 @@ Decisa il 4 ottobre 2026.
 **Dopo la fase 1: i mondi.** Deciso dall'utente il 7 ottobre 2026 (sostituisce il bivio paradiso/inferno scelto dal calore):
 
 - **La run resta infinita, e i mondi girano come in Risk of Rain 2**: finito l'ultimo mondo si ricomincia dal primo, più difficile.
-- **Il passaggio da un mondo all'altro si fa come in Risk of Rain**, in ogni caso. Da definire cosa se ne prende (il teletrasporto da attivare e difendere, l'evento col boss, l'arrivo nel mondo nuovo).
+- **Il passaggio da un mondo all'altro si fa come in Risk of Rain**, in ogni caso. Scelto il 7 ottobre 2026: **nel percorso compare un teletrasporto per il mondo successivo**, un oggetto da raggiungere (il costo è il percorso per arrivarci, non un menu); prenderlo è una possibilità, non un obbligo. **Il teletrasporto lascia indietro l'incendio**: nel mondo nuovo riparte un inseguitore con la skin del mondo, a 40 m e senza l'accelerazione accumulata. Così la durata di un mondo nasce dalla pressione dell'incendio, che accelera finché non si parte. Da definire: da quando e dove compare, se va anche attivato e difeso, se c'è un motivo per restare in un mondo.
 - **Un mondo dura parecchio**: più tane per mondo.
 - **Mondi**: il primo è il mondo di oggi, la terra (strade, fiumi, ferrovie, aeroporti, porti); dopo, ipotizzati, cielo, fogne, inferno, Olimpo.
 - **Gli stessi biomi in ogni mondo, cambiano soprattutto le skin dei pericoli.** Esempi dell'utente: in cielo non c'è l'acqua, la rana cade giù; nelle fogne l'acqua diventa melma, con slime che attaccano la rana.
-- Da decidere: l'ordine, quanto dura un mondo rispetto alla run da 15-20 minuti chiusa dall'incendio, cosa rende più difficile il secondo giro (il calore è già al massimo), cosa diventa l'incendio in ogni mondo.
+- Da decidere: l'ordine, se la run da 15-20 minuti resta un obiettivo (col teletrasporto l'incendio non la chiude più da solo) e cosa chiude allora le run lunghe, cosa rende più difficile il secondo giro (il calore è già al massimo), cosa diventa l'incendio in ogni mondo.
 
 Dopo la fase 1, o quando servono: **reazioni del mondo** (auto che danno la caccia, coccodrilli aggressivi), **altri biomi** (lago ghiacciato, città con semafori, palude) e forse il bivio nella tana. Il **multiplayer** cooperativo solo dopo l'uscita, se lo facciamo.
 
