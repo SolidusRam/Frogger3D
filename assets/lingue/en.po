@@ -1463,3 +1463,12 @@ msgstr "Drought %d"
 
 msgid "Si apre la Siccità 1!"
 msgstr "Drought 1 opens!"
+
+msgid "{punch}: il pugno. L'auto colpita vola e si schianta contro le altre."
+msgstr "{punch}: the punch. A punched car flies off and crashes into the others."
+
+msgid "{super_jump}: il super salto, per scavalcare quello che non puoi attraversare."
+msgstr "{super_jump}: the super jump, to clear what you can't cross."
+
+msgid "In aria, tieni premuto {jump}: il deltaplano, per planare sopra l'acqua."
+msgstr "In the air, hold {jump}: the glider, to glide over water."

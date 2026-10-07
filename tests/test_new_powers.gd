@@ -223,9 +223,14 @@ func _physics_process(_delta: float) -> bool:
 				for i in 30:
 					for id in upgrades.make_offer():
 						var slot: String = upgrades.CATALOG[id].slot
-						if slot != "" and slot != "fusion" and upgrades.slots[slot] != "":
+						if slot == "" or slot == "fusion":
+							continue
+						# Occupato da una modifica (non l'attrezzo semplice: sopra
+						# quello arrivano le modifiche, vedi test_two_step).
+						var held: String = upgrades.slots[slot]
+						if held != "" and held != "base" and not upgrades.CATALOG[held].get("tool", false):
 							occupied_offered = true
-				t.check(not occupied_offered, "la tana non offre carte per uno slot già occupato: resta per tutta la run")
+				t.check(not occupied_offered, "la tana non offre carte per uno slot con una modifica: resta per tutta la run")
 				# Solo la modalità prova sostituisce: toglie tutta la fusione.
 				upgrades.apply("uppercut")
 				smoke = load("res://scripts/car.gd").smoke_seconds

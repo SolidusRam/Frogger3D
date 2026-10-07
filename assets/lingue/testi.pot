@@ -519,6 +519,10 @@ msgid "L'assicurazione paga!"
 msgstr ""
 
 #: scripts/game.gd
+msgid "Si apre la Siccità 1!"
+msgstr ""
+
+#: scripts/game.gd
 msgid "Siccità %d superata!"
 msgstr ""
 
@@ -1819,6 +1823,26 @@ msgid "L'acqua non toglie più vita."
 msgstr ""
 
 #: scripts/upgrades.gd
+msgid "Guantoni"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "{punch}: il pugno. L'auto colpita vola e si schianta contro le altre."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "Molle"
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "{super_jump}: il super salto, per scavalcare quello che non puoi attraversare."
+msgstr ""
+
+#: scripts/upgrades.gd
+msgid "In aria, tieni premuto {jump}: il deltaplano, per planare sopra l'acqua."
+msgstr ""
+
+#: scripts/upgrades.gd
 msgid "Lingua-rampino"
 msgstr ""
 
@@ -1920,14 +1944,6 @@ msgstr ""
 
 #: scripts/upgrades.gd
 msgid "Montante + Schianto sismico. L'onda arriva a 10 m e scaglia le auto molto più in alto."
-msgstr ""
-
-#: scripts/upgrades.gd
-msgid "Guantoni"
-msgstr ""
-
-#: scripts/upgrades.gd
-msgid "Molle"
 msgstr ""
 
 #: scripts/upgrades.gd

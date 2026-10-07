@@ -38,6 +38,12 @@ const SLOT_NAMES := {
 	"gloves": "Guantoni", "springs": "Molle", "wing": "Ala", "body": "Corpo", "tongue": "Lingua",
 }
 
+## Gli attrezzi in due passi (deciso il 7 ottobre 2026): le carte "tool"
+## danno l'attrezzo semplice e escono solo per gli slot vuoti; le modifiche
+## escono solo per gli attrezzi che si hanno e sostituiscono la versione
+## semplice. La lingua semplice è il rampino (la carta "tongue"). Il corpo
+## resta in un passo.
+##
 ## Nei testi i tasti si scrivono col nome dell'azione fra graffe ("{slam}"):
 ## le carte li mostrano come sono assegnati nelle opzioni (Settings.with_keys).
 const CATALOG := {
@@ -73,8 +79,20 @@ const CATALOG := {
 		"name": "Pelle impermeabile", "slot": "body",
 		"text": "L'acqua non toglie più vita.",
 	},
+	"tool_gloves": {
+		"name": "Guantoni", "slot": "gloves", "tool": true,
+		"text": "{punch}: il pugno. L'auto colpita vola e si schianta contro le altre.",
+	},
+	"tool_springs": {
+		"name": "Molle", "slot": "springs", "tool": true,
+		"text": "{super_jump}: il super salto, per scavalcare quello che non puoi attraversare.",
+	},
+	"tool_wing": {
+		"name": "Ala", "slot": "wing", "tool": true,
+		"text": "In aria, tieni premuto {jump}: il deltaplano, per planare sopra l'acqua.",
+	},
 	"tongue": {
-		"name": "Lingua-rampino", "slot": "tongue",
+		"name": "Lingua-rampino", "slot": "tongue", "tool": true,
 		"text": "{tongue}: la lingua aggancia da sola la cosa più vicina dove guardi. Ti tira su auto, tronchi e navi; un rottame lo tira verso di te.",
 	},
 	"rocket_springs": {
@@ -227,9 +245,20 @@ func give_base(slot: String) -> void:
 		_set_tool(slot, true)
 
 
-## Prepara un'offerta: tre power-up diversi, solo per slot ancora liberi (o
-## con l'attrezzo semplice) e senza i numerici già al massimo o senza il loro
-## attrezzo. Una fusione pronta c'è sempre.
+## Vero se la carta può uscire per lo stato dello slot: un attrezzo per uno
+## slot vuoto, una modifica sopra un attrezzo semplice, il corpo se è libero.
+func _fits_slot(id: String) -> bool:
+	var item: Dictionary = CATALOG[id]
+	var held: String = slots[item.slot]
+	if item.get("tool", false) or item.slot == "body":
+		return held == ""
+	return held == BASE or (held != "" and CATALOG.has(held) and CATALOG[held].get("tool", false))
+
+
+## Prepara un'offerta: tre power-up diversi, che stanno negli slot (vedi
+## _fits_slot), senza i numerici già al massimo o senza il loro attrezzo. Una
+## fusione pronta c'è sempre. La spinta: finché c'è uno slot vuoto, almeno un
+## attrezzo nuovo è fra le carte.
 func make_offer(count := -1) -> Array[String]:
 	if count < 0:
 		count = offer_size
@@ -241,9 +270,7 @@ func make_offer(count := -1) -> Array[String]:
 			if fusion_ready(id) and Feats.card_available(id):
 				fusions.append(id)
 			continue
-		# Lo slot è occupato per tutta la run (l'attrezzo semplice no: una
-		# carta lo sostituisce).
-		if item.slot != "" and slots[item.slot] != "" and slots[item.slot] != BASE:
+		if item.slot != "" and not _fits_slot(id):
 			continue
 		if item.slot == "" and stacks.get(id, 0) >= item.max:
 			continue
@@ -256,6 +283,9 @@ func make_offer(count := -1) -> Array[String]:
 	pool.shuffle()
 	var offer: Array[String] = fusions.slice(0, count)
 	offer.append_array(pool.slice(0, count - offer.size()))
+	var tools := pool.filter(func(id: String) -> bool: return CATALOG[id].get("tool", false))
+	if not tools.is_empty() and not offer.any(func(id: String) -> bool: return id in tools) and offer.size() > fusions.size():
+		offer[offer.size() - 1] = tools[0]
 	current_offer.assign(offer)
 	offered.emit(current_offer)
 	return current_offer
@@ -276,6 +306,12 @@ func apply(id: String, announce := true) -> void:
 			slots[slot] = id
 			_set_tool(slot, true)
 		_set_modifier(id, true)
+	elif item.get("tool", false) and id != "tongue":
+		# L'attrezzo semplice: lo slot lo tiene come quelli di partenza.
+		if slots[item.slot] != "" and slots[item.slot] != BASE:
+			_remove(slots[item.slot])
+		slots[item.slot] = BASE
+		_set_tool(item.slot, true)
 	elif item.slot != "":
 		var previous: String = slots[item.slot]
 		if previous != "" and previous != BASE:
