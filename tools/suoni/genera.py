@@ -503,6 +503,41 @@ def fire_roar(rng, v):
     return low + mid + crackles(n, rng, 30, loud=0.5)
 
 
+@recipe(loop=True, level=-16.0)
+def storm_loop(rng, v):
+    """Il temporale del cielo (al posto dell'incendio): pioggia fitta e un
+    brontolio basso che va e viene. Circolare (fft_filter lo è)."""
+    n = n_of(6.0)
+    slow = fft_filter(rng.normal(0, 1, n), hi=1.0)
+    slow = 0.6 + 0.4 * (slow - slow.min()) / (np.ptp(slow) + 1e-9)
+    rain = fft_filter(white(n, rng), lo=900, hi=7000) * 0.5
+    drops = crackles(n, rng, 160, lo=2500, loud=0.6)
+    rumble = fft_filter(white(n, rng), hi=120) * slow * 2.0
+    return rain + drops + rumble
+
+
+@recipe(loop=True, level=-16.0)
+def storm_roar(rng, v):
+    """Il temporale vicino: vento forte e la pioggia che sferza."""
+    n = n_of(5.0)
+    slow = fft_filter(rng.normal(0, 1, n), hi=1.5)
+    slow = 0.4 + 0.6 * (slow - slow.min()) / (np.ptp(slow) + 1e-9)
+    wind = fft_peak(white(n, rng), 450, 1.5) * slow
+    gust = fft_filter(white(n, rng), lo=1500, hi=5000) * slow * 0.5
+    return wind + gust
+
+
+@recipe(variants=3, level=-2.0)
+def thunder(rng, v):
+    """Il fulmine: lo schiocco secco, poi il tuono che rotola a lungo."""
+    n = n_of(3.0)
+    t = t_of(n)
+    crack = hp(white(n_of(0.05), rng), 1500) * env_exp(n_of(0.05), 0.02)
+    roll = fft_filter(rng.normal(0, 1, n), hi=180) * env_points(n, [(0, 0), (0.08, 1.0), (0.6, 0.7), (3.0, 0)])
+    roll *= 0.7 + 0.3 * np.sin(2 * np.pi * rng.uniform(1.5, 3.0) * t) ** 2
+    return mix(place(silence(3.0), crack, 0, 0.8), roll * 2.0)
+
+
 @recipe(variants=2)
 def fire_ignite(rng, v):
     """Una fiammata che si accende: "fwoosh"."""

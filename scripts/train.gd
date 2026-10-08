@@ -23,6 +23,13 @@ const WAKE_RANGE := 3.0
 const WAKE_PULL := 9.0
 const WAKE_TAIL := 12.0
 const HALF_WIDTH := 1.5
+## Nel cielo (vedi Worlds) la funivia: le cabine pendono dal cavo, con gli
+## stessi ingombri e le stesse regole del treno.
+const SKY_MODELS := {
+	"locomotive": preload("res://assets/models/cablecar_front.glb"),
+	"boxcar": preload("res://assets/models/cablecar.glb"),
+	"flatcar": preload("res://assets/models/cablecar_open.glb"),
+}
 const EXPRESS_COLORS := {"loco": "express", "loco_stripe": "express_stripe", "wagon": "express"}
 
 var direction := 1.0
@@ -33,6 +40,8 @@ var smash_speed := 22.0
 var length := 0.0
 ## Il rapido: bianco, due carrozze, scia che risucchia.
 var express := false
+## La funivia del cielo.
+var sky := false
 
 var _wagons: Array[AnimatableBody3D] = []
 var _areas: Array[Area3D] = []
@@ -48,6 +57,9 @@ func build(wagon_count: int) -> void:
 	var offset := 0.0
 	for kind in kinds:
 		var info: Dictionary = KINDS[kind]
+		if sky:
+			info = info.duplicate()
+			info.model = SKY_MODELS[kind]
 		var wagon := _make_wagon(info)
 		wagon.position.x = -direction * (offset + info.length / 2.0)
 		add_child(wagon)

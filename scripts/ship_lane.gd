@@ -18,6 +18,8 @@ var initial_fill := 0.25
 var loading_cap := 0.45
 
 var cranes: Array[Crane] = []
+## Il cielo (vedi Worlds): dirigibili cargo ed elicotteri-gru.
+var sky := false
 
 var _last: Ship
 var _next_gap := 0.0
@@ -38,6 +40,7 @@ func _ready() -> void:
 	_last = first
 	for side in [-1.0, 1.0]:
 		var crane := Crane.new()
+		crane.sky = sky
 		crane.lane = self
 		# Ogni gru lavora su una metà, senza incrociare l'altra.
 		crane.min_x = -play_half_width + 4.0 if side < 0.0 else 2.5
@@ -87,6 +90,7 @@ func nearest_crane(point: Vector3) -> Crane:
 func _spawn(x: float) -> Ship:
 	# L'origine della nave sta a metà strada fra poppa e prua, più o meno.
 	var ship := Ship.create(direction, speed)
+	ship.sky = sky
 	ship.position.x = x
 	add_child(ship)
 	ship.load_initial(initial_fill)

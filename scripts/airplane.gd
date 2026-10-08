@@ -20,6 +20,9 @@ extends AnimatableBody3D
 ## locale della pista.
 
 const MODEL := preload("res://assets/models/airplane.glb")
+## Nel cielo (vedi Worlds) l'aereo è cambiato di poco: un vecchio quadrimotore
+## a eliche, con le stesse regole.
+const SKY_MODEL := preload("res://assets/models/airplane_prop.glb")
 const LENGTH := 24.0
 ## Getto dietro i motori: lunghezza, velocità del vento che spinge la rana,
 ## spinta verso l'alto per il deltaplano e accelerazione data ai rottami. Il
@@ -58,6 +61,9 @@ const BELLY_FIRE_SPACING := 4.0
 enum Phase { APPROACH, ROLLOUT, TAXI, BELLY }
 
 var direction := 1.0
+## Il quadrimotore a eliche del cielo.
+var sky := false
+var _props: Array[Node] = []
 ## Velocità del rullaggio (col calore); avvicinamento e pancia ne derivano.
 var speed := 7.0
 var taxi_speed := 7.0
@@ -117,9 +123,10 @@ func _ready() -> void:
 	_base_yaw = rotation.y
 	collision_layer = 8 # piattaforme: ci si sale sopra
 	collision_mask = 0
-	var model: Node3D = MODEL.instantiate()
+	var model: Node3D = (SKY_MODEL if sky else MODEL).instantiate()
 	add_child(model)
 	Style.apply_palette(model)
+	_props = model.find_children("Prop_*", "", true, false)
 	# Collisione: fusoliera, ali, motori, deriva (il muso guarda verso -Z).
 	_solid(Vector3(3.6, 3.6, LENGTH), Vector3(0.0, 2.7, 0.0))
 	_solid(Vector3(26.0, 0.4, 5.0), Vector3(0.0, 2.6, 0.5))
@@ -161,6 +168,8 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_time += delta
+	for prop: Node3D in _props:
+		prop.rotate_z(30.0 * delta)
 	var moved := transform
 	match phase:
 		Phase.APPROACH:

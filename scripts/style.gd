@@ -78,6 +78,10 @@ var styles: Array[Dictionary] = [
 			"cloud": Color(0.96, 0.97, 1.0), "cloud_shade": Color(0.78, 0.84, 0.94), "cielo/current": Color(0.92, 0.96, 1.0),
 			"eagle": Color(0.45, 0.29, 0.15), "eagle_dark": Color(0.24, 0.15, 0.08), "eagle_head": Color(0.96, 0.95, 0.9),
 			"beak": Color(1.0, 0.76, 0.15), "eagle_eye": Color(1.0, 0.82, 0.1),
+			"cielo/tree": Color(0.88, 0.92, 0.98), "cielo/stone": Color(0.78, 0.82, 0.92),
+			"rainbow_0": Color(0.92, 0.22, 0.2), "rainbow_1": Color(1.0, 0.56, 0.12), "rainbow_2": Color(1.0, 0.88, 0.22), "rainbow_3": Color(0.32, 0.78, 0.32), "rainbow_4": Color(0.25, 0.52, 0.95), "rainbow_5": Color(0.58, 0.32, 0.85),
+			"storm_cloud": Color(0.22, 0.24, 0.3), "storm_ground": Color(0.32, 0.35, 0.42), "rain": Color(0.75, 0.82, 0.95, 0.6), "lightning": Color(0.9, 0.95, 1.0),
+			"airship": Color(0.8, 0.82, 0.86), "wicker": Color(0.62, 0.45, 0.22), "cielo/wagon": Color(0.95, 0.72, 0.15), "cielo/wagon_deck": Color(0.75, 0.55, 0.2),
 		},
 		"phases": [
 			{"sky_top": Color(0.35, 0.55, 0.85), "sky_horizon": Color(0.75, 0.82, 0.9), "ground": Color(0.4, 0.45, 0.35),
@@ -161,6 +165,10 @@ var styles: Array[Dictionary] = [
 			"cloud": Color(0.86, 0.87, 0.9), "cloud_shade": Color(0.62, 0.67, 0.76), "cielo/current": Color(0.82, 0.86, 0.9),
 			"eagle": Color(0.38, 0.25, 0.13), "eagle_dark": Color(0.2, 0.13, 0.07), "eagle_head": Color(0.85, 0.84, 0.8),
 			"beak": Color(0.88, 0.66, 0.14), "eagle_eye": Color(0.9, 0.72, 0.1),
+			"cielo/tree": Color(0.76, 0.8, 0.86), "cielo/stone": Color(0.66, 0.7, 0.78),
+			"rainbow_0": Color(0.8, 0.2, 0.18), "rainbow_1": Color(0.88, 0.5, 0.12), "rainbow_2": Color(0.9, 0.78, 0.2), "rainbow_3": Color(0.28, 0.65, 0.28), "rainbow_4": Color(0.22, 0.45, 0.8), "rainbow_5": Color(0.5, 0.28, 0.72),
+			"storm_cloud": Color(0.2, 0.21, 0.26), "storm_ground": Color(0.28, 0.3, 0.36), "rain": Color(0.65, 0.72, 0.85, 0.6), "lightning": Color(0.85, 0.9, 1.0),
+			"airship": Color(0.68, 0.7, 0.74), "wicker": Color(0.52, 0.38, 0.2), "cielo/wagon": Color(0.82, 0.6, 0.14), "cielo/wagon_deck": Color(0.62, 0.46, 0.18),
 		},
 		"phases": [
 			{"sky_top": Color(0.45, 0.55, 0.7), "sky_horizon": Color(0.7, 0.72, 0.72), "ground": Color(0.35, 0.35, 0.3),
@@ -429,7 +437,7 @@ func _color_material(key: String, mat: StandardMaterial3D) -> void:
 	mat.emission = Color(color, 1.0)
 	# Le luci dei passaggi a livello, le ombre delle gru e le fiamme dei motori
 	# sono avvisi: brillano sempre, anche di giorno.
-	if key in ["signal_on", "drop_warning", "jet_flame", "fire", "fire_core", "edge_light", "portal", "portal_veil", "portal_beam"]:
+	if key in ["signal_on", "drop_warning", "jet_flame", "fire", "fire_core", "edge_light", "portal", "portal_veil", "portal_beam", "lightning"]:
 		mat.emission_enabled = true
 		# La fiamma è grande: troppa luce la sbiadirebbe nel giallo.
 		mat.emission_energy_multiplier = 1.5 if key == "jet_flame" else 4.0

@@ -61,7 +61,10 @@ PREVIEW = {
     "gold": (0.95, 0.75, 0.2, 1), "sign_white": (0.95, 0.95, 0.92, 1),
     "croc": (0.2, 0.4, 0.2, 1), "croc_dark": (0.16, 0.32, 0.16, 1), "croc_eye": (0.95, 0.85, 0.2, 1),
     "eagle": (0.42, 0.27, 0.14, 1), "eagle_dark": (0.22, 0.14, 0.08, 1), "eagle_head": (0.95, 0.94, 0.9, 1),
-    "beak": (0.98, 0.75, 0.15, 1), "eagle_eye": (0.98, 0.8, 0.1, 1),
+    "beak": (0.98, 0.75, 0.15, 1), "eagle_eye": (0.98, 0.8, 0.1, 1), "wicker": (0.62, 0.45, 0.22, 1),
+    "airship": (0.78, 0.8, 0.84, 1), "cloud": (0.95, 0.96, 1.0, 1), "cloud_shade": (0.78, 0.84, 0.94, 1),
+    "rainbow_0": (0.9, 0.2, 0.2, 1), "rainbow_1": (0.98, 0.55, 0.1, 1), "rainbow_2": (0.98, 0.88, 0.2, 1),
+    "rainbow_3": (0.3, 0.75, 0.3, 1), "rainbow_4": (0.25, 0.5, 0.9, 1), "rainbow_5": (0.55, 0.3, 0.8, 1),
 }
 
 
@@ -802,6 +805,52 @@ def build_den():
     save("den")
 
 
+def build_den_sky():
+    """La tana del cielo: la stessa striscia (74 x 12 m), con una pozza di
+    pioggia per lato sopra le nuvole, ciuffi di nuvola al posto di sassi,
+    ninfee e canne, e l'arcobaleno al posto delle tife. Fiori (Flower_*) e
+    increspature (Ripple_*) come nella tana della terra: Godot li anima allo
+    stesso modo."""
+    reset()
+    parts = []
+    for side in (1, -1):
+        cx = side * 21.0
+        parts.append(prism("pond_%d" % side, wobbly_ring(cx, 0.2, 8.5, 3.9, 11, 0.35, side), 0.0, 0.03, "water_shallow"))
+        parts.append(prism("deep_%d" % side, wobbly_ring(cx + side * 0.4, 0.1, 6.2, 2.5, 9, 0.3, side + 2), 0.0, 0.035, "water"))
+        for i, (px, py) in enumerate(wobbly_ring(cx, 0.2, 9.6, 4.8, 9, 0.3, side + 5)):
+            parts.append(ico("tuft_%d_%d" % (side, i), 0.55 + 0.25 * ((i * 7) % 3) / 2, (px, py, 0.1), "cloud", scale=(1.4, 1.2, 0.6)))
+        pads = [(-5.5, -1.5, 1.1), (-2.0, 1.8, 0.9), (1.5, -0.8, 1.2), (4.8, 1.5, 0.8), (6.2, -1.9, 0.7), (-6.4, 1.6, 0.6)]
+        for i, (dx, dy, r) in enumerate(pads):
+            parts.append(ico("puff_%d_%d" % (side, i), r * 0.7, (cx + side * dx, dy, 0.05), "cloud", scale=(1.0, 1.0, 0.3)))
+            if i % 2 == 0:
+                fx, fy = cx + side * dx + 0.2 * r, dy + 0.15 * r
+                part("Flower_%d_%d" % (side, i),
+                     [ico("petals", 0.18, (fx, fy, 0.2), "flower", scale=(1, 1, 0.8)),
+                      ico("heart", 0.07, (fx, fy, 0.32), "lamp_light")], (fx, fy, 0.12))
+    for side in (1, -1):
+        for k, (dx, dy, r) in enumerate([(-2.0, 1.8, 0.9), (1.5, -0.8, 1.2)]):
+            cx, cy = side * 21.0 + side * dx, dy
+            for n, extra in enumerate((0.3, 0.6)):
+                ripple = ring("Ripple_%d_%d_%d" % (side, k, n), 0, 0, r + extra, r + extra + 0.07, 10, 0.04, 0.045, "ripple")
+                ripple.location = (cx, cy, 0)
+    # Il passaggio: sbuffi di nuvola piatti al centro.
+    for i, y in enumerate((-4.6, -2.2, 0.2, 2.6, 4.9)):
+        x = 0.6 * math.sin(i * 1.9)
+        parts.append(prism("step_%d" % i, wobbly_ring(x, y, 0.9, 0.7, 7, 0.25, i), 0.0, 0.07, "cloud_shade"))
+    # L'arcobaleno: sei fasce a semicerchio sopra il passaggio, coi piedi
+    # nelle nuvole.
+    for band in range(6):
+        radius = 7.2 - band * 0.36
+        points = [Vector((radius * math.cos(math.pi * i / 14), 0.0, radius * math.sin(math.pi * i / 14))) for i in range(15)]
+        for i in range(14):
+            parts.append(tube("band_%d_%d" % (band, i), points[i], points[i + 1], 0.19, "rainbow_%d" % band))
+    for side in (1, -1):
+        parts.append(ico("foot_%d" % side, 1.4, (side * 6.3, 0.0, 0.2), "cloud", scale=(1.4, 1.2, 0.7)))
+        parts.append(ico("foot_b_%d" % side, 1.0, (side * 7.4, 0.6, 0.4), "cloud", scale=(1.2, 1.0, 0.7)))
+    join("Den", parts)
+    save("den_sky")
+
+
 # --- Il fiume ---------------------------------------------------------------
 
 def build_log():
@@ -989,6 +1038,97 @@ def build_flatcar():
     save("flatcar")
 
 
+# La funivia del cielo, al posto del treno (stessi ingombri: la cabina dal
+# telaio a 0,7 m fino all'altezza del vagone). Le cabine pendono dal cavo
+# (CABLE_Z) con un braccio e la carrucola.
+CABLE_Z = 7.5
+
+
+def hanger(y, top):
+    """Il braccio dal tetto al cavo, con la carrucola."""
+    parts = [box("arm_%d" % int(y * 10), -0.08, 0.08, y - 0.08, y + 0.08, top, CABLE_Z - 0.2, "metal")]
+    parts.append(box("yoke_%d" % int(y * 10), -0.12, 0.12, y - 0.6, y + 0.6, CABLE_Z - 0.35, CABLE_Z - 0.2, "trim"))
+    for dy in (-0.45, 0.45):
+        parts.append(cylinder("pulley_%d_%d" % (int(y * 10), int(dy * 10)), 0.22, 0.1, (0, y + dy, CABLE_Z), "trim"))
+    return parts
+
+
+def cabin_body(length, height, mat):
+    """Una cabina a vetri: fondo e tetto pieni, finestre lungo i lati."""
+    half = length / 2 - 0.1
+    parts = [block("floor", [(-1.3, -half, 0.7), (1.3, -half, 0.7), (1.3, half, 0.7), (-1.3, half, 0.7)],
+                   [(-1.5, -half, 1.3), (1.5, -half, 1.3), (1.5, half, 1.3), (-1.5, half, 1.3)], mat)]
+    parts.append(box("glass", -1.48, 1.48, -half + 0.2, half - 0.2, 1.3, height - 0.5, "glass"))
+    for y in [-half + 0.1] + [-half + 0.2 + k * (length - 0.6) / 4 for k in range(1, 4)] + [half - 0.1]:
+        parts.append(box("pillar_%d" % int(y * 10), -1.5, 1.5, y - 0.1, y + 0.1, 1.3, height - 0.5, mat))
+    parts.append(box("roof", -1.55, 1.55, -half, half, height - 0.5, height, mat))
+    parts += mirrored_box("stripe", 1.5, 1.52, -half, half, 1.0, 1.2, "loco_stripe")
+    return parts
+
+
+def build_cablecar_front():
+    """La cabina di testa (al posto della locomotiva, 14 m): il muso a vetri
+    inclinato, i fari, due bracci sul cavo."""
+    reset()
+    length, height = 14.0, 3.8
+    parts = cabin_body(length - 1.6, height, "loco")
+    for p in parts:
+        p.location.y -= 0.8
+    parts.append(block("nose", [(-1.5, length / 2 - 1.7, 0.7), (1.5, length / 2 - 1.7, 0.7), (1.0, length / 2, 1.0), (-1.0, length / 2, 1.0)],
+                       [(-1.55, length / 2 - 1.7, height), (1.55, length / 2 - 1.7, height), (1.0, length / 2 - 0.6, height - 0.6), (-1.0, length / 2 - 0.6, height - 0.6)], "loco"))
+    parts.append(box("windshield", -0.95, 0.95, length / 2 - 0.62, length / 2 - 0.4, 1.8, height - 0.8, "glass"))
+    parts += mirrored_box("headlight", 0.4, 0.8, length / 2 - 0.05, length / 2 + 0.02, 1.15, 1.4, "headlight")
+    for y in (-3.5, 3.0):
+        parts += hanger(y, height)
+    join("CableCarFront", parts)
+    save("cablecar_front")
+
+
+def build_cablecar():
+    """Una cabina (al posto del carro chiuso, 12 m), due bracci sul cavo."""
+    reset()
+    length, height = 12.0, 3.7
+    parts = cabin_body(length, height, "wagon")
+    for y in (-3.5, 3.5):
+        parts += hanger(y, height)
+    join("CableCar", parts)
+    save("cablecar")
+
+
+def build_cablecar_open():
+    """Il cestone aperto (al posto del pianale, 12 m, alto 1,2): una vasca
+    bassa con le sponde, appesa al cavo con quattro funi tese."""
+    reset()
+    length, height = 12.0, 1.2
+    half = length / 2 - 0.1
+    parts = [block("tray", [(-1.3, -half, 0.7), (1.3, -half, 0.7), (1.3, half, 0.7), (-1.3, half, 0.7)],
+                   [(-1.5, -half, 1.0), (1.5, -half, 1.0), (1.5, half, 1.0), (-1.5, half, 1.0)], "wagon")]
+    parts.append(box("deck", -1.45, 1.45, -half, half, 1.0, height, "wagon_deck"))
+    parts += mirrored_box("rail", 1.4, 1.5, -half, half, height, height + 0.5, "wagon")
+    for y in (-half + 0.3, half - 0.3):
+        for side in (1, -1):
+            parts.append(tube("rope_%d_%d" % (int(y), side), (side * 1.4, y, height + 0.5), (0, y * 0.6, CABLE_Z - 0.3), 0.04, "trim"))
+        parts += hanger(y * 0.6, CABLE_Z - 0.4)
+    join("CableCarOpen", parts)
+    save("cablecar_open")
+
+
+def build_cable_pylon():
+    """Il pilone della funivia, fuori dalla zona di gioco: un traliccio che
+    regge il cavo a CABLE_Z."""
+    reset()
+    parts = []
+    for x in (-0.8, 0.8):
+        for y in (-0.8, 0.8):
+            parts.append(tube("leg_%d_%d" % (x * 10, y * 10), (x, y, 0), (x * 0.3, y * 0.3, CABLE_Z + 0.6), 0.1, "crane"))
+    for z in (2.0, 4.0, 6.0):
+        k = 1 - z / (CABLE_Z + 0.6) * 0.7
+        parts.append(box("ring_%d" % z, -0.8 * k - 0.05, 0.8 * k + 0.05, -0.8 * k - 0.05, 0.8 * k + 0.05, z - 0.06, z + 0.06, "crane"))
+    parts.append(box("head", -0.6, 0.6, -0.4, 0.4, CABLE_Z + 0.5, CABLE_Z + 0.8, "trim"))
+    join("CablePylon", parts)
+    save("cable_pylon")
+
+
 def build_signal():
     """Palo del passaggio a livello: croce di Sant'Andrea e due luci rosse
     verso -Y (la direzione da cui arriva la rana). Le luci accese sono oggetti
@@ -1020,7 +1160,20 @@ def build_airplane():
     """Aereo di linea: davanti verso +Y, origine a terra. Pancia a 0,9 m (la
     rana non ci passa sotto), ali a circa 2,5 m (sotto le ali sì), motori
     sotto le ali."""
+    airplane_model("airplane", props=False)
+
+
+def build_airplane_prop():
+    """L'aereo del cielo, cambiato di poco: un vecchio quadrimotore a eliche.
+    Stessa sagoma e stessi ingombri del jet (i motori interni al loro posto),
+    due motori in più più in fuori, e le eliche "Prop_*" davanti a ogni
+    motore; coda e strisce rosse."""
+    airplane_model("airplane_prop", props=True)
+
+
+def airplane_model(name, props):
     reset()
+    livery = "loco" if props else "plane_tail"
     parts = []
     parts.append(block("fuselage",
                        [(-1.8, -7, 0.9), (1.8, -7, 0.9), (1.8, 8, 0.9), (-1.8, 8, 0.9)],
@@ -1041,7 +1194,14 @@ def build_airplane():
                            [(side * 1.8, -1.0, 2.75), (side * 13.0, -4.0, 2.8), (side * 13.0, -2.2, 2.8), (side * 1.8, 4.0, 2.75)],
                            "plane_wing"))
         parts.append(cylinder("engine_%d" % side, 0.85, 3.4, (side * 6.0, 1.2, 1.75), "plane_engine", sides=8, axis="Y"))
-        parts.append(cylinder("intake_%d" % side, 0.7, 0.05, (side * 6.0, 2.92, 1.75), "trim", sides=8, axis="Y"))
+        if props:
+            parts.append(cone("spinner_%d" % side, 0.4, 0.6, (side * 6.0, 3.2, 1.75), "plane", sides=8))
+            parts[-1].rotation_euler = (-math.pi / 2, 0, 0)
+            parts.append(cylinder("engine_out_%d" % side, 0.7, 2.8, (side * 10.0, 0.0, 2.0), "plane_engine", sides=8, axis="Y"))
+            parts.append(cone("spinner_out_%d" % side, 0.35, 0.5, (side * 10.0, 1.65, 2.0), "plane", sides=8))
+            parts[-1].rotation_euler = (-math.pi / 2, 0, 0)
+        else:
+            parts.append(cylinder("intake_%d" % side, 0.7, 0.05, (side * 6.0, 2.92, 1.75), "trim", sides=8, axis="Y"))
         parts.append(block("stabilizer_%d" % side,
                            [(side * 0.4, -12.0, 4.2), (side * 5.0, -12.2, 4.3), (side * 5.0, -11.2, 4.3), (side * 0.4, -9.2, 4.2)],
                            [(side * 0.4, -12.0, 4.45), (side * 5.0, -12.2, 4.45), (side * 5.0, -11.2, 4.45), (side * 0.4, -9.2, 4.45)],
@@ -1049,9 +1209,9 @@ def build_airplane():
     parts.append(block("fin",
                        [(-0.2, -11.8, 4.5), (0.2, -11.8, 4.5), (0.2, -8.0, 4.5), (-0.2, -8.0, 4.5)],
                        [(-0.15, -12.6, 9.5), (0.15, -12.6, 9.5), (0.15, -10.6, 9.5), (-0.15, -10.6, 9.5)],
-                       "plane_tail"))
-    parts.append(box("tail_stripe_l", -1.84, -1.8, -6.5, 7.5, 1.6, 1.9, "plane_tail"))
-    parts.append(box("tail_stripe_r", 1.8, 1.84, -6.5, 7.5, 1.6, 1.9, "plane_tail"))
+                       livery))
+    parts.append(box("tail_stripe_l", -1.84, -1.8, -6.5, 7.5, 1.6, 1.9, livery))
+    parts.append(box("tail_stripe_r", 1.8, 1.84, -6.5, 7.5, 1.6, 1.9, livery))
     parts.append(cylinder("nose_wheel", 0.35, 0.3, (0, 9.5, 0.35), "tire"))
     parts.append(box("nose_strut", -0.08, 0.08, 9.42, 9.58, 0.35, 1.2, "metal"))
     for side in (1, -1):
@@ -1059,7 +1219,10 @@ def build_airplane():
             parts.append(cylinder("main_wheel", 0.45, 0.35, (side * 2.4, -0.5 + dy, 0.45), "tire"))
         parts.append(box("main_strut", side * 2.4 - 0.1, side * 2.4 + 0.1, -0.6, -0.4, 0.45, 2.5, "metal"))
     join("Airplane", parts)
-    save("airplane")
+    if props:
+        for i, (x, y, z, r) in enumerate([(6.0, 3.0, 1.75, 1.25), (-6.0, 3.0, 1.75, 1.25), (10.0, 1.45, 2.0, 1.05), (-10.0, 1.45, 2.0, 1.05)]):
+            propeller("Prop_%d" % i, (x, y, z), r, "trim")
+    save(name)
 
 
 # I mezzi del trenino bagagli hanno l'origine a terra, al centro, come i
@@ -1195,6 +1358,85 @@ def build_ship():
     save("ship")
 
 
+def build_airship():
+    """Il dirigibile cargo del cielo, al posto della nave (stessi ingombri:
+    la prua verso +X, il ponte a 0,7 m, la cabina di comando a poppa e il muso
+    a prua troppo alti per il salto normale). Il ponte coi container sta sul
+    dorso di un grande involucro a sigaro, che pende sotto; a poppa le pinne,
+    ai lati le gondole dei motori con le eliche "Prop_*"."""
+    reset()
+    parts = [box("deck", -20, 17, -5, 5, 0.45, 0.7, "ship_deck")]
+    # La fiancata sotto il ponte, che si rastrema verso l'involucro.
+    parts.append(block("keel", [(-20, -3.0, -2.4), (17, -3.0, -2.4), (17, 3.0, -2.4), (-20, 3.0, -2.4)],
+                       [(-20, -5.0, 0.45), (17, -5.0, 0.45), (17, 5.0, 0.45), (-20, 5.0, 0.45)], "ship_hull"))
+    parts.append(box("keel_stripe", -20.05, 17.05, -5.05, 5.05, -0.2, 0.15, "ship_stripe"))
+    parts += [box("gunwale_a", -14.6, 17, 4.85, 5.0, 0.7, 1.0, "trim"), box("gunwale_b", -14.6, 17, -5.0, -4.85, 0.7, 1.0, "trim")]
+    hull = cylinder("envelope", 4.6, 40.0, (-1.0, 0, -4.2), "airship", sides=10, axis="X")
+    parts.append(hull)
+    nose = cone("envelope_nose", 4.6, 4.5, (21.2, 0, -4.2), "airship", sides=10)
+    nose.rotation_euler = (0, math.pi / 2, 0)
+    parts.append(nose)
+    tail = cone("envelope_tail", 4.6, 5.0, (-23.5, 0, -4.2), "airship", sides=10)
+    tail.rotation_euler = (0, -math.pi / 2, 0)
+    parts.append(tail)
+    for x in (-8.0, 8.0):
+        parts.append(cylinder("band_%d" % x, 4.65, 0.8, (x, 0, -4.2), "ship_stripe", sides=10, axis="X"))
+    # Le pinne a croce in coda.
+    parts.append(box("fin_down", -26.5, -21.5, -0.15, 0.15, -12.0, -8.0, "ship_hull"))
+    for side in (1, -1):
+        parts.append(box("fin_side_%d" % side, -26.5, -21.5, side * 4.0, side * 8.5, -4.4, -4.0, "ship_hull"))
+    # Il muso a prua (come il castello) e la cabina di comando a poppa.
+    bow = [(17, -5), (21.5, -1.2), (21.5, 1.2), (17, 5)]
+    parts.append(block("forecastle", [(x, y, 0.6) for x, y in bow], [(x, y, 3.4) for x, y in bow], "ship_hull"))
+    parts.append(box("forecastle_top", 17, 21.3, -4.6, 4.6, 3.4, 3.5, "ship_deck"))
+    parts.append(box("bridge", -20, -14.6, -5, 5, 0.6, 9.0, "ship_bridge"))
+    parts.append(box("bridge_windows", -14.65, -14.55, -4.6, 4.6, 7.4, 8.3, "glass"))
+    for y in (-5.05, 5.0):
+        parts.append(box("side_windows", -19.5, -15.1, y, y + 0.05, 7.4, 8.3, "glass"))
+    parts.append(box("mast", -17.6, -17.2, -0.2, 0.2, 9.0, 12.0, "metal"))
+    parts.append(box("beacon", -17.7, -17.1, -0.3, 0.3, 12.0, 12.4, "beacon"))
+    # Le gondole dei motori ai lati, sotto il ponte.
+    for side in (1, -1):
+        parts.append(box("pylon_%d" % side, -12.6, -11.4, side * 5.0, side * 7.0, -1.0, -0.6, "trim"))
+        parts.append(cylinder("pod_%d" % side, 0.8, 3.0, (-12.0, side * 7.4, -0.8), "ship_bridge", sides=8, axis="X"))
+    join("Airship", parts)
+    # Le eliche girano attorno a X, il verso di marcia della nave.
+    for i, side in enumerate((1, -1)):
+        propeller("Prop_%d" % i, (-13.7, side * 7.4, -0.8), 1.4, "trim", axis="X")
+    save("airship")
+
+
+def build_skycrane():
+    """L'elicottero-gru del cielo, al posto del carrello della gru: stesse
+    quote (il container appeso sotto lo spreader, a 12,8 m), la fusoliera
+    sottile con la cabina davanti (+X) e il grande rotore "Rotor_main" sopra.
+    Origine a terra sotto l'elicottero."""
+    reset()
+    parts = [block("spine", [(-6.5, -0.6, 15.0), (5.0, -0.6, 15.0), (5.0, 0.6, 15.0), (-6.5, 0.6, 15.0)],
+                   [(-6.5, -0.45, 16.6), (5.0, -0.45, 16.6), (5.0, 0.45, 16.6), (-6.5, 0.45, 16.6)], "crane")]
+    parts.append(block("cockpit", [(5.0, -1.0, 14.6), (7.6, -0.7, 15.0), (7.6, 0.7, 15.0), (5.0, 1.0, 14.6)],
+                       [(5.0, -0.9, 16.8), (7.2, -0.6, 16.2), (7.2, 0.6, 16.2), (5.0, 0.9, 16.8)], "crane"))
+    parts.append(box("windshield", 6.5, 7.3, -0.62, 0.62, 15.4, 16.1, "glass"))
+    parts.append(block("tail", [(-6.5, -0.45, 15.4), (-11.5, -0.25, 15.9), (-11.5, 0.25, 15.9), (-6.5, 0.45, 15.4)],
+                       [(-6.5, -0.35, 16.6), (-11.5, -0.2, 16.4), (-11.5, 0.2, 16.4), (-6.5, 0.35, 16.6)], "crane"))
+    parts.append(box("fin", -12.0, -10.8, -0.08, 0.08, 16.0, 18.2, "crane_cab"))
+    parts.append(box("engine", -2.5, 1.5, -1.0, 1.0, 16.6, 17.4, "crane_cab"))
+    parts.append(box("mast", -0.25, 0.25, -0.25, 0.25, 17.4, 17.9, "trim"))
+    for side in (1, -1):
+        parts.append(box("leg_f_%d" % side, 3.5, 3.8, side * 0.5, side * 2.4, 13.4, 15.2, "trim"))
+        parts.append(box("leg_b_%d" % side, -3.8, -3.5, side * 0.5, side * 2.4, 13.4, 15.2, "trim"))
+    for x in (-1.1, 1.1):
+        parts.append(box("cable", x - 0.05, x + 0.05, -0.05, 0.05, 13.0, 15.0, "metal"))
+    parts.append(box("spreader", -3.1, 3.1, -1.3, 1.3, 12.8, 13.0, "metal"))
+    join("Skycrane", parts)
+    rotor = [box("blade_a", -9.0, 9.0, -0.3, 0.3, 17.85, 17.95, "trim"), box("blade_b", -0.3, 0.3, -9.0, 9.0, 17.85, 17.95, "trim")]
+    part("Rotor_main", rotor, (0, 0, 17.9))
+    tail_rotor = [box("tail_blade", -12.4, -11.6, 0.1, 0.16, 15.6, 18.6, "trim"), box("tail_blade_b", -13.5, -10.5, 0.1, 0.16, 17.0, 17.2, "trim")]
+    # Il rotore di coda gira di lato: Prop_tail, attorno all'asse di lato.
+    part("Prop_tail", tail_rotor, (-12.0, 0.13, 17.1))
+    save("skycrane")
+
+
 def build_container():
     """Container da 20 piedi: 2,44 x 2,6 x 6,1 m, davanti verso +Y, origine
     al centro. Le nervature fanno leggere la forma anche in pixel grossi."""
@@ -1244,6 +1486,148 @@ def build_lamp():
     parts.append(box("light", 1.05, 1.55, -0.18, 0.18, 4.55, 4.6, "lamp_light"))
     join("Lamp", parts)
     save("lamp")
+
+
+# --- Il cielo: i veicoli della strada (vedi scripts/worlds.gd) ----------------
+# Stessi ruoli di utilitaria, berlina, furgone e camion, con le loro
+# dimensioni di gioco. Le eliche "Prop_*" girano attorno al muso (l'asse
+# avanti), i rotori "Rotor_*" attorno all'alto; le ruote "Wheel_*" come
+# quelle delle auto.
+
+def propeller(name, pivot, radius, mat="trim", axis="Y"):
+    """Un'elica a due pale con il mozzo, con l'origine nel mozzo. axis: l'asse
+    attorno a cui gira (Y avanti, X di lato)."""
+    x, y, z = pivot
+    hub = cone(name + "_hub", 0.08, 0.16, pivot, "metal", sides=6)
+    if axis == "Y":
+        hub.rotation_euler = (-math.pi / 2, 0, 0)
+        blade = box(name + "_blade", x - radius, x + radius, y - 0.03, y + 0.03, z - 0.06, z + 0.06, mat)
+    else:
+        hub.rotation_euler = (0, math.pi / 2, 0)
+        blade = box(name + "_blade", x - 0.03, x + 0.03, y - radius, y + radius, z - 0.06, z + 0.06, mat)
+    return part(name, [hub, blade], pivot)
+
+
+def build_ultralight():
+    """L'ultraleggero (al posto dell'utilitaria, 1,8 x 1,35 x 3,4): una
+    carlinga a goccia col tettuccio, l'ala alta coi montanti, la trave di coda
+    e l'elica sul muso. Le ali sporgono oltre l'ingombro: solo da vedere."""
+    reset()
+    hz, hy = 0.675, 1.7
+    parts = [block("pod", [(-0.42, -0.4, -0.5), (0.42, -0.4, -0.5), (0.3, 1.3, -0.45), (-0.3, 1.3, -0.45)],
+                   [(-0.42, -0.4, 0.25), (0.42, -0.4, 0.25), (0.3, 1.3, 0.1), (-0.3, 1.3, 0.1)], "paint")]
+    parts.append(block("nose", [(-0.3, 1.3, -0.45), (0.3, 1.3, -0.45), (0.12, 1.6, -0.25), (-0.12, 1.6, -0.25)],
+                       [(-0.3, 1.3, 0.1), (0.3, 1.3, 0.1), (0.12, 1.6, -0.05), (-0.12, 1.6, -0.05)], "paint"))
+    parts.append(block("canopy", [(-0.34, -0.2, 0.25), (0.34, -0.2, 0.25), (0.26, 1.1, 0.1), (-0.26, 1.1, 0.1)],
+                       [(-0.26, -0.1, 0.55), (0.26, -0.1, 0.55), (0.2, 0.7, 0.5), (-0.2, 0.7, 0.5)], "glass"))
+    parts.append(box("wing", -1.95, 1.95, -0.05, 0.85, 0.55, hz, "paint"))
+    parts += mirrored_box("wing_tip", 1.75, 1.95, -0.05, 0.85, 0.54, hz + 0.01, "wing_stripe")
+    for side in (1, -1):
+        parts.append(tube("strut_%d" % side, (side * 0.4, 0.4, -0.2), (side * 1.2, 0.4, 0.56), 0.035, "trim"))
+    parts.append(tube("boom", (0, -0.4, 0.05), (0, -1.55, 0.3), 0.08, "trim"))
+    parts.append(block("fin", [(-0.03, -1.7, 0.25), (0.03, -1.7, 0.25), (0.03, -1.35, 0.25), (-0.03, -1.35, 0.25)],
+                       [(-0.03, -1.7, hz), (0.03, -1.7, hz), (0.03, -1.55, hz), (-0.03, -1.55, hz)], "paint"))
+    parts.append(box("tailplane", -0.65, 0.65, -1.7, -1.45, 0.27, 0.33, "paint"))
+    parts.append(box("headlight", -0.1, 0.1, 1.55, 1.62, -0.2, -0.1, "headlight"))
+    parts.append(box("taillight", -0.04, 0.04, -1.72, -1.68, 0.55, 0.62, "taillight"))
+    for side in (1, -1):
+        parts.append(tube("gear_%d" % side, (side * 0.3, 0.6, -0.45), (side * 0.55, 0.6, -0.5), 0.03, "trim"))
+    join("Body", parts)
+    wheels(0.15, 0.08, 0.6, (0.6,), -hz + 0.15)
+    propeller("Prop_nose", (0, 1.66, -0.15), 0.75)
+    save("ultralight")
+
+
+def build_helicopter():
+    """L'elicotterino (al posto della berlina, 2,0 x 1,4 x 4,4): la bolla di
+    vetro davanti, la trave di coda col rotore di coda (una "ruota" che gira di
+    lato), i pattini e il rotore principale sul tetto, più largo dell'ingombro."""
+    reset()
+    hz, hy = 0.7, 2.2
+    parts = [block("body", [(-0.85, -0.8, -0.45), (0.85, -0.8, -0.45), (0.85, 0.9, -0.45), (-0.85, 0.9, -0.45)],
+                   [(-0.7, -0.6, 0.5), (0.7, -0.6, 0.5), (0.7, 0.9, 0.5), (-0.7, 0.9, 0.5)], "paint")]
+    parts.append(block("bubble", [(-0.85, 0.9, -0.45), (0.85, 0.9, -0.45), (0.45, 2.05, -0.3), (-0.45, 2.05, -0.3)],
+                       [(-0.7, 0.9, 0.5), (0.7, 0.9, 0.5), (0.3, 1.9, 0.15), (-0.3, 1.9, 0.15)], "glass"))
+    parts.append(block("boom", [(-0.2, -2.0, 0.0), (0.2, -2.0, 0.0), (0.3, -0.8, -0.2), (-0.3, -0.8, -0.2)],
+                       [(-0.12, -2.0, 0.25), (0.12, -2.0, 0.25), (0.25, -0.8, 0.35), (-0.25, -0.8, 0.35)], "paint"))
+    parts.append(block("fin", [(-0.04, -2.2, 0.1), (0.04, -2.2, 0.1), (0.04, -1.85, 0.1), (-0.04, -1.85, 0.1)],
+                       [(-0.04, -2.2, hz), (0.04, -2.2, hz), (0.04, -2.05, hz), (-0.04, -2.05, hz)], "paint"))
+    parts.append(box("mast", -0.12, 0.12, 0.05, 0.3, 0.5, 0.66, "trim"))
+    for side in (1, -1):
+        parts.append(box("skid_%d" % side, side * 0.75 - 0.05, side * 0.75 + 0.05, -0.9, 1.4, -hz, -hz + 0.06, "trim"))
+        for y in (-0.4, 0.8):
+            parts.append(tube("strut_%d_%d" % (side, int(y * 10)), (side * 0.75, y, -hz + 0.05), (side * 0.6, y, -0.42), 0.03, "trim"))
+    parts += mirrored_box("headlight", 0.15, 0.35, 1.9, 1.95, -0.3, -0.15, "headlight")
+    parts.append(box("taillight", -0.05, 0.05, -2.22, -2.18, 0.55, 0.65, "taillight"))
+    join("Body", parts)
+    # Il rotore di coda gira di lato come una ruota: Wheel_tail.
+    tail = [box("tail_blade_a", 0.22, 0.26, -2.05 - 0.38, -2.05 + 0.38, 0.4, 0.48, "trim"),
+            box("tail_blade_b", 0.22, 0.26, -2.05 - 0.04, -2.05 + 0.04, 0.06, 0.82, "trim")]
+    part("Wheel_tail", tail, (0.24, -2.05, 0.44))
+    main = [box("blade_a", -2.2, 2.2, 0.1, 0.25, 0.66, 0.7, "trim"), box("blade_b", -0.07, 0.07, -2.0, 2.4, 0.66, 0.7, "trim"),
+            cone("hub", 0.14, 0.12, (0, 0.175, 0.72), "metal", sides=6)]
+    part("Rotor_main", main, (0, 0.175, 0.68))
+    save("helicopter")
+
+
+def build_balloon():
+    """La mongolfiera (al posto del furgone, 2,4 x 3,4 x 2,6): il cesto di
+    vimini col bruciatore, le funi, e il pallone a spicchi che fa da tetto."""
+    reset()
+    hz = 1.7
+    parts = [box("basket", -0.6, 0.6, -0.6, 0.6, -hz, -0.95, "wicker")]
+    parts.append(box("rim", -0.65, 0.65, -0.65, 0.65, -1.0, -0.9, "leather"))
+    parts.append(box("burner", -0.18, 0.18, -0.18, 0.18, -0.85, -0.65, "metal"))
+    parts.append(box("flame", -0.08, 0.08, -0.08, 0.08, -0.65, -0.5, "headlight"))
+    for x in (-1, 1):
+        for y in (-1, 1):
+            parts.append(tube("rope_%d_%d" % (x, y), (x * 0.58, y * 0.58, -0.95), (x * 0.45, y * 0.45, -0.55), 0.02, "trim"))
+    # Il pallone: un cono rovesciato, un cilindro e la cupola, a otto spicchi.
+    lower = cone("envelope_low", 1.2, 1.1, (0, 0, -0.05), "paint", sides=8)
+    lower.rotation_euler = (math.pi, 0, 0)
+    parts.append(lower)
+    parts.append(cylinder("envelope_mid", 1.2, 1.1, (0, 0, 1.0), "paint", sides=8, axis="Z"))
+    parts.append(cylinder("band", 1.22, 0.25, (0, 0, 0.8), "wing_stripe", sides=8, axis="Z"))
+    top = cone("envelope_top", 1.2, 0.5, (0, 0, 1.8), "paint", sides=8)
+    parts.append(top)
+    join("Body", parts)
+    save("balloon")
+
+
+def build_blimp():
+    """Il dirigibile (al posto del camion, 2,4 x 2,6 x 8): l'involucro a sigaro
+    con le pinne in coda, la gondola sotto coi finestrini e due eliche ai lati."""
+    reset()
+    hz, hy = 1.3, 4.0
+    parts = [cylinder("hull", 1.05, 5.6, (0, 0, 0.25), "paint", sides=8, axis="Y")]
+    parts[0].scale = (1.12, 1.0, 1.0)
+    nose = cone("nose", 1.05, 1.2, (0, 3.4, 0.25), "paint", sides=8)
+    nose.rotation_euler = (-math.pi / 2, 0, 0)
+    nose.scale = (1.12, 1.0, 1.0)
+    parts.append(nose)
+    tail = cone("tail", 1.05, 1.2, (0, -3.4, 0.25), "paint", sides=8)
+    tail.rotation_euler = (math.pi / 2, 0, 0)
+    tail.scale = (1.12, 1.0, 1.0)
+    parts.append(tail)
+    parts.append(cylinder("band", 1.08, 0.4, (0, 1.5, 0.25), "wing_stripe", sides=8, axis="Y"))
+    parts[-1].scale = (1.12, 1.0, 1.0)
+    # Le pinne a croce.
+    parts.append(block("fin_up", [(-0.05, -3.9, 0.9), (0.05, -3.9, 0.9), (0.05, -2.7, 0.9), (-0.05, -2.7, 0.9)],
+                       [(-0.05, -3.95, hz), (0.05, -3.95, hz), (0.05, -3.4, hz), (-0.05, -3.4, hz)], "trim"))
+    parts.append(block("fin_down", [(-0.05, -3.9, -0.4), (0.05, -3.9, -0.4), (0.05, -2.7, -0.4), (-0.05, -2.7, -0.4)],
+                       [(-0.05, -3.95, -0.95), (0.05, -3.95, -0.95), (0.05, -3.4, -0.95), (-0.05, -3.4, -0.95)], "trim"))
+    for side in (1, -1):
+        parts.append(box("fin_side_%d" % side, side * 0.9, side * 1.75, -3.9, -2.9, 0.2, 0.3, "trim"))
+    parts.append(box("gondola", -0.42, 0.42, -0.8, 1.4, -hz, -0.65, "cargo"))
+    parts += mirrored_box("window", 0.42, 0.44, -0.6, 1.2, -1.05, -0.85, "glass")
+    parts.append(box("headlight", -0.15, 0.15, 3.98, 4.02, 0.15, 0.35, "headlight"))
+    parts.append(box("taillight", -0.08, 0.08, -3.98, -3.94, 1.05, 1.2, "taillight"))
+    for side in (1, -1):
+        parts.append(box("pylon_%d" % side, side * 0.42, side * 0.8, -0.95, -0.75, -1.05, -0.95, "trim"))
+    join("Body", parts)
+    for name, side in (("Prop_L", -1), ("Prop_R", 1)):
+        propeller(name, (side * 0.85, -1.0, -1.0), 0.5)
+    save("blimp")
 
 
 def build_eagle():
@@ -1329,10 +1713,12 @@ def build_mountain():
 
 BUILDERS = {
     "compact": build_compact, "sedan": build_sedan, "van": build_van, "truck": build_truck,
-    "frog": build_frog, "den": build_den, "log": build_log, "crocodile": build_crocodile, "eagle": build_eagle, "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
+    "frog": build_frog, "den": build_den, "den_sky": build_den_sky, "log": build_log, "crocodile": build_crocodile, "eagle": build_eagle, "ultralight": build_ultralight, "helicopter": build_helicopter,
+    "balloon": build_balloon, "blimp": build_blimp, "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
     "mountain": build_mountain, "locomotive": build_locomotive, "boxcar": build_boxcar,
-    "flatcar": build_flatcar, "signal": build_signal, "airplane": build_airplane,
-    "crane": build_crane, "crane_trolley": build_crane_trolley, "ship": build_ship,
+    "flatcar": build_flatcar, "cablecar_front": build_cablecar_front, "cablecar": build_cablecar,
+    "cablecar_open": build_cablecar_open, "cable_pylon": build_cable_pylon, "signal": build_signal, "airplane": build_airplane, "airplane_prop": build_airplane_prop,
+    "crane": build_crane, "crane_trolley": build_crane_trolley, "ship": build_ship, "airship": build_airship, "skycrane": build_skycrane,
     "container": build_container, "tug": build_tug, "dolly": build_dolly,
     "suitcase": build_suitcase, "parcel": build_parcel,
     "frog_raganella": build_frog_raganella, "frog_paracadutista": build_frog_paracadutista,

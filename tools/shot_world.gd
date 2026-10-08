@@ -2,12 +2,15 @@ extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
 ## I mondi. SCENE: portale (il teletrasporto visto dalla rana al calore 5) |
 ## cielo (la rana appena arrivata nel cielo, che guarda avanti) | nuvole (un
-## fiume di vuoto con nuvole e aquile). HEAT, SHOT.
+## fiume di vuoto con nuvole e aquile) | bioma (nel cielo, il bioma BIOMA:
+## 2 strada, 4 funivia, 6 aeroporto, 7 porto, 5 tana; ATTESA: fotogrammi prima
+## dello scatto). HEAT, SHOT.
 var frame := 0
 var main: Node
 var frog: Node3D
 var course: Node3D
 var scene := OS.get_environment("SCENE")
+var wait := int(OS.get_environment("ATTESA")) if OS.get_environment("ATTESA") != "" else 90
 
 
 func _initialize() -> void:
@@ -57,8 +60,10 @@ func _process(_d: float) -> bool:
 	frog.invincible = true
 	if frame == 2:
 		heat.running = false
-		if scene in ["cielo", "nuvole"]:
+		if scene in ["cielo", "nuvole", "bioma", "temporale"]:
 			main.next_world()
+		if scene == "bioma":
+			course.jump_to(int(OS.get_environment("BIOMA")))
 		if scene == "nuvole":
 			course.jump_to(3)
 			var lanes := by_script(course, "river_lane.gd")
@@ -67,7 +72,17 @@ func _process(_d: float) -> bool:
 		heat.set_value(float(OS.get_environment("HEAT")))
 	if frame == 40 and scene == "portale":
 		heat.set_value(100.0)
-	if frame == 90:
+	# La funivia: aspetta che una cabina sia davanti alla rana.
+	if scene == "bioma" and OS.get_environment("BIOMA") == "4" and frame >= wait and frame < wait + 900 and wait > 0:
+		var passing := false
+		for track in by_script(course, "rail_track.gd"):
+			if track.train and absf(track.train.nose_x()) < 15.0:
+				passing = true
+		if not passing:
+			wait += 1
+	if scene == "temporale" and frame > 2:
+		fire.front_z = frog.global_position.z + 14.0
+	if frame == wait:
 		if scene == "portale":
 			var portals := by_script(course, "portal.gd")
 			if portals.is_empty():
@@ -76,11 +91,15 @@ func _process(_d: float) -> bool:
 				return true
 			var p: Node3D = portals[0]
 			shoot_from(p.global_position + Vector3(-6, 7, 26), p.global_position + Vector3(0, 4, 0))
-		elif scene == "nuvole":
+		elif scene == "temporale":
+			shoot_from(frog.global_position + Vector3(6, 5, -10), frog.global_position + Vector3(0, 6, 14))
+		elif scene == "bioma" and OS.get_environment("LATO") != "":
+			shoot_from(frog.global_position + Vector3(-34, 16, -6), frog.global_position + Vector3(0, 6, -16))
+		elif scene in ["nuvole", "bioma"]:
 			shoot_from(frog.global_position + Vector3(-8, 9, 6), frog.global_position + Vector3(4, -1, -14))
 		else:
 			shoot_from(frog.global_position + Vector3(0, 6, 10), frog.global_position + Vector3(0, 1, -30))
-	if frame == 110:
+	if frame == wait + 20:
 		var image := root.get_texture().get_image()
 		image.save_png(OS.get_environment("SHOT"))
 		print("salvato " + OS.get_environment("SHOT"))

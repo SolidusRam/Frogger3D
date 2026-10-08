@@ -14,6 +14,10 @@ extends AnimatableBody3D
 
 const MODEL := preload("res://assets/models/crane.glb")
 const TROLLEY_MODEL := preload("res://assets/models/crane_trolley.glb")
+## Nel cielo (vedi Worlds) la gru è un elicottero-gru: niente portale né
+## gambe, l'elicottero fa il carrello (stesse quote, stesso container appeso)
+## e insegue la casella allo stesso modo.
+const SKY_TROLLEY_MODEL := preload("res://assets/models/skycrane.glb")
 ## Quota del centro del container appeso sotto lo spreader.
 const HANG_Y := 11.5
 ## Fin dove arriva il carrello, dal centro della corsia.
@@ -49,6 +53,10 @@ var target_x := 0.0
 var target_z := 0.0
 ## Vero se questo container è per la rana.
 var aimed := false
+## L'elicottero-gru del cielo.
+var sky := false
+var _rotors: Array[Node] = []
+var _props: Array[Node] = []
 
 var _timer := 0.0
 var _ship: Ship
@@ -69,6 +77,18 @@ func _init() -> void:
 func _ready() -> void:
 	collision_layer = 1 # come il terreno: le gambe sono muri che si muovono
 	collision_mask = 0
+	if not sky:
+		_build_gantry()
+	_trolley = (SKY_TROLLEY_MODEL if sky else TROLLEY_MODEL).instantiate()
+	add_child(_trolley)
+	Style.apply_palette(_trolley)
+	_rotors = _trolley.find_children("Rotor_*", "", true, false)
+	_props = _trolley.find_children("Prop_*", "", true, false)
+	_finish_ready()
+
+
+## Il portale con le gambe solide sulle banchine (solo sulla terra).
+func _build_gantry() -> void:
 	var model: Node3D = MODEL.instantiate()
 	add_child(model)
 	Style.apply_palette(model)
@@ -80,10 +100,9 @@ func _ready() -> void:
 			collision.shape = shape
 			collision.position = Vector3(x, 7.5, z)
 			add_child(collision)
-	_trolley = TROLLEY_MODEL.instantiate()
-	add_child(_trolley)
-	Style.apply_palette(_trolley)
 
+
+func _finish_ready() -> void:
 	_shadow = MeshInstance3D.new()
 	var mesh := BoxMesh.new()
 	# Come il container sulla nave: lungo X.
@@ -97,6 +116,10 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	for rotor: Node3D in _rotors:
+		rotor.rotate_y(14.0 * delta)
+	for prop: Node3D in _props:
+		prop.rotate_z(25.0 * delta)
 	match phase:
 		Phase.IDLE:
 			_timer -= delta

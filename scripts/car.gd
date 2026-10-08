@@ -77,6 +77,23 @@ const TYPES := {
 	},
 }
 
+## Nel cielo (vedi Worlds) gli stessi quattro ruoli volano: l'ultraleggero,
+## l'elicotterino, la mongolfiera e il dirigibile. Le voci qui sostituiscono
+## quelle di TYPES; le eliche (Prop_*) e i rotori (Rotor_*) girano.
+const SKY_TYPES := {
+	"compact": {"model": preload("res://assets/models/ultralight.glb"), "wheel_radius": 0.15},
+	"sedan": {"model": preload("res://assets/models/helicopter.glb"), "wheel_radius": 0.12},
+	"van": {
+		"size": Vector3(2.4, 3.4, 2.6),
+		"model": preload("res://assets/models/balloon.glb"),
+		"collision": [[Vector3(1.3, 0.8, 1.3), Vector3(0.0, -1.3, 0.0)], [Vector3(2.4, 2.4, 2.6), Vector3(0.0, 0.5, 0.0)]],
+	},
+	"truck": {
+		"model": preload("res://assets/models/blimp.glb"),
+		"collision": [[Vector3(2.3, 2.1, 7.4), Vector3(0.0, 0.25, 0.0)], [Vector3(0.9, 0.65, 2.2), Vector3(0.0, -0.98, 0.3)]],
+	},
+}
+
 static var _wrecks: Array[Car] = []
 
 ## Il tono del motore per tipo: la utilitaria ronza, il camion brontola.
@@ -98,6 +115,15 @@ static func smoking_wrecks() -> Array[Car]:
 	return smoking
 
 
+## I dati del tipo, nel cielo quelli del veicolo che vola.
+static func type_data(type: String, in_sky := false) -> Dictionary:
+	if not in_sky:
+		return TYPES[type]
+	var data: Dictionary = TYPES[type].duplicate()
+	data.merge(SKY_TYPES[type], true)
+	return data
+
+
 ## Sceglie un tipo a caso secondo le frequenze del traffico.
 static func random_type() -> String:
 	var total := 0
@@ -113,6 +139,9 @@ static func random_type() -> String:
 
 ## Tipo di veicolo (una voce di TYPES), da scegliere prima di aggiungerlo.
 var model_type := "sedan"
+## Nel cielo: il veicolo che vola (SKY_TYPES).
+var sky := false
+var _data: Dictionary
 ## Larghezza, altezza e lunghezza, prese dal tipo.
 var size := Vector3(2.0, 1.4, 4.4)
 ## Direzione di marcia nel mondo e velocità di crociera, impostate dalla corsia.
@@ -152,6 +181,8 @@ var _look_wait := 0
 ## Superfici verniciate del modello, per annerirle quando diventa rottame.
 var _painted := []
 var _wheels: Array[Node] = []
+var _props: Array[Node] = []
+var _rotors: Array[Node] = []
 ## Carrozzeria disegnata: si inclina e sobbalza senza toccare il corpo fisico.
 var _visual: Node3D
 var _frog: Frog
@@ -181,8 +212,9 @@ var _yank_blow := Vector3.ZERO
 
 func _ready() -> void:
 	add_to_group("cars")
-	size = TYPES[model_type].size
-	hit_damage = TYPES[model_type].damage
+	_data = type_data(model_type, sky)
+	size = _data.size
+	hit_damage = _data.damage
 	collision_layer = 4 # veicoli
 	collision_mask = 1 | 4 | 8 # terreno, veicoli, piattaforme
 	freeze_mode = RigidBody3D.FREEZE_MODE_KINEMATIC
@@ -592,7 +624,7 @@ func _sink_and_free() -> void:
 
 
 func _build_collision() -> void:
-	for part in TYPES[model_type].collision:
+	for part in _data.collision:
 		var shape := BoxShape3D.new()
 		shape.size = part[0]
 		var collision := CollisionShape3D.new()
@@ -605,10 +637,12 @@ func _build_visual() -> void:
 	_color_index = randi() % Style.CAR_COLORS
 	_visual = Node3D.new()
 	add_child(_visual)
-	var model: Node3D = TYPES[model_type].model.instantiate()
+	var model: Node3D = _data.model.instantiate()
 	_visual.add_child(model)
 	_painted = Style.apply_palette(model, {"paint": "car_%d" % _color_index})
 	_wheels = model.find_children("Wheel_*", "", true, false)
+	_props = model.find_children("Prop_*", "", true, false)
+	_rotors = model.find_children("Rotor_*", "", true, false)
 	_frog = get_tree().get_first_node_in_group("frog") as Frog
 
 
@@ -623,9 +657,14 @@ func _animate_driving(delta: float) -> void:
 	_visual.rotation.x = _pitch
 
 	Sfx.set_loop(self, &"car_engine", linear_to_db(0.4 + 0.6 * clampf(_speed / 14.0, 0.0, 1.0)), ENGINE_PITCH[model_type] * (0.75 + 0.5 * clampf(_speed / 16.0, 0.0, 1.0)))
-	var spin: float = -_speed / TYPES[model_type].wheel_radius * delta
+	var spin: float = -_speed / _data.wheel_radius * delta
 	for wheel: Node3D in _wheels:
 		wheel.rotate_x(spin)
+	# Eliche e rotori girano sempre, anche da fermi in coda.
+	for prop: Node3D in _props:
+		prop.rotate_z(35.0 * delta)
+	for rotor: Node3D in _rotors:
+		rotor.rotate_y(18.0 * delta)
 
 	var wobble := 0.0
 	if _speed > 0.5:

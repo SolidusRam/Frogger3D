@@ -373,6 +373,7 @@ func _apply_world() -> void:
 	var sky := Worlds.is_void(course.world)
 	frog.void_world = sky
 	$Backdrop.set_world(sky)
+	$Wildfire.set_world(sky)
 
 
 ## Caduta nel vuoto del cielo: sull'ultima striscia sicura davanti al fuoco

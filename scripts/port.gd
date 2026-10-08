@@ -40,6 +40,7 @@ func _ready() -> void:
 		water.position.z = center
 		add_child(water)
 		var lane := ShipLane.new()
+		lane.sky = sky
 		lane.position.z = center
 		# Due corsie: navi in versi opposti.
 		lane.direction = first_direction * (1.0 if i % 2 == 0 else -1.0)

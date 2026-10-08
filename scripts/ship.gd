@@ -9,6 +9,9 @@ extends AnimatableBody3D
 ## La nave corre lungo l'asse X locale: la prua guarda verso +X.
 
 const MODEL := preload("res://assets/models/ship.glb")
+## Nel cielo (vedi Worlds) è un dirigibile cargo coi container sul dorso:
+## stessa sagoma, stesse regole; le eliche (Prop_*) girano.
+const SKY_MODEL := preload("res://assets/models/airship.glb")
 ## Quota del ponte rispetto alla banchina.
 const DECK_Y := 0.7
 const STERN_X := -20.0
@@ -25,6 +28,9 @@ const MAX_STACK := 3
 ## Per quanti passi di fisica una casella resta prenotata da una gru.
 const RESERVATION_FRAMES := 240
 
+## Il dirigibile cargo del cielo.
+var sky := false
+var _props: Array[Node] = []
 var speed := 4.0
 
 ## Container impilati in ogni casella: _levels[colonna][fila].
@@ -53,9 +59,10 @@ func _init() -> void:
 func _ready() -> void:
 	collision_layer = 8 # piattaforme
 	collision_mask = 0
-	var model: Node3D = MODEL.instantiate()
+	var model: Node3D = (SKY_MODEL if sky else MODEL).instantiate()
 	add_child(model)
 	Style.apply_palette(model)
+	_props = model.find_children("Prop_*", "", true, false)
 	# Scafo, ponte di comando, prua col castello.
 	_box(Vector3(37.0, 3.2, HALF_WIDTH * 2.0), Vector3(-1.5, DECK_Y - 1.6, 0.0))
 	_box(Vector3(5.4, 8.4, HALF_WIDTH * 2.0), Vector3(-17.3, 4.8, 0.0))
@@ -70,7 +77,7 @@ func _ready() -> void:
 	add_child(bow_collision)
 	Sfx.loop(self, &"ship_engine", 0.0, 1.0, 1.5)
 	# Una nave su due si annuncia con la sirena.
-	if randf() < 0.5:
+	if randf() < 0.5 and not sky:
 		Sfx.play_at(&"ship_horn", global_position, 0.0, 1.0, 4.0)
 
 
@@ -78,6 +85,8 @@ func _ready() -> void:
 var anchored_left := 0.0
 
 func _physics_process(delta: float) -> void:
+	for prop: Node3D in _props:
+		prop.rotate_x(12.0 * delta)
 	# Ancorata dalla lingua: ferma sul posto.
 	if anchored_left > 0.0:
 		anchored_left -= delta

@@ -11,6 +11,8 @@ extends Node3D
 ## La telecamera guarda avanti, quindi lo si sente in tre modi: il bagliore
 ## arancione sulla strada davanti, il fumo che passa sopra la rana e, nell'HUD,
 ## la distanza col bordo dello schermo che si arrossa.
+## Nel cielo (vedi Worlds) è un temporale: un muro di nubi nere coi fulmini e
+## la pioggia, con le stesse regole (set_world).
 
 const WIDTH := 140.0
 const FLAMES := 70
@@ -61,6 +63,14 @@ var _rng := RandomNumberGenerator.new()
 ## Da dove si sente il fuoco: sul fronte, proprio dietro la rana. Il
 ## crepitio c'è sempre; il ruggito cresce quando il fuoco si avvicina.
 var _voice: Node3D
+## Il temporale del cielo, e quello che cambia con lui: l'aspetto (in _look),
+## i suoni e i fulmini.
+var sky := false
+var _look: Node3D
+var _loop_sound := &"fire_loop"
+var _roar_sound := &"fire_roar"
+var _bolt_wait := 0.0
+var _flash: OmniLight3D
 
 
 func _ready() -> void:
@@ -71,8 +81,29 @@ func _ready() -> void:
 	_build()
 	_voice = Node3D.new()
 	add_child(_voice)
-	Sfx.loop(_voice, &"fire_loop", 0.0, 1.0, 2.5)
-	Sfx.loop(_voice, &"fire_roar", -60.0, 1.0, 2.5)
+	_start_sounds()
+
+
+func _start_sounds() -> void:
+	Sfx.loop(_voice, _loop_sound, 0.0, 1.0, 2.5)
+	Sfx.loop(_voice, _roar_sound, -60.0, 1.0, 2.5)
+
+
+## Il fuoco della terra o il temporale del cielo: rifà l'aspetto e i suoni.
+func set_world(in_sky: bool) -> void:
+	if in_sky == sky:
+		return
+	sky = in_sky
+	Sfx.unloop(_voice, _loop_sound)
+	Sfx.unloop(_voice, _roar_sound)
+	_loop_sound = &"storm_loop" if sky else &"fire_loop"
+	_roar_sound = &"storm_roar" if sky else &"fire_roar"
+	_start_sounds()
+	_look.queue_free()
+	_lights.clear()
+	_build_look()
+	if hud:
+		hud.set_chaser_icon("storm" if sky else "fire")
 
 
 func _physics_process(delta: float) -> void:
@@ -101,7 +132,7 @@ func _physics_process(delta: float) -> void:
 			car.become_wreck()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	var gap := distance()
 	var closeness := clampf(1.0 - gap / max_gap, 0.0, 1.0)
 	for light in _lights:
@@ -112,12 +143,14 @@ func _process(_delta: float) -> void:
 	_frog_smoke.emitting = gap < 35.0
 	_voice.global_position = Vector3(frog.global_position.x, 2.0, front_z)
 	var near := clampf(1.0 - (gap - 6.0) / (danger_distance - 6.0), 0.0, 1.0)
-	Sfx.set_loop(_voice, &"fire_roar", linear_to_db(maxf(near, 0.001)), 0.9 + 0.2 * near)
+	Sfx.set_loop(_voice, _roar_sound, linear_to_db(maxf(near, 0.001)), 0.9 + 0.2 * near)
 	for i in FLAMES:
 		var x := -WIDTH / 2.0 + (i + 0.5) * WIDTH / FLAMES
 		var height := _heights[i] * _rng.randf_range(0.85, 1.15)
 		var basis := Basis.from_scale(Vector3(_rng.randf_range(0.9, 1.1), height, _rng.randf_range(0.9, 1.1)))
 		_flames.set_instance_transform(i, Transform3D(basis, Vector3(x, height * 0.5, -0.5 + (i % 2) * 1.2)))
+	if sky:
+		_lightning(delta)
 	if hud:
 		hud.set_fire_distance(gap, clampf(1.0 - (gap - 3.0) / (danger_distance - 3.0), 0.0, 1.0))
 
@@ -157,48 +190,9 @@ func _on_den_reached(_count: int, _distance: float) -> void:
 
 
 func _build() -> void:
-	# Le fiamme: coni che tremolano, in due file sfalsate.
-	var cone := CylinderMesh.new()
-	cone.top_radius = 0.0
-	cone.bottom_radius = 1.3
-	cone.height = 1.0
-	cone.radial_segments = 5
-	cone.rings = 1
-	cone.material = Style.material("fire")
-	_flames = MultiMesh.new()
-	_flames.transform_format = MultiMesh.TRANSFORM_3D
-	_flames.mesh = cone
-	_flames.instance_count = FLAMES
 	for i in FLAMES:
 		_heights.append(_rng.randf_range(2.5, 6.0))
-	var flames := MultiMeshInstance3D.new()
-	flames.multimesh = _flames
-	# Il tremolio si aggiorna a ogni fotogramma: niente interpolazione fisica
-	# (altrimenti Godot avvisa a ogni aggiornamento).
-	flames.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
-	add_child(flames)
-
-	# Dietro il fuoco, la terra bruciata.
-	var ground := MeshInstance3D.new()
-	var plane := BoxMesh.new()
-	plane.size = Vector3(WIDTH * 3.0, 0.05, 200.0)
-	plane.material = Style.material("burnt")
-	ground.mesh = plane
-	ground.position = Vector3(0.0, 0.03, 100.5)
-	add_child(ground)
-
-	# Il bagliore che illumina la strada davanti alla rana.
-	for x in [-30.0, 0.0, 30.0]:
-		var light := OmniLight3D.new()
-		light.light_color = Color(1.0, 0.45, 0.1)
-		light.omni_range = 45.0
-		light.position = Vector3(x, 5.0, -2.0)
-		add_child(light)
-		_lights.append(light)
-
-	_front_smoke = _smoke(Vector3(WIDTH / 2.0, 1.0, 1.0), 70, 3.5, 0.9)
-	_front_smoke.direction = Vector3(0.0, 1.0, -0.3)
-	add_child(_front_smoke)
+	_build_look()
 	# Il fumo che arriva da dietro e passa sopra la rana.
 	_frog_smoke = _smoke(Vector3(8.0, 0.5, 0.5), 16, 2.5, 0.6)
 	_frog_smoke.direction = Vector3(0.0, 0.1, -1.0)
@@ -216,6 +210,122 @@ func _build() -> void:
 	collision.position.y = 3.0
 	_reach.add_child(collision)
 	add_child(_reach)
+
+
+## L'aspetto: le fiamme, la terra bruciata, il bagliore e il fumo; o, nel
+## cielo, le nubi nere, la pioggia e il lampo dei fulmini.
+func _build_look() -> void:
+	_look = Node3D.new()
+	add_child(_look)
+	# Le fiamme: coni che tremolano, in due file sfalsate. Nel cielo, sbuffi
+	# di nubi nere alti come le fiamme.
+	var mesh: PrimitiveMesh
+	if sky:
+		var puff := SphereMesh.new()
+		puff.radius = 2.2
+		puff.height = 1.4
+		puff.radial_segments = 7
+		puff.rings = 3
+		mesh = puff
+	else:
+		var cone := CylinderMesh.new()
+		cone.top_radius = 0.0
+		cone.bottom_radius = 1.3
+		cone.height = 1.0
+		cone.radial_segments = 5
+		cone.rings = 1
+		mesh = cone
+	mesh.material = Style.material("storm_cloud" if sky else "fire")
+	_flames = MultiMesh.new()
+	_flames.transform_format = MultiMesh.TRANSFORM_3D
+	_flames.mesh = mesh
+	_flames.instance_count = FLAMES
+	var flames := MultiMeshInstance3D.new()
+	flames.multimesh = _flames
+	# Il tremolio si aggiorna a ogni fotogramma: niente interpolazione fisica
+	# (altrimenti Godot avvisa a ogni aggiornamento).
+	flames.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	_look.add_child(flames)
+
+	# Dietro il fuoco, la terra bruciata (nel cielo, le nubi fradice).
+	var ground := MeshInstance3D.new()
+	var plane := BoxMesh.new()
+	plane.size = Vector3(WIDTH * 3.0, 0.05, 200.0)
+	plane.material = Style.material("storm_ground" if sky else "burnt")
+	ground.mesh = plane
+	ground.position = Vector3(0.0, 0.03, 100.5)
+	_look.add_child(ground)
+
+	# Il bagliore che illumina la strada davanti alla rana (nel cielo, una luce
+	# fredda e livida).
+	for x in [-30.0, 0.0, 30.0]:
+		var light := OmniLight3D.new()
+		light.light_color = Color(0.55, 0.65, 1.0) if sky else Color(1.0, 0.45, 0.1)
+		light.omni_range = 45.0
+		light.position = Vector3(x, 5.0, -2.0)
+		_look.add_child(light)
+		_lights.append(light)
+
+	_front_smoke = _smoke(Vector3(WIDTH / 2.0, 1.0, 1.0), 70, 3.5, 0.9)
+	_front_smoke.direction = Vector3(0.0, 1.0, -0.3)
+	_look.add_child(_front_smoke)
+	if not sky:
+		return
+	# La pioggia, che scende davanti al fronte.
+	var rain := CPUParticles3D.new()
+	var drop := BoxMesh.new()
+	drop.size = Vector3(0.04, 0.7, 0.04)
+	drop.material = Style.material("rain")
+	rain.mesh = drop
+	rain.amount = 400
+	rain.lifetime = 0.8
+	rain.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	rain.emission_box_extents = Vector3(WIDTH / 2.0, 0.5, 8.0)
+	rain.direction = Vector3.DOWN
+	rain.spread = 4.0
+	rain.gravity = Vector3.ZERO
+	rain.initial_velocity_min = 22.0
+	rain.initial_velocity_max = 26.0
+	rain.position = Vector3(0.0, 16.0, -6.0)
+	rain.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_look.add_child(rain)
+	# Il lampo dei fulmini: si accende un attimo a ogni colpo.
+	_flash = OmniLight3D.new()
+	_flash.light_color = Color(0.85, 0.9, 1.0)
+	_flash.omni_range = 70.0
+	_flash.light_energy = 0.0
+	_look.add_child(_flash)
+
+
+## I fulmini del temporale: ogni tanto uno cade sul fronte, con il lampo e il
+## tuono. Solo da vedere e sentire: il pericolo è il fronte, come il fuoco.
+func _lightning(delta: float) -> void:
+	_flash.light_energy = maxf(_flash.light_energy - delta * 40.0, 0.0)
+	_bolt_wait -= delta
+	if _bolt_wait > 0.0:
+		return
+	_bolt_wait = _rng.randf_range(0.5, 1.8)
+	var x := _rng.randf_range(-40.0, 40.0)
+	var bolt := Node3D.new()
+	var top := Vector3(x, 30.0, _rng.randf_range(-2.0, 2.0))
+	for i in 5:
+		var bottom := top + Vector3(_rng.randf_range(-3.0, 3.0), -6.0, _rng.randf_range(-1.0, 1.0))
+		var piece := MeshInstance3D.new()
+		var stick := BoxMesh.new()
+		# Lungo Z, poi girato verso il pezzo successivo.
+		stick.size = Vector3(0.35, 0.35, top.distance_to(bottom))
+		stick.material = Style.material("lightning")
+		piece.mesh = stick
+		piece.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		piece.transform = Transform3D(Basis.looking_at(bottom - top, Vector3.FORWARD), (top + bottom) / 2.0)
+		bolt.add_child(piece)
+		top = bottom
+	_look.add_child(bolt)
+	bolt.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	get_tree().create_timer(0.12).timeout.connect(bolt.queue_free)
+	_flash.position = Vector3(x, 12.0, -4.0)
+	_flash.light_energy = 6.0
+	Sfx.play_at(&"thunder", to_global(Vector3(x, 10.0, 0.0)), 0.0, _rng.randf_range(0.85, 1.1), 4.0)
 
 
 func _smoke(extents: Vector3, amount: int, lifetime: float, radius: float) -> CPUParticles3D:

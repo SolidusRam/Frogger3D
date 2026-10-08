@@ -8,6 +8,8 @@ extends Node3D
 @export var length := 70.0
 @export var min_speed := 6.0
 @export var max_speed := 12.0
+## Il cielo (vedi Worlds): i veicoli che volano.
+@export var sky := false
 
 
 func _ready() -> void:
@@ -18,6 +20,7 @@ func _ready() -> void:
 		lane.direction = 1.0 if i % 2 == 0 else -1.0
 		lane.speed = randf_range(min_speed, max_speed)
 		lane.half_length = length / 2.0
+		lane.sky = sky
 		add_child(lane)
 
 

@@ -25,7 +25,7 @@ const VOLUME := {
 	"tongue_shoot": -8.0, "tongue_stick": -4.0, "tongue_reel": -8.0, "power_ready": -14.0,
 	"car_engine": -4.0, "car_horn": -6.0, "car_skid": -6.0, "car_crash": -2.0,
 	"wreck_hit": -8.0, "car_explode": 0.0,
-	"fire_loop": 0.0, "fire_roar": 0.0, "fire_ignite": -6.0, "sizzle": -6.0,
+	"fire_loop": 0.0, "fire_roar": 0.0, "fire_ignite": -6.0, "sizzle": -6.0, "storm_loop": 0.0, "storm_roar": 0.0, "thunder": -4.0,
 	"river_loop": -4.0, "harbor_loop": -4.0, "log_creak": -8.0, "log_bubbles": -10.0,
 	"croc_snap": -4.0, "croc_open": -10.0, "eagle_screech": -10.0,
 	"rail_bell": -6.0, "train_horn": -2.0, "train_loop": 0.0,
@@ -50,7 +50,7 @@ const DEFAULT_VOICES := 3
 const LOOP_VOICES := {
 	"car_engine": 6, "jet_loop": 2, "train_loop": 2, "fly_buzz": 2, "river_loop": 2,
 	"harbor_loop": 1, "tug_loop": 2, "ship_engine": 2, "scrape_loop": 1, "fire_loop": 1,
-	"fire_roar": 1, "rail_bell": 2, "crane_warning": 2, "glide_wind": 1, "sizzle": 1,
+	"fire_roar": 1, "storm_loop": 1, "storm_roar": 1, "rail_bell": 2, "crane_warning": 2, "glide_wind": 1, "sizzle": 1,
 }
 ## Variazione casuale del tono a ogni colpo: dieci pugni di fila non suonano
 ## mai uguali. L'interfaccia no: deve essere sempre la stessa voce.

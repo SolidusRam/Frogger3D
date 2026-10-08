@@ -15,6 +15,8 @@ const TREE := preload("res://assets/models/tree.glb")
 const HOUSE := preload("res://assets/models/house.glb")
 const LAMP := preload("res://assets/models/lamp.glb")
 const DEN := preload("res://assets/models/den.glb")
+## La tana del cielo: la pozza di pioggia con l'arcobaleno (vedi Worlds).
+const DEN_SKY := preload("res://assets/models/den_sky.glb")
 
 
 @export var frog: Frog
@@ -273,6 +275,7 @@ func _add_chunk(kind: Kind) -> void:
 			road.length = (play_half_width + Edges.TUNNEL_DEPTH * 0.65) * 2.0
 			road.min_speed = minf(6.0 + difficulty * 0.7, 14.0)
 			road.max_speed = minf(12.0 + difficulty * 0.9, 20.0)
+			road.sky = Worlds.is_void(world)
 			chunk.add_child(road)
 			chunk.set_meta("lanes", lanes)
 		Kind.RIVER:
@@ -297,6 +300,7 @@ func _add_chunk(kind: Kind) -> void:
 				track.direction = 1.0 if randf() < 0.5 else -1.0
 				track.length = rail_ground_width
 				track.play_half_width = play_half_width
+				track.sky = Worlds.is_void(world)
 				chunk.add_child(track)
 		Kind.AIRPORT:
 			# Un raccordo con gli aerei: le ali coprono quasi 26 m.
@@ -307,6 +311,7 @@ func _add_chunk(kind: Kind) -> void:
 			taxiway.length = rail_ground_width
 			taxiway.play_half_width = play_half_width
 			taxiway.difficulty = difficulty
+			taxiway.sky = Worlds.is_void(world)
 			chunk.add_child(taxiway)
 		Kind.PORT:
 			# Una corsia d'acqua con le navi, due nelle sezioni avanzate.
@@ -436,7 +441,7 @@ func _prop(chunk: Node3D, scene: PackedScene, at: Vector3) -> Node3D:
 ## sopra il passaggio (modello di Blender, solo da vedere). Entrarci registra
 ## il checkpoint.
 func _add_den(chunk: Node3D, depth: float) -> void:
-	var den := _prop(chunk, DEN, Vector3.ZERO)
+	var den := _prop(chunk, DEN_SKY if Worlds.is_void(world) else DEN, Vector3.ZERO)
 	chunk.set_meta("den", den)
 	# I fiori sono boccioli chiusi finché la rana non arriva.
 	for flower: Node3D in den.find_children("Flower_*", "", false, false):

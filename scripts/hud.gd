@@ -62,6 +62,7 @@ var _chips := {}
 var _message: Label
 var _fire_label: Label
 var _fire_box: HBoxContainer
+var _fire_icon: SlotIcon
 var _vignette: ColorRect
 var _game_over: PanelContainer
 var _game_over_text: Label
@@ -179,6 +180,11 @@ func set_fire_distance(distance: float, danger: float) -> void:
 	var pulse := 1.0 + 0.12 * danger * absf(sin(Time.get_ticks_msec() * 0.008))
 	_fire_box.scale = Vector2(pulse, pulse)
 	(_vignette.material as ShaderMaterial).set_shader_parameter("strength", danger)
+
+
+## L'icona dell'inseguitore: la fiamma, o nel cielo il temporale.
+func set_chaser_icon(kind: String) -> void:
+	_fire_icon.kind = kind
 
 
 func set_flies(count: int, golden := 0) -> void:
@@ -589,7 +595,8 @@ void fragment() {
 	_fire_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	_fire_box.add_theme_constant_override("separation", 6)
 	_root.add_child(_fire_box)
-	_fire_box.add_child(SlotIcon.make("fire", 32.0))
+	_fire_icon = SlotIcon.make("fire", 32.0)
+	_fire_box.add_child(_fire_icon)
 	_fire_label = _label(22, "")
 	_fire_box.add_child(_fire_label)
 

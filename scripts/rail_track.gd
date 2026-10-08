@@ -8,6 +8,10 @@ extends Node3D
 ## stesso avviso. Corre lungo l'asse X locale.
 
 const SIGNAL := preload("res://assets/models/signal.glb")
+## Nel cielo (vedi Worlds) è una funivia: il cavo in alto, i piloni fuori
+## dalla zona di gioco, le cabine al posto dei vagoni.
+const PYLON := preload("res://assets/models/cable_pylon.glb")
+const CABLE_HEIGHT := 7.5
 
 enum Phase { WAITING, WARNING, PASSING }
 
@@ -24,6 +28,8 @@ var max_heat_bonus := 0.3
 ## Il rapido: quanti treni lo sono dal livello dei gradini, e la velocità.
 var express_chance := 0.5
 var express_speed := 55.0
+## La funivia del cielo.
+var sky := false
 
 var phase := Phase.WAITING
 var train: Train
@@ -92,6 +98,7 @@ func is_warning() -> bool:
 
 func _send_train() -> void:
 	train = Train.new()
+	train.sky = sky
 	train.direction = direction
 	train.express = Heat.level() >= Heat.STEP_LEVEL and randf() < express_chance
 	train.speed = express_speed if train.express else base_speed * (1.0 + max_heat_bonus * Heat.ratio())
@@ -121,6 +128,9 @@ func _update_lamps(delta: float) -> void:
 
 
 func _build_track() -> void:
+	if sky:
+		_build_cable()
+		return
 	var ballast := MeshInstance3D.new()
 	ballast.mesh = _box(Vector3(length, 0.16, 3.2), "ballast")
 	ballast.position.y = 0.08
@@ -141,6 +151,22 @@ func _build_track() -> void:
 	var sleepers_instance := MultiMeshInstance3D.new()
 	sleepers_instance.multimesh = sleepers
 	add_child(sleepers_instance)
+
+
+## Il cavo della funivia, retto da piloni oltre il bordo della zona di gioco.
+func _build_cable() -> void:
+	var cable := MeshInstance3D.new()
+	cable.mesh = _box(Vector3(length, 0.08, 0.08), "trim")
+	cable.position.y = CABLE_HEIGHT
+	add_child(cable)
+	for side in [-1.0, 1.0]:
+		var x: float = side * (play_half_width + 8.0)
+		while absf(x) < length / 2.0:
+			var pylon: Node3D = PYLON.instantiate()
+			pylon.position.x = x
+			add_child(pylon)
+			Style.apply_palette(pylon)
+			x += side * 60.0
 
 
 ## Pali sul lato da cui arriva la rana (+Z), con le luci verso di lei.

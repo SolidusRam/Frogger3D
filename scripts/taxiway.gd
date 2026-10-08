@@ -16,6 +16,8 @@ var play_half_width := 37.0
 var min_interval := 9.0
 var max_interval := 15.0
 var difficulty := 0
+## Il cielo (vedi Worlds): l'aereo a eliche.
+var sky := false
 ## Quanti aerei atterrano di pancia dal livello dei gradini.
 var belly_chance := 0.5
 ## Metri di rampa prima del punto di contatto: l'aereo parte da lì, alto
@@ -63,6 +65,7 @@ func _physics_process(delta: float) -> void:
 func _send_plane() -> void:
 	var plane := Airplane.create(direction, base_speed * (1.0 + max_heat_bonus * Heat.ratio()))
 	plane.play_half_width = play_half_width
+	plane.sky = sky
 	var belly := Heat.level() >= Heat.STEP_LEVEL and randf() < belly_chance
 	var into := randf_range(0.0, 6.0) if belly else randf_range(8.0, 50.0)
 	plane.land(-direction * (play_half_width - into), APPROACH, belly)
