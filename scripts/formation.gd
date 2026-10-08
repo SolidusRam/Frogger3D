@@ -34,12 +34,14 @@ var speed := 16.0
 var wingmen := 3
 ## Secondi fra il capo e il primo gregario, e fra un gregario e l'altro.
 var first_delay := 1.6
-var spacing := 0.45
+var spacing := 0.38
 ## Mezza profondità del blocco: le curve ci stanno dentro.
 var half_depth := 10.0
 ## Da dove entra a dove esce, lungo X.
 var half_length := 70.0
-var loop_chance := 0.6
+var loop_chance := 0.75
+## Un secondo giro della morte, nei passaggi che ne hanno già uno.
+var double_loop_chance := 0.35
 ## Il gradino: lo scarabocchio.
 var scribble := false
 
@@ -242,12 +244,17 @@ func _place_all() -> void:
 # --- Il percorso --------------------------------------------------------------
 
 ## Entra da un lato e esce dall'altro, ondeggiando lungo Z dentro il blocco;
-## forse un giro della morte. Lo scarabocchio aggiunge zig-zag fitti.
+## forse uno o due giri della morte. Lo scarabocchio aggiunge zig-zag fitti.
 func _build_path() -> void:
-	var amp := randf_range(0.35, 0.8) * (half_depth - 2.5)
-	var waves := randf_range(0.6, 1.6)
+	var amp := randf_range(0.5, 0.95) * (half_depth - 2.5)
+	var waves := randf_range(0.8, 2.0)
 	var phase := randf() * TAU
-	var loop_x := randf_range(-18.0, 18.0) if randf() < loop_chance else INF
+	var loops: Array[float] = []
+	if randf() < loop_chance:
+		if randf() < double_loop_chance:
+			loops.assign([randf_range(-22.0, -8.0) * direction, randf_range(8.0, 22.0) * direction])
+		else:
+			loops.append(randf_range(-18.0, 18.0))
 	var x := -direction * half_length
 	while (x - direction * half_length) * direction < 0.0:
 		var z := amp * sin(waves * PI * x / half_length + phase)
@@ -258,9 +265,9 @@ func _build_path() -> void:
 		z = clampf(z, -half_depth + 1.5, half_depth - 1.5)
 		_points.append(Vector3(x, y, z))
 		_ups.append(Vector3.UP)
-		if loop_x != INF and (x - loop_x) * direction >= 0.0:
+		if not loops.is_empty() and (x - loops[0]) * direction >= 0.0:
 			_add_loop(Vector3(x, y, z))
-			loop_x = INF
+			loops.remove_at(0)
 		x += direction * SAMPLE
 
 
