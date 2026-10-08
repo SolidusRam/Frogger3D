@@ -4,11 +4,15 @@ extends Floater
 ## (il gradino del fiume) affonda sotto il peso della rana: appena lei sale
 ## trema, dopo sink_delay secondi comincia ad affondare, facendo bolle, e in
 ## sink_time secondi va sott'acqua. Quando la rana scende torna su.
+## Nel cielo (vedi Worlds) è una nuvola: lo stesso, ma si sfalda verso il
+## basso invece di fare bolle.
 
 ## Secondi con la rana sopra prima di cominciare ad affondare.
 var sink_delay := 1.0
 ## Secondi per andare del tutto sott'acqua.
 var sink_time := 2.0
+## Una nuvola invece di un tronco (il cielo).
+var cloud := false
 
 const MODEL := preload("res://assets/models/log.glb")
 
@@ -23,6 +27,10 @@ var _sunk := 0.0
 
 func _build() -> void:
 	super()
+	if cloud:
+		_bark = Cloud.build(size.z, size.x * 1.1, size.y, get_instance_id())
+		add_child(_bark)
+		return
 	# Il modello è lungo 1 m: la corteccia si allunga, teste e moncone vanno
 	# al loro posto.
 	_bark = MODEL.instantiate()
@@ -52,9 +60,9 @@ func _physics_process(delta: float) -> void:
 	# L'avviso: trema appena la rana sale, fa bolle mentre affonda.
 	var trembling := loaded or _sunk > 0.0
 	# Scricchiola appena la rana sale, gorgoglia quando comincia ad affondare.
-	if loaded and _weighted == delta:
+	if loaded and _weighted == delta and not cloud:
 		Sfx.play_at(&"log_creak", global_position)
-	if loaded and _weighted > sink_delay and _weighted - delta <= sink_delay:
+	if loaded and _weighted > sink_delay and _weighted - delta <= sink_delay and not cloud:
 		Sfx.play_at(&"log_bubbles", global_position)
 	_bark.position = Vector3(randf_range(-0.04, 0.04), randf_range(-0.03, 0.03), 0.0) if trembling else Vector3.ZERO
 	_set_bubbling(loaded and _weighted > sink_delay * 0.5)
@@ -87,13 +95,14 @@ func _set_bubbling(on: bool) -> void:
 		bubble.height = 0.24
 		bubble.radial_segments = 6
 		bubble.rings = 3
-		bubble.material = Style.material("sign_white")
+		bubble.material = Style.material("cloud" if cloud else "sign_white")
 		_bubbles.mesh = bubble
 		_bubbles.amount = 24
 		_bubbles.lifetime = 0.6
 		_bubbles.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
 		_bubbles.emission_box_extents = Vector3(size.x * 0.7, 0.1, size.z * 0.5)
-		_bubbles.direction = Vector3.UP
+		# La nuvola si sfalda verso il basso; il tronco fa le bolle.
+		_bubbles.direction = Vector3.DOWN if cloud else Vector3.UP
 		_bubbles.spread = 25.0
 		_bubbles.gravity = Vector3.ZERO
 		_bubbles.initial_velocity_min = 1.0

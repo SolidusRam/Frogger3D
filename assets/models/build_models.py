@@ -60,6 +60,8 @@ PREVIEW = {
     "felt_blue": (0.2, 0.35, 0.8, 1), "felt_green": (0.25, 0.6, 0.3, 1), "felt_purple": (0.55, 0.3, 0.75, 1),
     "gold": (0.95, 0.75, 0.2, 1), "sign_white": (0.95, 0.95, 0.92, 1),
     "croc": (0.2, 0.4, 0.2, 1), "croc_dark": (0.16, 0.32, 0.16, 1), "croc_eye": (0.95, 0.85, 0.2, 1),
+    "eagle": (0.42, 0.27, 0.14, 1), "eagle_dark": (0.22, 0.14, 0.08, 1), "eagle_head": (0.95, 0.94, 0.9, 1),
+    "beak": (0.98, 0.75, 0.15, 1), "eagle_eye": (0.98, 0.8, 0.1, 1),
 }
 
 
@@ -1244,6 +1246,79 @@ def build_lamp():
     save("lamp")
 
 
+def build_eagle():
+    """L'aquila del cielo, al posto del coccodrillo e con la sua stessa
+    collisione (1,4 x 0,8 x 6 m): la schiena è una piattaforma, il becco morde.
+    Corpo bruno, testa bianca, becco giallo uncinato; il becco superiore (Jaw)
+    ruota sul suo attacco e Godot lo apre come la mascella del coccodrillo; le
+    ali (WingL, WingR) hanno il perno alla spalla e Godot le fa battere.
+    Davanti +Y, origine al centro."""
+    reset()
+    parts = []
+    # Il corpo: dal collo alla coda, la schiena piatta in cima (z 0,38).
+    sections = [(1.4, 0.45, -0.3, 0.3), (0.6, 0.62, -0.4, 0.38), (-0.6, 0.58, -0.38, 0.38),
+                (-1.5, 0.4, -0.28, 0.3), (-1.9, 0.28, -0.18, 0.2)]
+    for i in range(len(sections) - 1):
+        y0, w0, b0, t0 = sections[i]
+        y1, w1, b1, t1 = sections[i + 1]
+        parts.append(block("body_%d" % i,
+                           [(-w0 * 0.8, y0, b0), (w0 * 0.8, y0, b0), (w1 * 0.8, y1, b1), (-w1 * 0.8, y1, b1)],
+                           [(-w0, y0, t0), (w0, y0, t0), (w1, y1, t1), (-w1, y1, t1)],
+                           "eagle"))
+    # La coda a ventaglio, con la punta scura.
+    parts.append(block("tail", [(-0.28, -1.9, 0.02), (0.28, -1.9, 0.02), (0.75, -2.8, 0.0), (-0.75, -2.8, 0.0)],
+                       [(-0.28, -1.9, 0.16), (0.28, -1.9, 0.16), (0.75, -2.8, 0.08), (-0.75, -2.8, 0.08)], "eagle"))
+    parts.append(block("tail_tip", [(-0.75, -2.8, 0.0), (0.75, -2.8, 0.0), (0.8, -3.0, 0.0), (-0.8, -3.0, 0.0)],
+                       [(-0.75, -2.8, 0.08), (0.75, -2.8, 0.08), (0.8, -3.0, 0.06), (-0.8, -3.0, 0.06)], "eagle_dark"))
+    # La testa bianca e il becco inferiore.
+    parts.append(block("neck", [(-0.36, 1.4, -0.28), (0.36, 1.4, -0.28), (0.3, 1.8, -0.22), (-0.3, 1.8, -0.22)],
+                       [(-0.45, 1.4, 0.3), (0.45, 1.4, 0.3), (0.34, 1.8, 0.42), (-0.34, 1.8, 0.42)], "eagle_head"))
+    parts.append(block("head", [(-0.3, 1.8, -0.22), (0.3, 1.8, -0.22), (0.22, 2.3, -0.12), (-0.22, 2.3, -0.12)],
+                       [(-0.34, 1.8, 0.42), (0.34, 1.8, 0.42), (0.24, 2.3, 0.3), (-0.24, 2.3, 0.3)], "eagle_head"))
+    parts.append(block("beak_low", [(-0.14, 2.3, -0.1), (0.14, 2.3, -0.1), (0.05, 2.75, -0.02), (-0.05, 2.75, -0.02)],
+                       [(-0.14, 2.3, 0.04), (0.14, 2.3, 0.04), (0.05, 2.75, 0.02), (-0.05, 2.75, 0.02)], "beak"))
+    # Gli occhi feroci, con la fronte sporgente sopra.
+    for side in (1, -1):
+        parts.append(ico("eye_%d" % side, 0.09, (side * 0.27, 2.05, 0.24), "eagle_eye"))
+        parts.append(box("pupil_%d" % side, side * 0.27 - 0.03, side * 0.27 + 0.03, 2.1, 2.14, 0.2, 0.28, "pupil"))
+        parts.append(block("brow_%d" % side, [(side * 0.12, 1.9, 0.3), (side * 0.36, 1.9, 0.28), (side * 0.32, 2.2, 0.3), (side * 0.12, 2.2, 0.32)],
+                           [(side * 0.12, 1.9, 0.42), (side * 0.36, 1.9, 0.38), (side * 0.32, 2.2, 0.36), (side * 0.12, 2.2, 0.38)], "eagle_head"))
+    # Le zampe gialle raccolte sotto la pancia, con gli artigli scuri.
+    for side in (1, -1):
+        parts.append(box("leg_%d" % side, side * 0.15, side * 0.32, -0.9, -0.5, -0.55, -0.3, "beak"))
+        for k in range(3):
+            parts.append(cone("claw_%d_%d" % (side, k), 0.04, 0.16, (side * (0.17 + k * 0.06), -0.45, -0.55), "pupil", sides=4))
+    join("Body", parts)
+
+    # Il becco superiore uncinato: il perno al suo attacco.
+    jaw = [block("beak_up", [(-0.16, 2.25, 0.02), (0.16, 2.25, 0.02), (0.06, 2.85, 0.0), (-0.06, 2.85, 0.0)],
+                 [(-0.15, 2.25, 0.24), (0.15, 2.25, 0.24), (0.05, 2.85, 0.12), (-0.05, 2.85, 0.12)], "beak")]
+    hook = cone("hook", 0.07, 0.22, (0, 2.88, -0.02), "beak", sides=4)
+    hook.rotation_euler = (math.pi, 0, 0)
+    jaw.append(hook)
+    part("Jaw", jaw, (0, 2.25, 0.04))
+
+    # Le ali aperte: piatte, con le remiganti scure come dita in punta.
+    for name, side in (("WingL", -1), ("WingR", 1)):
+        wing = [block("wing_%d" % side,
+                      [(side * 0.45, 1.0, 0.1), (side * 3.4, 0.8, 0.1), (side * 3.4, -0.6, 0.1), (side * 0.45, -0.4, 0.1)],
+                      [(side * 0.45, 1.0, 0.24), (side * 3.4, 0.8, 0.18), (side * 3.4, -0.6, 0.18), (side * 0.45, -0.4, 0.24)],
+                      "eagle")]
+        wing.append(block("covert_%d" % side,
+                          [(side * 0.45, 1.0, 0.24), (side * 2.6, 0.85, 0.18), (side * 2.6, 0.3, 0.18), (side * 0.45, 0.4, 0.24)],
+                          [(side * 0.45, 1.0, 0.3), (side * 2.6, 0.85, 0.24), (side * 2.6, 0.3, 0.24), (side * 0.45, 0.4, 0.3)],
+                          "eagle_dark"))
+        for k in range(4):
+            y = 0.65 - k * 0.38
+            spread = k * 0.12
+            wing.append(block("primary_%d_%d" % (side, k),
+                              [(side * 3.4, y, 0.12), (side * (4.3 - spread * 0.5), y - 0.05 - spread, 0.12), (side * (4.3 - spread * 0.5), y - 0.25 - spread, 0.12), (side * 3.4, y - 0.3, 0.12)],
+                              [(side * 3.4, y, 0.17), (side * (4.3 - spread * 0.5), y - 0.05 - spread, 0.15), (side * (4.3 - spread * 0.5), y - 0.25 - spread, 0.15), (side * 3.4, y - 0.3, 0.17)],
+                              "eagle_dark"))
+        part(name, wing, (side * 0.45, 0.3, 0.17))
+    save("eagle")
+
+
 def build_mountain():
     reset()
     parts = [cone("rock", 40.0, 36.0, (0, 0, 18.0), "mountain", sides=7)]
@@ -1254,7 +1329,7 @@ def build_mountain():
 
 BUILDERS = {
     "compact": build_compact, "sedan": build_sedan, "van": build_van, "truck": build_truck,
-    "frog": build_frog, "den": build_den, "log": build_log, "crocodile": build_crocodile, "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
+    "frog": build_frog, "den": build_den, "log": build_log, "crocodile": build_crocodile, "eagle": build_eagle, "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
     "mountain": build_mountain, "locomotive": build_locomotive, "boxcar": build_boxcar,
     "flatcar": build_flatcar, "signal": build_signal, "airplane": build_airplane,
     "crane": build_crane, "crane_trolley": build_crane_trolley, "ship": build_ship,

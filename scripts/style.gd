@@ -73,8 +73,11 @@ var styles: Array[Dictionary] = [
 			"portal": Color(0.45, 0.9, 1.0), "portal_veil": Color(0.6, 0.95, 1.0, 0.45), "portal_beam": Color(0.5, 0.9, 1.0, 0.22),
 			"cielo/grass": Color(0.93, 0.95, 0.98), "cielo/den_grass": Color(0.84, 0.9, 0.97), "cielo/sidewalk": Color(0.8, 0.84, 0.9),
 			"cielo/asphalt": Color(0.6, 0.66, 0.77), "cielo/gravel": Color(0.76, 0.8, 0.88), "cielo/ballast": Color(0.7, 0.75, 0.84),
-			"cielo/tarmac": Color(0.62, 0.68, 0.78), "cielo/concrete": Color(0.84, 0.88, 0.94), "cielo/far_ground": Color(0.8, 0.87, 0.96),
+			"cielo/tarmac": Color(0.62, 0.68, 0.78), "cielo/concrete": Color(0.84, 0.88, 0.94), "cielo/far_ground": Color(0.42, 0.58, 0.86),
 			"cielo/mountain": Color(0.92, 0.94, 0.98), "cielo/mountain_snow": Color(0.98, 0.98, 1.0),
+			"cloud": Color(0.96, 0.97, 1.0), "cloud_shade": Color(0.78, 0.84, 0.94), "cielo/current": Color(0.92, 0.96, 1.0),
+			"eagle": Color(0.45, 0.29, 0.15), "eagle_dark": Color(0.24, 0.15, 0.08), "eagle_head": Color(0.96, 0.95, 0.9),
+			"beak": Color(1.0, 0.76, 0.15), "eagle_eye": Color(1.0, 0.82, 0.1),
 		},
 		"phases": [
 			{"sky_top": Color(0.35, 0.55, 0.85), "sky_horizon": Color(0.75, 0.82, 0.9), "ground": Color(0.4, 0.45, 0.35),
@@ -86,6 +89,19 @@ var styles: Array[Dictionary] = [
 			{"sky_top": Color(0.02, 0.03, 0.1), "sky_horizon": Color(0.35, 0.08, 0.1), "ground": Color(0.05, 0.05, 0.08),
 				"sun": Color(0.55, 0.65, 1.0), "sun_energy": 0.45, "sun_elevation": 40.0, "ambient": 0.35,
 				"fog": Color(0.1, 0.04, 0.08), "fog_density": 0.008},
+		],
+		# Il cielo (vedi Worlds): un blu pieno di giorno, un tramonto rosa e
+		# una notte blu scuro; il mare di nubi sotto prende la luce.
+		"cielo/phases": [
+			{"sky_top": Color(0.12, 0.38, 0.88), "sky_horizon": Color(0.62, 0.8, 1.0), "ground": Color(0.75, 0.82, 0.92),
+				"sun": Color(1.0, 0.98, 0.92), "sun_energy": 1.1, "sun_elevation": 55.0, "ambient": 1.0,
+				"fog": Color(0.7, 0.82, 0.98), "fog_density": 0.0},
+			{"sky_top": Color(0.28, 0.25, 0.6), "sky_horizon": Color(1.0, 0.55, 0.5), "ground": Color(0.75, 0.5, 0.55),
+				"sun": Color(1.0, 0.65, 0.5), "sun_energy": 0.9, "sun_elevation": 10.0, "ambient": 0.75,
+				"fog": Color(0.95, 0.6, 0.55), "fog_density": 0.003},
+			{"sky_top": Color(0.02, 0.04, 0.16), "sky_horizon": Color(0.12, 0.16, 0.38), "ground": Color(0.06, 0.08, 0.16),
+				"sun": Color(0.6, 0.7, 1.0), "sun_energy": 0.5, "sun_elevation": 40.0, "ambient": 0.4,
+				"fog": Color(0.08, 0.1, 0.22), "fog_density": 0.006},
 		],
 	},
 	{
@@ -140,8 +156,11 @@ var styles: Array[Dictionary] = [
 			"car_4": Color(0.4, 0.25, 0.45), "car_5": Color(0.7, 0.7, 0.65),
 			"cielo/grass": Color(0.82, 0.84, 0.86), "cielo/den_grass": Color(0.72, 0.78, 0.84), "cielo/sidewalk": Color(0.7, 0.73, 0.78),
 			"cielo/asphalt": Color(0.5, 0.55, 0.64), "cielo/gravel": Color(0.66, 0.7, 0.76), "cielo/ballast": Color(0.6, 0.64, 0.72),
-			"cielo/tarmac": Color(0.52, 0.57, 0.66), "cielo/concrete": Color(0.74, 0.77, 0.82), "cielo/far_ground": Color(0.7, 0.76, 0.84),
+			"cielo/tarmac": Color(0.52, 0.57, 0.66), "cielo/concrete": Color(0.74, 0.77, 0.82), "cielo/far_ground": Color(0.36, 0.48, 0.7),
 			"cielo/mountain": Color(0.8, 0.82, 0.86), "cielo/mountain_snow": Color(0.88, 0.89, 0.92),
+			"cloud": Color(0.86, 0.87, 0.9), "cloud_shade": Color(0.62, 0.67, 0.76), "cielo/current": Color(0.82, 0.86, 0.9),
+			"eagle": Color(0.38, 0.25, 0.13), "eagle_dark": Color(0.2, 0.13, 0.07), "eagle_head": Color(0.85, 0.84, 0.8),
+			"beak": Color(0.88, 0.66, 0.14), "eagle_eye": Color(0.9, 0.72, 0.1),
 		},
 		"phases": [
 			{"sky_top": Color(0.45, 0.55, 0.7), "sky_horizon": Color(0.7, 0.72, 0.72), "ground": Color(0.35, 0.35, 0.3),
@@ -430,7 +449,9 @@ func _apply_colors() -> void:
 func _apply_light() -> void:
 	if _environment == null:
 		return
-	var phases: Array = styles[current].phases
+	# Un mondo può avere la sua luce ("cielo/phases"); quello che lo stile non
+	# ha lo prende da Base.
+	var phases: Array = styles[current].get(world + "/phases", styles[0].get(world + "/phases", styles[current].phases))
 	var low := mini(floori(phase), phases.size() - 2)
 	var t := phase - low
 	var a: Dictionary = phases[low]

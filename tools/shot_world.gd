@@ -1,7 +1,8 @@
 extends SceneTree
 ## Strumento per gli screenshot (vedi tools/screenshot.sh), non fa parte del gioco.
 ## I mondi. SCENE: portale (il teletrasporto visto dalla rana al calore 5) |
-## cielo (la rana appena arrivata nel cielo, che guarda avanti). HEAT, SHOT.
+## cielo (la rana appena arrivata nel cielo, che guarda avanti) | nuvole (un
+## fiume di vuoto con nuvole e aquile). HEAT, SHOT.
 var frame := 0
 var main: Node
 var frog: Node3D
@@ -56,8 +57,13 @@ func _process(_d: float) -> bool:
 	frog.invincible = true
 	if frame == 2:
 		heat.running = false
-		if scene == "cielo":
+		if scene in ["cielo", "nuvole"]:
 			main.next_world()
+		if scene == "nuvole":
+			course.jump_to(3)
+			var lanes := by_script(course, "river_lane.gd")
+			for lane in lanes:
+				lane.crocodile_chance = 0.5
 		heat.set_value(float(OS.get_environment("HEAT")))
 	if frame == 40 and scene == "portale":
 		heat.set_value(100.0)
@@ -70,6 +76,8 @@ func _process(_d: float) -> bool:
 				return true
 			var p: Node3D = portals[0]
 			shoot_from(p.global_position + Vector3(-6, 7, 26), p.global_position + Vector3(0, 4, 0))
+		elif scene == "nuvole":
+			shoot_from(frog.global_position + Vector3(-8, 9, 6), frog.global_position + Vector3(4, -1, -14))
 		else:
 			shoot_from(frog.global_position + Vector3(0, 6, 10), frog.global_position + Vector3(0, 1, -30))
 	if frame == 110:

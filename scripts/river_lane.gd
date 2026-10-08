@@ -16,6 +16,8 @@ var float_height := 0.0
 var min_gap := 3.0
 var max_gap := 9.0
 var crocodile_chance := 0.25
+## Il cielo (vedi Worlds): nuvole e aquile invece di tronchi e coccodrilli.
+var sky := false
 
 var _last: Floater
 var _next_is_crocodile := false
@@ -48,9 +50,11 @@ func _spawn(x: float) -> Floater:
 	var floater: Floater
 	if _next_is_crocodile:
 		floater = Crocodile.new()
+		floater.eagle = sky
 		floater.size = CROCODILE_SIZE
 	else:
 		floater = RiverLog.new()
+		floater.cloud = sky
 		floater.size = Vector3(LOG_WIDTH, LOG_HEIGHT, _next_length)
 	# Il lato anteriore (-Z locale) guarda nel verso della corrente.
 	floater.position = Vector3(x, float_height, 0.0)

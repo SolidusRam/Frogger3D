@@ -47,6 +47,8 @@ var starting_kit := {}
 @export_group("Mondi")
 ## Il mondo nuovo: la rana ci arriva cadendo da questa altezza.
 @export var world_drop_height := 12.0
+## Chi cade nel vuoto ricompare su una striscia almeno così davanti al fuoco.
+@export var void_fire_margin := 3.0
 
 @export_group("Tempi speciali")
 ## Fermo-immagine quando il pugno colpisce un'auto.
@@ -108,10 +110,12 @@ func _ready() -> void:
 	Style.bind(environment.environment, sun, post)
 	# Ogni run parte dal primo mondo.
 	Style.set_world(Worlds.id_of(0))
+	_apply_world()
 	record_distance = _load_record()
 	frog.power_used.connect(Heat.on_power_used)
 	frog.punched.connect(_on_punched)
 	frog.died.connect(_on_frog_died)
+	frog.fell_into_void.connect(_on_fell_into_void)
 	Heat.wreck_created.connect(_on_wreck_created)
 	course.den_reached.connect(_on_den_reached)
 	course.portal_entered.connect(next_world, CONNECT_DEFERRED)
@@ -352,6 +356,7 @@ func next_world() -> void:
 	fire.new_world(course.worlds_passed)
 	if course.world == 0:
 		_add_loop_drought(drought + course.loop)
+	_apply_world()
 	frog.respawn()
 	frog.global_position.y = world_drop_height
 	frog.reset_physics_interpolation()
@@ -360,6 +365,21 @@ func next_world() -> void:
 	if course.loop > 0:
 		title = tr("%s · giro %d") % [title, course.loop + 1]
 	hud.announce(title)
+
+
+## Quello che il mondo cambia fuori dal percorso: il vuoto per la rana, il
+## paesaggio.
+func _apply_world() -> void:
+	var sky := Worlds.is_void(course.world)
+	frog.void_world = sky
+	$Backdrop.set_world(sky)
+
+
+## Caduta nel vuoto del cielo: sull'ultima striscia sicura davanti al fuoco
+## (deciso l'8 ottobre 2026).
+func _on_fell_into_void() -> void:
+	var fire: Wildfire = $Wildfire
+	frog.respawn_at(course.safe_point(frog.global_position.z, fire.front_z - void_fire_margin, frog.global_position.x))
 
 
 ## Il giro nuovo aggiunge l'handicap del livello di Siccità successivo, e le

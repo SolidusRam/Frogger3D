@@ -190,6 +190,29 @@ func next_den_distance() -> float:
 	return best
 
 
+## Dove ricompare chi cade nel vuoto: l'ultima striscia sicura passata
+## (partenza, striscia o tana) che sta ancora davanti al fuoco, cioè a quote
+## più basse di limit_z; se il fuoco se le è già prese tutte, la prima davanti
+## a lui. Alla x della rana, dentro la zona di gioco.
+func safe_point(frog_z: float, limit_z: float, x := 0.0) -> Vector3:
+	var behind := INF
+	var ahead := -INF
+	for chunk in get_children():
+		if not chunk.has_meta("kind") or chunk.get_meta("kind") not in [Kind.START, Kind.SAFE, Kind.DEN]:
+			continue
+		var z: float = chunk.get_meta("near_z") - chunk.get_meta("depth") / 2.0
+		if z >= limit_z:
+			continue
+		if z >= frog_z:
+			behind = minf(behind, z)
+		else:
+			ahead = maxf(ahead, z)
+	var z := behind if behind < INF else ahead
+	if z == -INF:
+		z = frog_z
+	return Vector3(clampf(x, -play_half_width + 1.0, play_half_width - 1.0), 0.5, z)
+
+
 ## Distanza percorsa dall'inizio, in metri.
 func distance() -> float:
 	return best_distance
@@ -262,6 +285,7 @@ func _add_chunk(kind: Kind) -> void:
 			river.min_speed = minf(2.0 + difficulty * 0.3, 5.0) * Heat.river_speed_factor()
 			river.max_speed = minf(5.0 + difficulty * 0.4, 8.0) * Heat.river_speed_factor()
 			river.crocodile_chance = minf(0.2 + difficulty * 0.05, 0.5)
+			river.sky = Worlds.is_void(world)
 			chunk.add_child(river)
 		Kind.RAIL:
 			var tracks := clampi(1 + floori(difficulty / 2.0) + randi_range(0, 1), 1, 3)
@@ -293,6 +317,7 @@ func _add_chunk(kind: Kind) -> void:
 			port.difficulty = difficulty
 			port.length = rail_ground_width
 			port.play_half_width = play_half_width
+			port.sky = Worlds.is_void(world)
 			chunk.add_child(port)
 		Kind.DEN:
 			depth = den_depth
@@ -356,6 +381,9 @@ func _add_side_walls(chunk: Node3D, depth: float) -> void:
 func _add_props(chunk: Node3D, kind: Kind, depth: float) -> void:
 	var outside := play_half_width + 4.0
 	var edge := ground_width / 2.0 - 3.0
+	if Worlds.is_void(world):
+		_add_sky_props(chunk, kind, depth, outside, edge)
+		return
 	match kind:
 		Kind.START, Kind.SAFE, Kind.DEN:
 			for side in [-1.0, 1.0]:
@@ -372,6 +400,25 @@ func _add_props(chunk: Node3D, kind: Kind, depth: float) -> void:
 				var z := -depth / 2.0 + 2.0
 				while z < depth / 2.0:
 					# Il braccio del lampione punta verso la strada.
+					var lamp := _prop(chunk, LAMP, Vector3(side * (play_half_width + 1.2), 0.0, z))
+					lamp.rotation.y = 0.0 if side < 0.0 else PI
+					z += 12.0
+
+
+## Nel cielo, ai lati, ammassi di nuvole al posto di alberi e case; i
+## lampioni lungo le strade restano (è il cielo degli uomini).
+func _add_sky_props(chunk: Node3D, kind: Kind, depth: float, outside: float, edge: float) -> void:
+	match kind:
+		Kind.START, Kind.SAFE, Kind.DEN:
+			for side in [-1.0, 1.0]:
+				for i in maxi(1, floori(depth / 8.0)):
+					var heap := Cloud.heap(randf_range(1.5, 3.0), _chunks_created * 7 + i * 2 + int(side))
+					heap.position = Vector3(side * randf_range(outside, edge), 0.5, randf_range(-depth, depth) * 0.4)
+					chunk.add_child(heap)
+		Kind.ROAD:
+			for side in [-1.0, 1.0]:
+				var z := -depth / 2.0 + 2.0
+				while z < depth / 2.0:
 					var lamp := _prop(chunk, LAMP, Vector3(side * (play_half_width + 1.2), 0.0, z))
 					lamp.rotation.y = 0.0 if side < 0.0 else PI
 					z += 12.0

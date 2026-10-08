@@ -588,6 +588,17 @@ def croc_snap(rng, v):
     return drive(knock + thud + crunch, 2.0)
 
 
+@recipe(variants=2)
+def eagle_screech(rng, v):
+    """L'aquila che apre il becco: lo strillo che scende, come nei film."""
+    n = n_of(0.7)
+    t = t_of(n)
+    f = (2600 - 900 * (t / t[-1])) * jitter(rng, 0.06) * (1 + 0.03 * np.sin(2 * np.pi * 22 * t))
+    voice = saw(f, n) * 0.5 + white(n, rng) * 0.15
+    voice = peak(voice, 2800, 3.0) + peak(voice, 4200, 4.0) * 0.5
+    return voice * env_points(n, [(0, 0), (0.03, 1.0), (0.35, 0.7), (0.7, 0)])
+
+
 @recipe(variants=2, level=-4.0)
 def croc_open(rng, v):
     """La bocca che si apre: un sibilo roco."""

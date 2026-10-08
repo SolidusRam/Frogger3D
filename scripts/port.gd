@@ -16,6 +16,8 @@ var lanes := 1
 var difficulty := 0
 var length := 400.0
 var play_half_width := 37.0
+## Il cielo (vedi Worlds): sotto le corsie c'è il vuoto.
+var sky := false
 
 
 static func depth_for(lane_count: int) -> float:
@@ -31,6 +33,7 @@ func _ready() -> void:
 		var center := z - WATER / 2.0
 		var water := River.new()
 		water.still = true
+		water.sky = sky
 		water.lane_count = 1
 		water.lane_width = WATER
 		water.length = length

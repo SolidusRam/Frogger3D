@@ -27,7 +27,7 @@ const VOLUME := {
 	"wreck_hit": -8.0, "car_explode": 0.0,
 	"fire_loop": 0.0, "fire_roar": 0.0, "fire_ignite": -6.0, "sizzle": -6.0,
 	"river_loop": -4.0, "harbor_loop": -4.0, "log_creak": -8.0, "log_bubbles": -10.0,
-	"croc_snap": -4.0, "croc_open": -10.0,
+	"croc_snap": -4.0, "croc_open": -10.0, "eagle_screech": -10.0,
 	"rail_bell": -6.0, "train_horn": -2.0, "train_loop": 0.0,
 	"jet_loop": 0.0, "plane_touchdown": 0.0, "plane_reverse": 0.0, "scrape_loop": -2.0,
 	"baggage_hit": -6.0, "tug_loop": -6.0,
@@ -42,7 +42,7 @@ const VOLUME := {
 ## Voci contemporanee per suono singolo (le altre: DEFAULT_VOICES).
 const VOICES := {
 	"frog_hop": 1, "frog_swim": 1, "car_crash": 5, "wreck_hit": 4, "car_explode": 4,
-	"car_horn": 2, "car_skid": 2, "croc_snap": 2, "croc_open": 2, "flower_pop": 3,
+	"car_horn": 2, "car_skid": 2, "croc_snap": 2, "croc_open": 2, "eagle_screech": 2, "flower_pop": 3,
 	"fly_collect": 3, "ui_hover": 1, "chain_ding": 2, "baggage_hit": 3,
 }
 const DEFAULT_VOICES := 3

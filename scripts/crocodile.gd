@@ -2,18 +2,24 @@ class_name Crocodile
 extends Floater
 ## Un coccodrillo: la schiena è una piattaforma, la testa no. La bocca si apre a
 ## intervalli e morde la rana che ci si trova davanti.
+## Nel cielo (vedi Worlds) è un'aquila: stessa schiena, il becco morde, e le
+## ali battono.
 
 const HEAD_LENGTH := 1.6
 const MODEL := preload("res://assets/models/crocodile.glb")
+const EAGLE := preload("res://assets/models/eagle.glb")
 
 var bite_damage := 35
 var open_duration := 1.2
 var closed_duration := 2.8
+## Un'aquila invece di un coccodrillo (il cielo).
+var eagle := false
 
 var _mouth: Area3D
 var _jaw: Node3D
 var _mouth_open := false
 var _cycle_time := 0.0
+var _wings: Array[Node3D] = []
 
 
 func _ready() -> void:
@@ -26,6 +32,9 @@ func _physics_process(delta: float) -> void:
 	super(delta)
 	_cycle_time = fmod(_cycle_time + delta, open_duration + closed_duration)
 	_set_mouth_open(_cycle_time < open_duration)
+	# Le ali battono piano, lente come chi plana.
+	for i in _wings.size():
+		_wings[i].rotation.z = (1.0 if i == 0 else -1.0) * sin(_cycle_time * 3.0) * 0.3
 	if _mouth_open:
 		for body in _mouth.get_overlapping_bodies():
 			# Chi è immerso col tuffo passa sotto la bocca.
@@ -45,7 +54,11 @@ func _set_mouth_open(open: bool) -> void:
 	# Si sente solo il coccodrillo vicino: un fiume pieno sarebbe un cantiere.
 	var frog := get_tree().get_first_node_in_group("frog") as Node3D
 	if frog and frog.global_position.distance_to(global_position) < 18.0:
-		Sfx.play_at(&"croc_open" if open else &"croc_snap", global_position)
+		if eagle:
+			if open:
+				Sfx.play_at(&"eagle_screech", global_position)
+		else:
+			Sfx.play_at(&"croc_open" if open else &"croc_snap", global_position)
 	var tween := create_tween()
 	tween.tween_property(_jaw, "rotation:x", deg_to_rad(40.0) if open else 0.0, 0.15)
 
@@ -60,11 +73,14 @@ func _build() -> void:
 	collision.position.z = HEAD_LENGTH / 2.0
 	add_child(collision)
 
-	# Il modello (build_crocodile): la mascella superiore è il nodo Jaw.
-	var model: Node3D = MODEL.instantiate()
+	# Il modello (build_crocodile, build_eagle): la mascella superiore, o il
+	# becco, è il nodo Jaw; le ali dell'aquila sono WingL e WingR.
+	var model: Node3D = (EAGLE if eagle else MODEL).instantiate()
 	add_child(model)
 	Style.apply_palette(model)
 	_jaw = model.get_node("Jaw")
+	if eagle:
+		_wings.assign([model.get_node("WingL"), model.get_node("WingR")])
 
 	var head_z := -size.z / 2.0 + HEAD_LENGTH / 2.0
 	var mouth_shape := BoxShape3D.new()

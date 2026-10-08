@@ -4,6 +4,9 @@ extends Node3D
 ## fondo e l'acqua in superficie. Le correnti corrono lungo X e si susseguono
 ## lungo Z. L'acqua fa galleggiare i rottami e li trascina con la corrente.
 ## Le sponde sono il terreno ai due lati del canale, fuori da questa scena.
+## Nel cielo (vedi Worlds) al posto dell'acqua c'è il vuoto: niente letto né
+## superficie, le scie sono il vento, chi ci finisce cade (lo gestisce la
+## rana) e i rottami precipitano.
 
 @export var lane_count := 4
 @export var lane_width := 3.5
@@ -16,6 +19,8 @@ extends Node3D
 @export var depth := 3.0
 ## Acqua ferma, come quella del porto: niente correnti, tronchi o coccodrilli.
 @export var still := false
+## Il vuoto del cielo invece dell'acqua.
+@export var sky := false
 
 @export_group("Galleggiamento dei rottami")
 ## Oltre 1 il rottame galleggia: a 2 resta immerso per circa metà.
@@ -44,7 +49,8 @@ func _ready() -> void:
 	_build_bed_and_water()
 	_voice = Node3D.new()
 	add_child(_voice)
-	Sfx.loop(_voice, &"harbor_loop" if still else &"river_loop", 0.0, 1.0, 1.5)
+	if not sky:
+		Sfx.loop(_voice, &"harbor_loop" if still else &"river_loop", 0.0, 1.0, 1.5)
 	if still:
 		_build_streaks()
 		return
@@ -56,6 +62,7 @@ func _ready() -> void:
 		lane.half_length = length / 2.0 - 12.0
 		lane.float_height = water_level + 0.1
 		lane.crocodile_chance = crocodile_chance
+		lane.sky = sky
 		add_child(lane)
 		_lanes.append(lane)
 	_build_streaks()
@@ -113,6 +120,8 @@ func _process(delta: float) -> void:
 
 
 func _physics_process(_delta: float) -> void:
+	if sky:
+		return
 	for body in _water.get_overlapping_bodies():
 		var wreck := body as Car
 		if wreck and wreck.state == Car.State.WRECK:
@@ -160,6 +169,8 @@ func _lane_offset(index: int) -> float:
 func _build_bed_and_water() -> void:
 	var width := lane_count * lane_width
 
+	if sky:
+		return
 	var bed := StaticBody3D.new()
 	bed.collision_mask = 0
 	bed.position.y = -depth - 0.5

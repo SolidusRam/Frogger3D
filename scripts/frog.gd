@@ -17,6 +17,8 @@ signal punched(cars: Array[Car])
 ## Emesso a ogni uso di un potere (&"punch", &"super_jump", &"glide"): fa
 ## salire il calore.
 signal power_used(power: StringName)
+## Caduta nel vuoto del cielo: la partita sceglie dove ricompare (respawn_at).
+signal fell_into_void
 
 @export_group("Movimento")
 @export var move_speed := 7.0
@@ -58,6 +60,13 @@ signal power_used(power: StringName)
 ## Sotto questa quota la rana torna al punto di partenza.
 @export var fall_limit := -20.0
 
+@export_group("Vuoto")
+## Nel cielo (vedi Worlds) non si nuota, si cade: sotto questa quota la rana
+## è caduta, perde void_damage di vita e ricompare indietro (più vicina al
+## fuoco).
+@export var void_fall_y := -4.0
+@export var void_damage := 25
+
 @export_group("Bordi")
 ## Mezza larghezza della zona di gioco (la imposta il percorso): lì ci sono i
 ## muri invisibili.
@@ -72,6 +81,8 @@ var jump_velocity: float
 var gravity_up: float
 var gravity_down: float
 var is_dead := false
+## Il mondo ha il vuoto al posto dell'acqua (lo imposta la partita).
+var void_world := false
 ## Nel menu la rana aspetta sulla striscia di partenza: non risponde ai tasti.
 var asleep := false
 
@@ -342,7 +353,9 @@ func _physics_process(delta: float) -> void:
 	# Il vento lo rimettono ogni passo gli aerei: se ci si allontana, cessa.
 	_wind_push = Vector3.ZERO
 	_wind_lift = 0.0
-	if global_position.y < fall_limit:
+	if void_world and global_position.y < void_fall_y:
+		fall_into_void()
+	elif global_position.y < fall_limit:
 		respawn()
 
 
@@ -581,7 +594,25 @@ func set_respawn_point(point: Vector3) -> void:
 
 
 func respawn() -> void:
-	global_position = _spawn_position
+	respawn_at(_spawn_position)
+
+
+## La caduta nel vuoto: la partita la rimette sull'ultima striscia sicura
+## davanti al fuoco, poi si perde vita (anche l'ultima: si muore lì).
+func fall_into_void() -> void:
+	tongue_power.stop()
+	slam_power.stop()
+	fell_into_void.emit()
+	# Nessuno l'ha rimessa a terra: torna al punto di partenza.
+	if global_position.y < void_fall_y:
+		respawn()
+	Sfx.play(&"frog_hurt")
+	_invulnerable_time = invulnerability_duration
+	_lose_health(void_damage)
+
+
+func respawn_at(point: Vector3) -> void:
+	global_position = point
 	velocity = Vector3.ZERO
 	_stun_time = 0.0
 	_river = null

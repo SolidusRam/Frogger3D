@@ -12,9 +12,11 @@ extends RefCounted
 ## "<mondo>/<voce>" (per esempio "cielo/grass") che sostituiscono la voce
 ## normale finché si è in quel mondo.
 
+## "void": al posto dell'acqua c'è il vuoto (il cielo): non si nuota, si
+## cade, e i fiumi hanno nuvole e aquile invece di tronchi e coccodrilli.
 const ALL: Array[Dictionary] = [
 	{"id": "terra", "name": "La terra"},
-	{"id": "cielo", "name": "Il cielo"},
+	{"id": "cielo", "name": "Il cielo", "void": true},
 ]
 
 ## Ogni mondo passato rende l'inseguitore più veloce di questa frazione
@@ -31,6 +33,11 @@ static func id_of(index: int) -> String:
 
 static func name_of(index: int) -> String:
 	return ALL[index].name
+
+
+## Vero se nel mondo l'acqua è vuoto.
+static func is_void(index: int) -> bool:
+	return ALL[index].get("void", false)
 
 
 ## Quanto corre l'inseguitore dopo passed mondi passati.
