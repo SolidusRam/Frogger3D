@@ -343,6 +343,24 @@ def power_ready(rng, v):
     return modes(n, [1318.5, 1975.5, 2637], [0.18, 0.12, 0.06], [1.0, 0.5, 0.25], rng)
 
 
+@recipe()
+def portal_warp(rng, v):
+    """Il teletrasporto: un soffio che sale e si stringe, poi uno scintillio
+    di campanelle che sale anche lui. La rana se ne va in un altro mondo."""
+    n = n_of(1.6)
+    t = t_of(n)
+    whoosh = svf(white(n, rng), 300 + 5000 * (t / t[-1]) ** 2, q=3.0, mode="bp")
+    whoosh *= env_points(n, [(0, 0), (0.6, 0.8), (1.0, 1.0), (1.15, 0)])
+    hum = sine(sweep(110, 880, n), n) * env_points(n, [(0, 0), (0.2, 0.4), (1.0, 0.5), (1.15, 0)])
+    out = whoosh * 0.6 + hum * 0.3
+    for i, midi in enumerate([79, 83, 86, 91, 95, 98]):
+        bn = n_of(0.5)
+        f = 440 * 2 ** ((midi - 69) / 12)
+        bell = modes(bn, [f, f * 2.0, f * 3.01], [0.25, 0.12, 0.06], [1.0, 0.4, 0.2], rng)
+        place(out, bell * env_exp(bn, 0.3), 0.75 + i * 0.07, 0.35)
+    return out
+
+
 # =============================================================================
 # Le auto (semi-realistiche, caricaturali)
 # =============================================================================

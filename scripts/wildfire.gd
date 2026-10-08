@@ -30,6 +30,9 @@ const FLAMES := 70
 @export var water_factor := 0.6
 ## Mai più indietro di così; è anche la distanza a cui lo respinge una tana.
 @export var max_gap := 40.0
+## A calore pieno il caos non costa più calore: nutre l'inseguitore. Ogni
+## rottame vicino alla rana lo avvicina di tanti metri.
+@export var fed_per_wreck := 0.8
 ## Vita tolta al secondo a chi è nel fuoco.
 @export var burn := 80.0
 ## Sotto questa distanza il bordo dello schermo si arrossa.
@@ -43,6 +46,8 @@ var stopped := false
 var waiting := false
 ## Secondi di inseguimento (fermo non conta): fanno accelerare il fuoco.
 var elapsed := 0.0
+## Ogni mondo passato l'inseguitore corre di più (vedi Worlds.chaser_factor).
+var world_factor := 1.0
 
 var _flames: MultiMesh
 var _heights := PackedFloat32Array()
@@ -62,6 +67,7 @@ func _ready() -> void:
 	add_to_group("wildfire")
 	front_z = frog.global_position.z + max_gap
 	course.den_reached.connect(_on_den_reached)
+	Heat.wreck_created.connect(_on_wreck_created)
 	_build()
 	_voice = Node3D.new()
 	add_child(_voice)
@@ -118,7 +124,26 @@ func _process(_delta: float) -> void:
 
 ## Velocità sulla terra, in m/s: il calore e i minuti di inseguimento.
 func speed() -> float:
-	return minf(lerpf(min_speed, max_speed, Heat.ratio()) + acceleration_per_minute * elapsed / 60.0, top_speed)
+	var base := lerpf(min_speed, max_speed, Heat.ratio()) + acceleration_per_minute * elapsed / 60.0
+	return minf(base * world_factor, top_speed * world_factor)
+
+
+## Il teletrasporto lascia indietro l'incendio: nel mondo nuovo l'inseguitore
+## riparte a max_gap, senza l'accelerazione accumulata, ma più veloce di
+## quello di prima.
+func new_world(worlds_passed: int) -> void:
+	elapsed = 0.0
+	world_factor = Worlds.chaser_factor(worlds_passed)
+	front_z = frog.global_position.z + max_gap
+
+
+## A calore pieno il caos nutre l'inseguitore (solo quello vicino alla rana,
+## come per il calore; i rottami del fuoco no).
+func _on_wreck_created(car: Node3D) -> void:
+	if Heat.value < Heat.MAX or car.has_meta("burnt"):
+		return
+	if car.global_position.distance_to(frog.global_position) <= Heat.wreck_radius:
+		front_z -= fed_per_wreck
 
 
 ## Metri fra la rana e il fronte del fuoco.

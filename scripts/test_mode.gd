@@ -7,6 +7,7 @@ extends CanvasLayer
 ## equipaggiato subito (anche le fusioni, con le loro parti). Le stesse cose si chiedono anche
 ## all'avvio, dalla riga di comando (vedi tools/prova.sh):
 ##   --bioma=strada|fiume|ferrovia|aeroporto|porto|tana  --calore=0..5
+##   --mondo=cielo   (si passa dal teletrasporto fino a quel mondo)
 ##   --blocca-calore  --invincibile  --poteri  --senza-fuoco
 ##   --power=tongue,slam,napalm   (gli id sono quelli di Upgrades.CATALOG)
 ##   --attrezzi   (pugno, super salto e deltaplano semplici negli slot vuoti)
@@ -69,6 +70,21 @@ func set_heat_level(level: int) -> void:
 	locked_level = level
 	Heat.set_value(_heat_for(level))
 	_mark_test_run()
+
+
+## Il teletrasporto subito, senza aspettare il calore 5.
+func next_world() -> void:
+	_mark_test_run()
+	_game.next_world()
+
+
+## Teletrasporti fino al mondo dato (id di Worlds.ALL).
+func go_to_world(id: String) -> void:
+	for i in Worlds.ALL.size():
+		if Worlds.id_of(_game.course.world) == id:
+			return
+		next_world()
+	push_warning("Mondo sconosciuto: %s" % id)
 
 
 func jump_to(biome: String) -> void:
@@ -183,6 +199,8 @@ func _read_command_line() -> void:
 			"power":
 				for id in parts[1].split(","):
 					equip(id)
+			"mondo":
+				go_to_world(parts[1])
 			"bioma":
 				if BIOMES.has(parts[1]):
 					jump_to(parts[1])
@@ -246,6 +264,8 @@ func _build() -> void:
 		biome_row.add_child(_button(biome.capitalize(), _jump_and_close.bind(biome)))
 	box.add_child(biome_row)
 
+	box.add_child(_button("Teletrasporto: il mondo successivo", _next_world_and_close))
+
 	box.add_child(_toggle("Invincibile", "invincible", set_invincible))
 	box.add_child(_toggle("Poteri sempre carichi", "charged", set_charged))
 	box.add_child(_toggle("Blocca il calore al livello attuale", "heat_locked", set_heat_locked))
@@ -265,6 +285,11 @@ func _build() -> void:
 	var note := _title("Una run di prova non salva il record.", 14)
 	note.modulate = Color(1, 1, 1, 0.7)
 	box.add_child(note)
+
+
+func _next_world_and_close() -> void:
+	_set_open(false)
+	next_world()
 
 
 func _jump_and_close(biome: String) -> void:

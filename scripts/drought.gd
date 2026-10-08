@@ -57,16 +57,24 @@ static func reached(frog: String, level: int) -> bool:
 ## Gli handicap del livello sulla partita (all'inizio della run, dopo lo
 ## stagno).
 static func apply(game: Node, level: int) -> void:
-	if level >= 1:
-		var fire: Wildfire = game.get_node("Wildfire")
-		fire.max_gap -= 10.0
-		fire.front_z = game.frog.global_position.z + fire.max_gap
-	if level >= 2:
-		Heat.traffic_factor = 1.15
-	if level >= 3:
-		game.upgrades.offer_size = maxi(game.upgrades.offer_size - 1, 2)
-	if level >= 4:
-		game.frog.damage_factor *= 1.25
-	if level >= 5:
-		Heat.growth_factor = 1.3
+	for n in range(1, level + 1):
+		apply_level(game, n)
 	game.fly_value *= 1.0 + FLY_BONUS * level
+
+
+## L'handicap di un solo livello. Serve anche al giro nuovo dei mondi, che
+## aggiunge un livello per quella run (vedi Worlds).
+static func apply_level(game: Node, level: int) -> void:
+	match level:
+		1:
+			var fire: Wildfire = game.get_node("Wildfire")
+			fire.max_gap -= 10.0
+			fire.front_z = game.frog.global_position.z + fire.max_gap
+		2:
+			Heat.traffic_factor = 1.15
+		3:
+			game.upgrades.offer_size = maxi(game.upgrades.offer_size - 1, 2)
+		4:
+			game.frog.damage_factor *= 1.25
+		5:
+			Heat.growth_factor = 1.3

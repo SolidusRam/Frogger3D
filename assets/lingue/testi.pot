@@ -615,6 +615,10 @@ msgid "Si apre il livello %d"
 msgstr ""
 
 #: scripts/game.gd
+msgid "%s · giro %d"
+msgstr ""
+
+#: scripts/game.gd
 msgid "Niente da scegliere: vita piena e %d mosche"
 msgstr ""
 
@@ -2124,6 +2128,14 @@ msgstr ""
 
 #: scripts/upgrades.gd
 msgid "Corpo"
+msgstr ""
+
+#: scripts/worlds.gd
+msgid "La terra"
+msgstr ""
+
+#: scripts/worlds.gd
+msgid "Il cielo"
 msgstr ""
 
 #: scripts/cosmetics.gd

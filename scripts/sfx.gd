@@ -34,7 +34,7 @@ const VOLUME := {
 	"ship_horn": -2.0, "ship_engine": -4.0, "crane_warning": -8.0, "crane_release": -6.0,
 	"container_land": 0.0,
 	"den_arrive": -4.0, "flower_pop": -12.0, "fly_collect": -8.0, "fly_golden": -4.0,
-	"fly_buzz": -10.0, "heat_up": -6.0, "chain_ding": -8.0,
+	"fly_buzz": -10.0, "heat_up": -6.0, "chain_ding": -8.0, "portal_warp": -2.0,
 	"ui_hover": -22.0, "ui_click": -8.0, "ui_back": -8.0, "ui_card_in": -10.0,
 	"ui_card_pick": -4.0, "ui_buy": -6.0, "ui_refund": -6.0,
 	"ui_pause": -8.0, "ui_resume": -8.0, "ui_record": -4.0,

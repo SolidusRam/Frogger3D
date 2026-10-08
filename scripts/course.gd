@@ -6,6 +6,8 @@ extends Node3D
 ## difficile della precedente.
 
 signal den_reached(count: int, distance: float)
+## La rana è entrata nel teletrasporto (vedi Worlds): la partita cambia mondo.
+signal portal_entered
 
 enum Kind { START, SAFE, ROAD, RIVER, RAIL, DEN, AIRPORT, PORT }
 
@@ -42,10 +44,24 @@ const DEN := preload("res://assets/models/den.glb")
 @export var section_obstacles := 4
 ## ...e se ne aggiunge uno a sezione, fino a questo massimo di aggiunte.
 ## Con 4 e 4: circa 75 m alla prima tana, 100 alla seconda, 270 dalla quinta.
+## Ogni mondo passato alza il tetto (Worlds.GROWTH_STEP).
 @export var section_growth_cap := 4
+
+@export_group("Mondi")
+## Il teletrasporto sta su una striscia sicura spostato di lato, fino a qui
+## dal centro: andarci costa strada.
+@export var portal_max_offset := 26.0
+## Quando si apre, il primo teletrasporto va sulla prima striscia sicura
+## almeno così avanti.
+@export var portal_min_ahead := 40.0
 
 var dens_reached := 0
 var best_distance := 0.0
+## Il mondo in cui si è (indice in Worlds.ALL), i mondi passati in tutta la
+## run e il giro (0 il primo; dal secondo si ricomincia dal primo mondo).
+var world := 0
+var worlds_passed := 0
+var loop := 0
 
 ## Sezione per cui si stanno creando i blocchi: decide la difficoltà.
 var _planning_section := 0
@@ -54,6 +70,9 @@ var _plan: Array[Kind] = []
 var _front_z := 0.0
 var _start_z := 0.0
 var _chunks_created := 0
+## La sezione che ha già il suo teletrasporto: uno per sezione, al più.
+var _portal_section := -1
+var _portal_open := false
 
 
 func _ready() -> void:
@@ -75,6 +94,64 @@ func _physics_process(_delta: float) -> void:
 			chunk.queue_free()
 
 	best_distance = maxf(best_distance, _start_z - frog.global_position.z)
+
+	# Al livello 5 di calore si apre l'uscita: il primo teletrasporto compare
+	# sulla prima striscia sicura abbastanza avanti; poi uno per sezione.
+	var open := Heat.level() >= Heat.LEVELS
+	if open and not _portal_open:
+		_open_portal()
+	_portal_open = open
+
+
+## Il calore è appena arrivato al livello 5: un teletrasporto sulla striscia
+## sicura già pronta più vicina, se non ce n'è già uno davanti.
+func _open_portal() -> void:
+	var best: Node3D = null
+	for chunk in get_children():
+		if not chunk.has_meta("kind") or chunk.get_meta("kind") != Kind.SAFE:
+			continue
+		if chunk.get_meta("near_z") > frog.global_position.z - portal_min_ahead:
+			continue
+		if chunk.has_meta("portal"):
+			return
+		if best == null or chunk.get_meta("near_z") > best.get_meta("near_z"):
+			best = chunk
+	if best:
+		_add_portal(best)
+
+
+func _add_portal(chunk: Node3D) -> void:
+	var portal := Portal.new()
+	portal.name = "Portal"
+	portal.position.x = randf_range(-portal_max_offset, portal_max_offset)
+	portal.entered.connect(func(_body: Node3D) -> void: portal_entered.emit())
+	chunk.add_child(portal)
+	chunk.set_meta("portal", portal)
+	_portal_section = chunk.get_meta("section")
+
+
+## Il tetto delle aggiunte per sezione: cresce a ogni mondo passato.
+func growth_cap() -> int:
+	return section_growth_cap + Worlds.GROWTH_STEP * worlds_passed
+
+
+## Il passaggio al mondo successivo: il percorso davanti e dietro sparisce e
+## ricomincia, nel mondo nuovo, da una partenza sotto la rana. La distanza e
+## le sezioni continuano: la quantità non riparte.
+func next_world() -> void:
+	worlds_passed += 1
+	world = (world + 1) % Worlds.ALL.size()
+	if world == 0:
+		loop += 1
+	Style.set_world(Worlds.id_of(world))
+	for chunk in get_children():
+		remove_child(chunk)
+		chunk.queue_free()
+	_plan.clear()
+	_portal_open = Heat.level() >= Heat.LEVELS
+	_front_z = frog.global_position.z + 10.0
+	_add_chunk(Kind.START)
+	frog.set_respawn_point(Vector3(frog.global_position.x, 0.5, frog.global_position.z))
 
 
 ## Modalità prova: crea subito, in fondo al percorso pronto, una striscia
@@ -119,7 +196,7 @@ func distance() -> float:
 
 
 func _plan_section() -> void:
-	var obstacles := section_obstacles + mini(_planning_section, section_growth_cap) + randi_range(0, 1)
+	var obstacles := section_obstacles + mini(_planning_section, growth_cap()) + randi_range(0, 1)
 	for i in obstacles:
 		_plan.append(_random_obstacle())
 		_plan.append(Kind.SAFE)
@@ -159,6 +236,9 @@ func _add_chunk(kind: Kind) -> void:
 		Kind.SAFE:
 			depth = safe_depth
 			_add_ground(chunk, depth, "grass")
+			chunk.set_meta("section", _planning_section)
+			if _portal_open and _portal_section != _planning_section:
+				_add_portal(chunk)
 		Kind.ROAD:
 			var lanes := clampi(3 + difficulty + randi_range(-1, 1), 2, 7)
 			depth = lanes * road_lane_width + 1.0

@@ -65,6 +65,13 @@ func reset() -> void:
 	changed.emit(value, level())
 
 
+## Il teletrasporto porta in un mondo nuovo col calore a zero: il calore non
+## scende mai dentro un mondo, e questa è l'unica fuga (vedi Worlds).
+func new_world() -> void:
+	value = 0.0
+	changed.emit(value, level())
+
+
 ## Solo per la modalità prova: nel gioco il calore non scende mai.
 func set_value(new_value: float) -> void:
 	value = clampf(new_value, 0.0, MAX)

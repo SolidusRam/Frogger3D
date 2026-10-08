@@ -1604,3 +1604,12 @@ msgstr "Epic"
 
 msgid "Passa su un'impresa: la rana ti mostra cosa sblocca."
 msgstr "Hover a feat: the frog shows you what it unlocks."
+
+msgid "La terra"
+msgstr "The Earth"
+
+msgid "Il cielo"
+msgstr "The Sky"
+
+msgid "%s · giro %d"
+msgstr "%s · loop %d"

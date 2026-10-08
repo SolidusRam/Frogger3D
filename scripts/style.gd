@@ -69,6 +69,12 @@ var styles: Array[Dictionary] = [
 			"car_0": Color(0.85, 0.2, 0.2), "car_1": Color(0.95, 0.75, 0.15),
 			"car_2": Color(0.2, 0.45, 0.85), "car_3": Color(0.9, 0.5, 0.15),
 			"car_4": Color(0.6, 0.3, 0.75), "car_5": Color(0.9, 0.9, 0.9),
+			# Il teletrasporto e i colori del cielo (vedi Worlds).
+			"portal": Color(0.45, 0.9, 1.0), "portal_veil": Color(0.6, 0.95, 1.0, 0.45), "portal_beam": Color(0.5, 0.9, 1.0, 0.22),
+			"cielo/grass": Color(0.93, 0.95, 0.98), "cielo/den_grass": Color(0.84, 0.9, 0.97), "cielo/sidewalk": Color(0.8, 0.84, 0.9),
+			"cielo/asphalt": Color(0.6, 0.66, 0.77), "cielo/gravel": Color(0.76, 0.8, 0.88), "cielo/ballast": Color(0.7, 0.75, 0.84),
+			"cielo/tarmac": Color(0.62, 0.68, 0.78), "cielo/concrete": Color(0.84, 0.88, 0.94), "cielo/far_ground": Color(0.8, 0.87, 0.96),
+			"cielo/mountain": Color(0.92, 0.94, 0.98), "cielo/mountain_snow": Color(0.98, 0.98, 1.0),
 		},
 		"phases": [
 			{"sky_top": Color(0.35, 0.55, 0.85), "sky_horizon": Color(0.75, 0.82, 0.9), "ground": Color(0.4, 0.45, 0.35),
@@ -132,6 +138,10 @@ var styles: Array[Dictionary] = [
 			"car_0": Color(0.62, 0.16, 0.14), "car_1": Color(0.75, 0.6, 0.2),
 			"car_2": Color(0.18, 0.3, 0.55), "car_3": Color(0.7, 0.4, 0.15),
 			"car_4": Color(0.4, 0.25, 0.45), "car_5": Color(0.7, 0.7, 0.65),
+			"cielo/grass": Color(0.82, 0.84, 0.86), "cielo/den_grass": Color(0.72, 0.78, 0.84), "cielo/sidewalk": Color(0.7, 0.73, 0.78),
+			"cielo/asphalt": Color(0.5, 0.55, 0.64), "cielo/gravel": Color(0.66, 0.7, 0.76), "cielo/ballast": Color(0.6, 0.64, 0.72),
+			"cielo/tarmac": Color(0.52, 0.57, 0.66), "cielo/concrete": Color(0.74, 0.77, 0.82), "cielo/far_ground": Color(0.7, 0.76, 0.84),
+			"cielo/mountain": Color(0.8, 0.82, 0.86), "cielo/mountain_snow": Color(0.88, 0.89, 0.92),
 		},
 		"phases": [
 			{"sky_top": Color(0.45, 0.55, 0.7), "sky_horizon": Color(0.7, 0.72, 0.72), "ground": Color(0.35, 0.35, 0.3),
@@ -216,6 +226,8 @@ var styles: Array[Dictionary] = [
 var current := 1
 ## Ora del giorno, da 0 (giorno) a 2 (notte); segue il calore.
 var phase := 0.0
+## Il mondo in cui si è (vedi Worlds): sceglie le voci "<mondo>/<voce>".
+var world := "terra"
 
 var _materials := {}
 var _environment: Environment
@@ -350,13 +362,36 @@ func apply_palette(root: Node, overrides := {}) -> Array:
 	return painted
 
 
+## Il colore di una voce nello stile corrente. Una voce del mondo in cui si
+## è ("cielo/grass") vince sulla voce normale; quello che lo stile non ha lo
+## prende da Base.
+func color_of(key: String) -> Color:
+	var world_key := world + "/" + key
+	for colors: Dictionary in [styles[current].colors, styles[0].colors]:
+		if colors.has(world_key):
+			return colors[world_key]
+	for colors: Dictionary in [styles[current].colors, styles[0].colors]:
+		if colors.has(key):
+			return colors[key]
+	return Color.MAGENTA
+
+
+## Il mondo in cui si è (vedi Worlds): ricolora tutto e torna subito giorno,
+## col calore che riparte da zero.
+func set_world(id: String) -> void:
+	world = id
+	phase = PHASE_BY_LEVEL[Heat.level()]
+	_last_level = Heat.level()
+	_apply_colors()
+	_apply_light()
+
+
 func _color_material(key: String, mat: StandardMaterial3D) -> void:
-	var colors: Dictionary = styles[current].colors
 	var color: Color
 	if key.begins_with("wreck_"):
-		color = (colors["car_" + key.trim_prefix("wreck_")] as Color).darkened(0.5)
+		color = color_of("car_" + key.trim_prefix("wreck_")).darkened(0.5)
 	else:
-		color = colors.get(key, Color.MAGENTA)
+		color = color_of(key)
 	mat.albedo_color = color
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA if color.a < 1.0 else BaseMaterial3D.TRANSPARENCY_DISABLED
 	if key.begins_with("wing"):
@@ -375,7 +410,7 @@ func _color_material(key: String, mat: StandardMaterial3D) -> void:
 	mat.emission = Color(color, 1.0)
 	# Le luci dei passaggi a livello, le ombre delle gru e le fiamme dei motori
 	# sono avvisi: brillano sempre, anche di giorno.
-	if key in ["signal_on", "drop_warning", "jet_flame", "fire", "fire_core", "edge_light"]:
+	if key in ["signal_on", "drop_warning", "jet_flame", "fire", "fire_core", "edge_light", "portal", "portal_veil", "portal_beam"]:
 		mat.emission_enabled = true
 		# La fiamma è grande: troppa luce la sbiadirebbe nel giallo.
 		mat.emission_energy_multiplier = 1.5 if key == "jet_flame" else 4.0

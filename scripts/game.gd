@@ -44,6 +44,10 @@ var starting_kit := {}
 ## aprono) prima delle carte. 0: le carte subito, senza festa (i test).
 @export var den_celebration_seconds := 0.9
 
+@export_group("Mondi")
+## Il mondo nuovo: la rana ci arriva cadendo da questa altezza.
+@export var world_drop_height := 12.0
+
 @export_group("Tempi speciali")
 ## Fermo-immagine quando il pugno colpisce un'auto.
 @export var hitstop_seconds := 0.11
@@ -102,12 +106,15 @@ func _ready() -> void:
 		_apply_stats()
 		_apply_drought()
 	Style.bind(environment.environment, sun, post)
+	# Ogni run parte dal primo mondo.
+	Style.set_world(Worlds.id_of(0))
 	record_distance = _load_record()
 	frog.power_used.connect(Heat.on_power_used)
 	frog.punched.connect(_on_punched)
 	frog.died.connect(_on_frog_died)
 	Heat.wreck_created.connect(_on_wreck_created)
 	course.den_reached.connect(_on_den_reached)
+	course.portal_entered.connect(next_world, CONNECT_DEFERRED)
 	hud.restart_requested.connect(restart)
 	hud.menu_requested.connect(to_menu)
 	hud.abandon_requested.connect(abandon)
@@ -328,6 +335,40 @@ func _on_den_reached(count: int, distance: float) -> void:
 	timer.timeout.connect(timer.queue_free)
 	add_child(timer)
 	timer.start()
+
+
+## Il teletrasporto (vedi Worlds), anche dalla modalità prova: il calore
+## torna a zero, il percorso ricomincia nel mondo nuovo, l'incendio resta
+## indietro e l'inseguitore del mondo nuovo riparte, più veloce. La rana ci
+## arriva dall'alto. Al giro nuovo la Siccità sale di un livello per questa
+## run.
+func next_world() -> void:
+	if _over:
+		return
+	frog.tongue_power.release()
+	Heat.new_world()
+	course.next_world()
+	var fire: Wildfire = $Wildfire
+	fire.new_world(course.worlds_passed)
+	if course.world == 0:
+		_add_loop_drought(drought + course.loop)
+	frog.respawn()
+	frog.global_position.y = world_drop_height
+	frog.reset_physics_interpolation()
+	Sfx.play(&"portal_warp")
+	var title := tr(Worlds.name_of(course.world))
+	if course.loop > 0:
+		title = tr("%s · giro %d") % [title, course.loop + 1]
+	hud.announce(title)
+
+
+## Il giro nuovo aggiunge l'handicap del livello di Siccità successivo, e le
+## mosche valgono come a quel livello. Oltre il quinto non si aggiunge niente.
+func _add_loop_drought(level: int) -> void:
+	if level < 1 or level > Drought.LEVELS.size():
+		return
+	Drought.apply_level(self, level)
+	fly_value *= (1.0 + Drought.FLY_BONUS * level) / (1.0 + Drought.FLY_BONUS * (level - 1))
 
 
 ## Finita la festa, le carte. Senza carte da scegliere la rana riparte
