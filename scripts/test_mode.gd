@@ -6,7 +6,7 @@ extends CanvasLayer
 ## incendio fermo, una tana per scegliere un power-up, e qualsiasi power-up
 ## equipaggiato subito (anche le fusioni, con le loro parti). Le stesse cose si chiedono anche
 ## all'avvio, dalla riga di comando (vedi tools/prova.sh):
-##   --bioma=strada|fiume|ferrovia|aeroporto|porto|tana  --calore=0..5
+##   --bioma=strada|fiume|ferrovia|aeroporto|porto|tana|pattuglia  --calore=0..5
 ##   --mondo=cielo   (si passa dal teletrasporto fino a quel mondo)
 ##   --blocca-calore  --invincibile  --poteri  --senza-fuoco
 ##   --power=tongue,slam,napalm   (gli id sono quelli di Upgrades.CATALOG)
@@ -18,6 +18,7 @@ extends CanvasLayer
 const BIOMES := {
 	"strada": Course.Kind.ROAD, "fiume": Course.Kind.RIVER, "ferrovia": Course.Kind.RAIL,
 	"aeroporto": Course.Kind.AIRPORT, "porto": Course.Kind.PORT, "tana": Course.Kind.DEN,
+	"pattuglia": Course.Kind.AEROBATICS,
 }
 
 ## Restano da una run all'altra (finché il gioco è aperto).

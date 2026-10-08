@@ -82,6 +82,15 @@ func _process(_d: float) -> bool:
 			wait += 1
 	if scene == "temporale" and frame > 2:
 		fire.front_z = frog.global_position.z + 14.0
+	# La pattuglia: aspetta che il primo gregario sia davanti alla rana.
+	if scene == "bioma" and OS.get_environment("BIOMA") == "8" and frame >= wait and frame < 2000:
+		var near := false
+		for formation in by_script(course, "formation.gd"):
+			var planes: Array = formation.wingmen_planes()
+			if not planes.is_empty() and absf(planes[0].global_position.x - frog.global_position.x) < 12.0:
+				near = true
+		if not near:
+			wait += 1
 	if frame == wait:
 		if scene == "portale":
 			var portals := by_script(course, "portal.gd")

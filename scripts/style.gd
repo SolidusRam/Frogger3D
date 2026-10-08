@@ -80,6 +80,9 @@ var styles: Array[Dictionary] = [
 			"beak": Color(1.0, 0.76, 0.15), "eagle_eye": Color(1.0, 0.82, 0.1),
 			"cielo/tree": Color(0.88, 0.92, 0.98), "cielo/stone": Color(0.78, 0.82, 0.92),
 			"rainbow_0": Color(0.92, 0.22, 0.2), "rainbow_1": Color(1.0, 0.56, 0.12), "rainbow_2": Color(1.0, 0.88, 0.22), "rainbow_3": Color(0.32, 0.78, 0.32), "rainbow_4": Color(0.25, 0.52, 0.95), "rainbow_5": Color(0.58, 0.32, 0.85),
+			"trail_green_mark": Color(0.15, 0.55, 0.28, 0.75), "trail_white_mark": Color(0.45, 0.52, 0.7, 0.7), "trail_red_mark": Color(0.75, 0.18, 0.18, 0.75),
+			"trail_green": Color(0.2, 0.75, 0.35, 0.85), "trail_white": Color(0.97, 0.97, 0.97, 0.85), "trail_red": Color(0.9, 0.2, 0.2, 0.85),
+			"stunt": Color(0.12, 0.32, 0.8), "stunt_stripe": Color(0.96, 0.96, 0.96), "stunt_tip": Color(0.88, 0.16, 0.16), "cloud_deck": Color(0.82, 0.87, 0.95),
 			"storm_cloud": Color(0.22, 0.24, 0.3), "storm_ground": Color(0.32, 0.35, 0.42), "rain": Color(0.75, 0.82, 0.95, 0.6), "lightning": Color(0.9, 0.95, 1.0),
 			"airship": Color(0.8, 0.82, 0.86), "wicker": Color(0.62, 0.45, 0.22), "cielo/wagon": Color(0.95, 0.72, 0.15), "cielo/wagon_deck": Color(0.75, 0.55, 0.2),
 		},
@@ -167,6 +170,9 @@ var styles: Array[Dictionary] = [
 			"beak": Color(0.88, 0.66, 0.14), "eagle_eye": Color(0.9, 0.72, 0.1),
 			"cielo/tree": Color(0.76, 0.8, 0.86), "cielo/stone": Color(0.66, 0.7, 0.78),
 			"rainbow_0": Color(0.8, 0.2, 0.18), "rainbow_1": Color(0.88, 0.5, 0.12), "rainbow_2": Color(0.9, 0.78, 0.2), "rainbow_3": Color(0.28, 0.65, 0.28), "rainbow_4": Color(0.22, 0.45, 0.8), "rainbow_5": Color(0.5, 0.28, 0.72),
+			"trail_green_mark": Color(0.14, 0.46, 0.24, 0.75), "trail_white_mark": Color(0.4, 0.46, 0.6, 0.7), "trail_red_mark": Color(0.65, 0.16, 0.15, 0.75),
+			"trail_green": Color(0.2, 0.62, 0.3, 0.85), "trail_white": Color(0.88, 0.88, 0.88, 0.85), "trail_red": Color(0.78, 0.18, 0.16, 0.85),
+			"stunt": Color(0.12, 0.26, 0.62), "stunt_stripe": Color(0.86, 0.86, 0.86), "stunt_tip": Color(0.75, 0.15, 0.14), "cloud_deck": Color(0.7, 0.75, 0.82),
 			"storm_cloud": Color(0.2, 0.21, 0.26), "storm_ground": Color(0.28, 0.3, 0.36), "rain": Color(0.65, 0.72, 0.85, 0.6), "lightning": Color(0.85, 0.9, 1.0),
 			"airship": Color(0.68, 0.7, 0.74), "wicker": Color(0.52, 0.38, 0.2), "cielo/wagon": Color(0.82, 0.6, 0.14), "cielo/wagon_deck": Color(0.62, 0.46, 0.18),
 		},
@@ -425,7 +431,7 @@ func _color_material(key: String, mat: StandardMaterial3D) -> void:
 		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	# Il fumo: il colore di ogni sbuffo viene dalle particelle, che lo fanno
 	# svanire (vedi fade_smoke).
-	if key in ["smoke", "fire_smoke"]:
+	if key in ["smoke", "fire_smoke"] or key.begins_with("trail_"):
 		mat.vertex_color_use_as_albedo = true
 		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	# Le pelli a gradi della Siccità sono metallo.

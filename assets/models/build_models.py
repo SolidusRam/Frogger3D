@@ -62,6 +62,7 @@ PREVIEW = {
     "croc": (0.2, 0.4, 0.2, 1), "croc_dark": (0.16, 0.32, 0.16, 1), "croc_eye": (0.95, 0.85, 0.2, 1),
     "eagle": (0.42, 0.27, 0.14, 1), "eagle_dark": (0.22, 0.14, 0.08, 1), "eagle_head": (0.95, 0.94, 0.9, 1),
     "beak": (0.98, 0.75, 0.15, 1), "eagle_eye": (0.98, 0.8, 0.1, 1), "wicker": (0.62, 0.45, 0.22, 1),
+    "stunt": (0.12, 0.3, 0.75, 1), "stunt_stripe": (0.95, 0.95, 0.95, 1), "stunt_tip": (0.85, 0.15, 0.15, 1),
     "airship": (0.78, 0.8, 0.84, 1), "cloud": (0.95, 0.96, 1.0, 1), "cloud_shade": (0.78, 0.84, 0.94, 1),
     "rainbow_0": (0.9, 0.2, 0.2, 1), "rainbow_1": (0.98, 0.55, 0.1, 1), "rainbow_2": (0.98, 0.88, 0.2, 1),
     "rainbow_3": (0.3, 0.75, 0.3, 1), "rainbow_4": (0.25, 0.5, 0.9, 1), "rainbow_5": (0.55, 0.3, 0.8, 1),
@@ -1630,6 +1631,34 @@ def build_blimp():
     save("blimp")
 
 
+def build_stunt_plane():
+    """L'aereo della pattuglia acrobatica (il bioma del cielo): un piccolo jet
+    a ala bassa, lungo 6 m e largo 5,6, blu con la fascia bianca (il capo la
+    ha d'oro: "stunt_stripe" si cambia in gioco), la punta del muso rossa e il
+    tettuccio a goccia. Davanti +Y, origine al centro della fusoliera."""
+    reset()
+    parts = [block("fuselage", [(-0.5, -2.4, -0.45), (0.5, -2.4, -0.45), (0.5, 2.2, -0.45), (-0.5, 2.2, -0.45)],
+                   [(-0.45, -2.4, 0.42), (0.45, -2.4, 0.42), (0.45, 2.2, 0.38), (-0.45, 2.2, 0.38)], "stunt")]
+    parts.append(block("nose", [(-0.5, 2.2, -0.45), (0.5, 2.2, -0.45), (0.12, 3.0, -0.1), (-0.12, 3.0, -0.1)],
+                       [(-0.45, 2.2, 0.38), (0.45, 2.2, 0.38), (0.1, 3.0, 0.05), (-0.1, 3.0, 0.05)], "stunt_tip"))
+    parts.append(block("tail_cone", [(-0.5, -2.4, -0.45), (0.5, -2.4, -0.45), (0.25, -3.0, -0.1), (-0.25, -3.0, -0.1)],
+                       [(-0.45, -2.4, 0.42), (0.45, -2.4, 0.42), (0.22, -3.0, 0.3), (-0.22, -3.0, 0.3)], "stunt"))
+    parts.append(block("canopy", [(-0.36, 0.0, 0.4), (0.36, 0.0, 0.4), (0.32, 1.7, 0.38), (-0.32, 1.7, 0.38)],
+                       [(-0.2, 0.3, 0.8), (0.2, 0.3, 0.8), (0.16, 1.2, 0.75), (-0.16, 1.2, 0.75)], "glass"))
+    parts += mirrored_box("stripe", 0.5, 0.52, -2.3, 2.1, -0.05, 0.15, "stunt_stripe")
+    for side in (1, -1):
+        parts.append(block("wing_%d" % side, [(side * 0.5, 0.9, -0.3), (side * 2.8, -0.4, -0.25), (side * 2.8, -1.0, -0.25), (side * 0.5, -1.0, -0.3)],
+                           [(side * 0.5, 0.9, -0.12), (side * 2.8, -0.4, -0.15), (side * 2.8, -1.0, -0.15), (side * 0.5, -1.0, -0.12)], "stunt"))
+        parts.append(box("tip_%d" % side, side * 2.72 - 0.08, side * 2.72 + 0.08, -1.0, -0.35, -0.3, -0.08, "stunt_tip"))
+        parts.append(block("stab_%d" % side, [(side * 0.3, -2.4, 0.15), (side * 1.3, -2.9, 0.15), (side * 1.3, -3.1, 0.15), (side * 0.3, -3.0, 0.15)],
+                           [(side * 0.3, -2.4, 0.25), (side * 1.3, -2.9, 0.22), (side * 1.3, -3.1, 0.22), (side * 0.3, -3.0, 0.25)], "stunt"))
+    parts.append(block("fin", [(-0.05, -3.0, 0.3), (0.05, -3.0, 0.3), (0.05, -2.0, 0.4), (-0.05, -2.0, 0.4)],
+                       [(-0.05, -3.1, 1.4), (0.05, -3.1, 1.4), (0.05, -2.7, 1.4), (-0.05, -2.7, 1.4)], "stunt_stripe"))
+    parts.append(box("nozzle", -0.22, 0.22, -3.08, -3.0, -0.1, 0.25, "trim"))
+    join("StuntPlane", parts)
+    save("stunt_plane")
+
+
 def build_eagle():
     """L'aquila del cielo, al posto del coccodrillo e con la sua stessa
     collisione (1,4 x 0,8 x 6 m): la schiena è una piattaforma, il becco morde.
@@ -1713,7 +1742,7 @@ def build_mountain():
 
 BUILDERS = {
     "compact": build_compact, "sedan": build_sedan, "van": build_van, "truck": build_truck,
-    "frog": build_frog, "den": build_den, "den_sky": build_den_sky, "log": build_log, "crocodile": build_crocodile, "eagle": build_eagle, "ultralight": build_ultralight, "helicopter": build_helicopter,
+    "frog": build_frog, "den": build_den, "den_sky": build_den_sky, "log": build_log, "crocodile": build_crocodile, "eagle": build_eagle, "stunt_plane": build_stunt_plane, "ultralight": build_ultralight, "helicopter": build_helicopter,
     "balloon": build_balloon, "blimp": build_blimp, "glider": build_glider, "tree": build_tree, "house": build_house, "lamp": build_lamp,
     "mountain": build_mountain, "locomotive": build_locomotive, "boxcar": build_boxcar,
     "flatcar": build_flatcar, "cablecar_front": build_cablecar_front, "cablecar": build_cablecar,

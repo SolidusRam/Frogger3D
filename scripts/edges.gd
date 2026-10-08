@@ -27,7 +27,7 @@ var lane_width := 4.0
 func _ready() -> void:
 	for side in [-1.0, 1.0]:
 		match kind:
-			Course.Kind.START, Course.Kind.SAFE, Course.Kind.DEN:
+			Course.Kind.START, Course.Kind.SAFE, Course.Kind.DEN, Course.Kind.AEROBATICS:
 				_hedge(side)
 			Course.Kind.ROAD:
 				_tunnel(side)

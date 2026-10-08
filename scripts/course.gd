@@ -9,7 +9,8 @@ signal den_reached(count: int, distance: float)
 ## La rana è entrata nel teletrasporto (vedi Worlds): la partita cambia mondo.
 signal portal_entered
 
-enum Kind { START, SAFE, ROAD, RIVER, RAIL, DEN, AIRPORT, PORT }
+## AEROBATICS: la pattuglia acrobatica, solo nel cielo.
+enum Kind { START, SAFE, ROAD, RIVER, RAIL, DEN, AIRPORT, PORT, AEROBATICS }
 
 const TREE := preload("res://assets/models/tree.glb")
 const HOUSE := preload("res://assets/models/house.glb")
@@ -239,6 +240,9 @@ func _random_obstacle() -> Kind:
 	if _planning_section >= 2:
 		weights[Kind.AIRPORT] = 12.0
 		weights[Kind.PORT] = 12.0
+	# Il bioma del cielo: la pattuglia acrobatica.
+	if Worlds.is_void(world):
+		weights[Kind.AEROBATICS] = 22.0
 	var total := 0.0
 	for kind in weights:
 		total += weights[kind]
@@ -324,6 +328,15 @@ func _add_chunk(kind: Kind) -> void:
 			port.play_half_width = play_half_width
 			port.sky = Worlds.is_void(world)
 			chunk.add_child(port)
+		Kind.AEROBATICS:
+			# Un banco di nubi dove passa la pattuglia.
+			depth = 22.0 + minf(difficulty, 6.0)
+			_add_ground(chunk, depth, "cloud_deck")
+			var aerobatics := Aerobatics.new()
+			aerobatics.difficulty = difficulty
+			aerobatics.depth = depth
+			aerobatics.play_half_width = play_half_width
+			chunk.add_child(aerobatics)
 		Kind.DEN:
 			depth = den_depth
 			_add_ground(chunk, depth, "den_grass")
