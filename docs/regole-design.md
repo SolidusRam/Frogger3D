@@ -79,7 +79,8 @@ Il caos serve a passare: auto ribaltate che bloccano una corsia, rottami che fan
 | Ritmo | Ondate di pericolo sopra una base che cresce sempre |
 | Genere | Roguelite con run infinite (deciso il 4 ottobre 2026). La run è infinita, ma l'incendio che insegue la rana la chiude: una buona run dura fra i 15 e i 20 minuti. Fra una run e l'altra si sbloccano opzioni con le imprese, si scelgono rane con attrezzi di partenza diversi, e con le mosche raccolte (la valuta, sopra le cose che si muovono) si compra forza permanente, come in Vampire Survivors: statistiche e carte migliorate. Dettagli in docs/imprese.md |
 | Ricompensa | La forza si guadagna nelle tane, scegliendo un potenziamento. Il caos non dà forza (decisione del 4 ottobre 2026, "per ora"): è un attrezzo per passare e costa calore |
-| Pubblicazione | Il gioco si pubblica comunque, senza budget: esce quando è pronto. Il nome definitivo verrà più avanti, prima della pagina Steam ("Frogger" è un marchio di Konami) |
+| Pubblicazione | Dal 9 ottobre 2026: solo nel browser, sul sito proprio (obiettivi ridimensionati: niente Steam, niente versione desktop). Si pubblica comunque, senza budget, quando è pronto. Il nome definitivo va deciso prima di mettere il gioco in pubblico ("Frogger" è un marchio di Konami) |
+| Browser | Godot esporta per il web (WebGL 2, renderer Compatibility, che dal 9 ottobre 2026 si usa anche sviluppando: si vede quello che vede il giocatore). Build senza thread: va su qualsiasi hosting statico. tools/web.sh fa la build in build/web (con --apri la serve su localhost:8765). Il limite è il numero di chiamate di disegno (ogni oggetto, per ogni materiale, più le ombre): tools/draws.sh le conta e dice da dove vengono. Veicoli, tronchi, coccodrilli, nuvole, mosche e bordi si disegnano solo fino a 110 m (Style.FAR_DRAW) e non fanno ombra; l'ombra resta alla rana e alle cose grandi. Nel browser: niente "Esci" né V-Sync; Esc libera il mouse e il gioco va in pausa da solo; i salvataggi stanno nel browser |
 | Vita | Vita e potenziamenti che crescono durante la run, dalle tane; auto, acqua e coccodrilli tolgono vita: un solo colpo non basta a perdere |
 | Sconfitta | Colpito dalle macchine (anche quelle che hai colpito tu), mangiato dal coccodrillo, caduto in acqua |
 | Traffico | Ibrido: le auto guidano in modo cinematico e diventano rottami fisici quando vengono colpite forte; un rottame che colpisce un'auto la trasforma a sua volta. Con il calore alto il traffico passa alla fisica e diventa instabile da solo. I veicoli frenano davanti agli ostacoli e si formano code; se non fanno in tempo a fermarsi si schiantano. I rottami spariscono dopo 25 s |
@@ -138,7 +139,7 @@ Il gioco base è finito e giocabile: una run infinita in cui si muore e si ricom
 | Power-up nelle tane | Scelta uno tra tre (quattro con "Più scelta") a gioco fermo; slot-attrezzo (guantoni, molle, ala, corpo, lingua). Fatti: nove modificatori, due fusioni e quattro numerici (elenco nella riga "Power-up attuali") |
 | Biomi | Ferrovia (treni inarrestabili, avviso leale); aeroporto (fiamma e getto dei motori, trenini bagagli il cui carico vola via nel getto, il getto come ascensore per il deltaplano); porto (acqua e navi portacontainer: le gru caricano le navi mentre ci sei sopra, un labirinto che si chiude; dal livello 3 cacciano la rana) |
 | Difficoltà nei biomi | Criteri decisi (sezione sopra); un gradino al livello 3 in ogni bioma: auto che sbandano, tronchi che affondano, il rapido, il decollo, le gru che cacciano |
-| Strumenti | 41 test automatici (tests/run.sh), screenshot senza finestre (tools/screenshot.sh, anche delle schermate: menu, stagno, carte, pausa, fine) e la modalità prova per giocare (F1 in gioco, oppure tools/prova.sh) |
+| Strumenti | Build per il browser (tools/web.sh) e conteggio delle chiamate di disegno (tools/draws.sh); 45 test automatici (tests/run.sh), screenshot senza finestre (tools/screenshot.sh, anche delle schermate: menu, stagno, carte, pausa, fine) e la modalità prova per giocare (F1 in gioco, oppure tools/prova.sh) |
 
 ### Da provare giocando
 
@@ -162,14 +163,15 @@ Provati tutti dal giocatore il 5 ottobre 2026: il porto nuovo, l'aeroporto rifat
 
 ### Il percorso verso l'uscita
 
-Il gioco si pubblica comunque, senza budget: quattro fasi, e si passa alla successiva quando il criterio è soddisfatto.
+Ridimensionato il 9 ottobre 2026: il gioco esce solo nel browser, sul sito proprio, senza budget. Tre fasi, e si passa alla successiva quando il criterio è soddisfatto. (Fino all'8 ottobre il percorso passava da pagina Steam, demo per la Next Fest e uscita a 5-8 €.)
 
 | Fase | Cosa | Criterio per passare oltre |
 | --- | --- | --- |
-| 1. È un gioco | I punti qui sotto | 5-10 persone esterne lo provano e vogliono rigiocare |
-| 2. Pagina Steam | Il nome, le immagini, un trailer di 30-60 s, clip brevi con costanza | Le wishlist crescono da sole |
-| 3. Demo | I primi minuti, per una Steam Next Fest (tre all'anno) | Chi prova la demo la rigioca e mette il gioco in wishlist |
-| 4. Uscita | Accesso anticipato o versione completa, a 5-8 € | — |
+| 1. È un gioco | I punti qui sotto, più fluido nel browser su un portatile normale | 5-10 persone esterne lo provano da un link e vogliono rigiocare |
+| 2. Online | Il nome, la build sul sito con una pagina essenziale (comandi, crediti) | Il link si può girare a chiunque |
+| 3. Farlo conoscere | Clip brevi con costanza; se serve, anche una pagina su itch.io che rimanda al sito | — |
+
+Ancora da decidere: gratis o con donazioni, e su quale hosting sta il sito.
 
 ### Fase 1: da fare, in ordine
 

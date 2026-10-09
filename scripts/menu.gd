@@ -99,7 +99,9 @@ func _build() -> void:
 	column.add_child(_button("Lo stagno", _open_pond))
 	column.add_child(_button("Imprese", _open_feats))
 	column.add_child(_button("Opzioni", _open_options))
-	column.add_child(_button("Esci", get_tree().quit, "FlatButton"))
+	# Nel browser si esce chiudendo la scheda.
+	if not OS.has_feature("web"):
+		column.add_child(_button("Esci", get_tree().quit, "FlatButton"))
 	play.grab_focus()
 
 	# In basso a sinistra: quello che ti porti dietro fra una run e l'altra.

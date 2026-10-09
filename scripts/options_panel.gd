@@ -156,7 +156,9 @@ func _build_graphics(page: VBoxContainer) -> void:
 	_choice(page, "Stile grafico", "style", names, func() -> int: return Style.current)
 	page.add_child(_note("Si cambia anche in gioco, con F2."))
 	_choice(page, "Schermo", "window_mode", Settings.WINDOW_MODES)
-	_toggle(page, "Sincronia verticale (V-Sync)", "vsync")
+	# Nel browser la sincronia la decide il browser.
+	if not OS.has_feature("web"):
+		_toggle(page, "Sincronia verticale (V-Sync)", "vsync")
 	var limits: Array = Settings.FPS_LIMITS.map(func(fps: int) -> String: return "Nessuno" if fps == 0 else "%d fps" % fps)
 	_choice(page, "Limite dei fotogrammi", "fps_limit", limits)
 	_slider(page, "Risoluzione del mondo", "render_scale", 0.5, 1.0, 0.05, _percent)
