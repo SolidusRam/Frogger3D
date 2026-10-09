@@ -87,6 +87,9 @@ func _report() -> void:
 	if Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME) > 0:
 		print("CHIAMATE DI DISEGNO (renderer vero, ombre comprese): %d, oggetti %d" % [
 			Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME), Performance.get_monitor(Performance.RENDER_TOTAL_OBJECTS_IN_FRAME)])
+	print("MEMORIA di Godot: %d MB ora, %d MB al massimo; texture %d MB, buffer %d MB" % [
+		OS.get_static_memory_usage() / 1048576, OS.get_static_memory_peak_usage() / 1048576,
+		Performance.get_monitor(Performance.RENDER_TEXTURE_MEM_USED) / 1048576, Performance.get_monitor(Performance.RENDER_BUFFER_MEM_USED) / 1048576])
 	print("IN VISTA: %d istanze, %d superfici, %d superfici che fanno ombra" % [total.istanze, total.superfici, total.ombre])
 	for limit in beyond:
 		print("  superfici a più di %d m dalla telecamera: %d" % [limit, beyond[limit]])

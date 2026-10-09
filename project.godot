@@ -14,6 +14,10 @@ config/name="Frogger 3D"
 run/main_scene="res://scenes/menu.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 
+[audio]
+
+general/default_playback_type.web=0
+
 [autoload]
 
 Heat="*res://scripts/heat.gd"
