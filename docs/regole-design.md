@@ -79,7 +79,7 @@ Il caos serve a passare: auto ribaltate che bloccano una corsia, rottami che fan
 | Ritmo | Ondate di pericolo sopra una base che cresce sempre |
 | Genere | Roguelite con run infinite (deciso il 4 ottobre 2026). La run è infinita, ma l'incendio che insegue la rana la chiude: una buona run dura fra i 15 e i 20 minuti. Fra una run e l'altra si sbloccano opzioni con le imprese, si scelgono rane con attrezzi di partenza diversi, e con le mosche raccolte (la valuta, sopra le cose che si muovono) si compra forza permanente, come in Vampire Survivors: statistiche e carte migliorate. Dettagli in docs/imprese.md |
 | Ricompensa | La forza si guadagna nelle tane, scegliendo un potenziamento. Il caos non dà forza (decisione del 4 ottobre 2026, "per ora"): è un attrezzo per passare e costa calore |
-| Pubblicazione | Il gioco si pubblica comunque, senza budget: esce quando è pronto. Il nome definitivo verrà più avanti, prima della pagina Steam ("Frogger" è un marchio di Konami). Una versione solo browser è stata tentata il 9 ottobre 2026 e messa da parte il 12 (gioco troppo lento nel browser): resoconto in docs/porting-browser.md, lavoro nel branch web |
+| Pubblicazione | Dal 12 ottobre 2026, obiettivi ridimensionati: il gioco va sul GitHub dell'utente, scaricabile come Release (Linux e Windows), e lo sviluppo si racconta in un post stile blog, con l'opinione dell'utente sullo sviluppo dei videogiochi (materia prima: docs/cronologia.md). Niente Steam. Licenze: MIT per il codice, CC BY 4.0 per gli asset, OFL per i font (LICENSE, LICENSE-ASSETS.md). Lo sviluppo di funzionalità si ferma: prima della build, un check giocando e solo correzioni. "Frogger" è un marchio di Konami: il repo lo dichiara come omaggio. Una versione solo browser è stata tentata il 9 ottobre 2026 e messa da parte il 12 (gioco troppo lento nel browser): resoconto in docs/porting-browser.md, lavoro nel branch web |
 | Vita | Vita e potenziamenti che crescono durante la run, dalle tane; auto, acqua e coccodrilli tolgono vita: un solo colpo non basta a perdere |
 | Sconfitta | Colpito dalle macchine (anche quelle che hai colpito tu), mangiato dal coccodrillo, caduto in acqua |
 | Traffico | Ibrido: le auto guidano in modo cinematico e diventano rottami fisici quando vengono colpite forte; un rottame che colpisce un'auto la trasforma a sua volta. Con il calore alto il traffico passa alla fisica e diventa instabile da solo. I veicoli frenano davanti agli ostacoli e si formano code; se non fanno in tempo a fermarsi si schiantano. I rottami spariscono dopo 25 s |
@@ -162,14 +162,14 @@ Provati tutti dal giocatore il 5 ottobre 2026: il porto nuovo, l'aeroporto rifat
 
 ### Il percorso verso l'uscita
 
-Il gioco si pubblica comunque, senza budget: quattro fasi, e si passa alla successiva quando il criterio è soddisfatto.
+Ridimensionato il 12 ottobre 2026 (fino all'8 ottobre il percorso passava da pagina Steam, demo per la Next Fest e uscita a 5-8 €; il 9 si è tentato il solo browser, vedi docs/porting-browser.md). Niente funzionalità nuove: si chiude quello che c'è.
 
-| Fase | Cosa | Criterio per passare oltre |
+| Passo | Cosa | Fatto quando |
 | --- | --- | --- |
-| 1. È un gioco | I punti qui sotto | 5-10 persone esterne lo provano e vogliono rigiocare |
-| 2. Pagina Steam | Il nome, le immagini, un trailer di 30-60 s, clip brevi con costanza | Le wishlist crescono da sole |
-| 3. Demo | I primi minuti, per una Steam Next Fest (tre all'anno) | Chi prova la demo la rigioca e mette il gioco in wishlist |
-| 4. Uscita | Accesso anticipato o versione completa, a 5-8 € | — |
+| 1. Check | L'utente gioca la lista "Da provare giocando" e segnala bug e cose rotte; si corregge solo quello | Una sessione senza problemi bloccanti |
+| 2. Pacchetto | Licenze (fatte il 12 ottobre), README, build per Linux e Windows in una Release | Chi scarica lo zip gioca senza installare niente |
+| 3. Pubblico | Il commit 860eab7 ha come autore l'email personale: decidere se riscrivere la storia. Poi il repo diventa pubblico, solo col via libera dell'utente | Il repo è pubblico |
+| 4. Il post | Lo sviluppo raccontato stile blog, con l'opinione dell'utente; lingua, nome e dove pubblicarlo da decidere | Il post è online |
 
 ### Fase 1: da fare, in ordine
 
