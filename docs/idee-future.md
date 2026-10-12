@@ -100,8 +100,6 @@ La proposta del 4 ottobre (criteri di difficoltà e porto con le navi) è stata 
 
 ## Pubblicazione e aspetto economico (discussione, 4 ottobre)
 
-Superata il 9 ottobre 2026: il gioco esce solo nel browser, sul sito proprio (vedi la roadmap in regole-design.md). La discussione resta qui per memoria.
-
 Deciso: il gioco si pubblica comunque, senza budget; il nome verrà più avanti. Il percorso in quattro fasi sta nella roadmap di regole-design.md.
 
 - **Il nome va cambiato**: "Frogger" è un marchio di Konami. Le meccaniche non sono protette (Crossy Road esiste), il nome sì. Va deciso prima di qualsiasi pagina Steam.
@@ -132,4 +130,3 @@ Il modello ibrido aiuta la rete: il traffico in marcia è deterministico (con lo
 
 - Al calore massimo la fisica arriva a circa 6 ms per passo, su un limite di 16,7; nelle sezioni avanzate fino a 8.
 - Se diventa un problema: fermare il traffico nei blocchi lontani dalla rana.
-- Nel browser (9 ottobre 2026) il collo di bottiglia sono le chiamate di disegno: nel caos, a terra, erano circa 2.700 (metà per le ombre), e sono scese a circa 1.500 con la distanza di disegno e meno ombre. Il passo successivo, se serve: unire le superfici dei modelli (ogni colore della tavolozza è una superficie, quindi un'auto costa quasi due chiamate e un coccodrillo quattro), oppure accorciare FAR_DRAW. Lo script gira in WebAssembly su un solo thread, circa 2-3 volte più lento del nativo (4-5 ms a fotogramma nel nativo).

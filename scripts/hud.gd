@@ -90,7 +90,6 @@ var _root: Control
 var _resume_button: Button
 var _restart_button: Button
 var _record_distance := 0.0
-var _was_captured := false
 ## Il suggerimento del primo minuto (vedi Hints), in basso al centro.
 var _hint: PanelContainer
 var _hint_text: RichTextLabel
@@ -170,12 +169,6 @@ func _process(_delta: float) -> void:
 	# Poca vita: la barra pulsa.
 	var low := float(frog.health) / frog.max_health < HEALTH_LOW and not frog.is_dead
 	_health_bar.modulate.a = 0.65 + 0.35 * sin(Time.get_ticks_msec() * 0.012) if low else 1.0
-	# Nel browser Esc libera il mouse e il gioco non lo vede: se il mouse si
-	# libera da solo mentre si gioca, è la pausa.
-	var captured := Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
-	if OS.has_feature("web") and _was_captured and not captured and visible and not get_tree().paused and not _game_over.visible and not frog.is_dead:
-		pause()
-	_was_captured = captured
 
 
 ## L'incendio dietro la rana: la distanza, e il bordo dello schermo che si

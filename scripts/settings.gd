@@ -301,8 +301,8 @@ func event_name(event: InputEvent) -> String:
 		if KEY_NAMES.has(code):
 			return tr(KEY_NAMES[code])
 		# La lettera che quel tasto ha sulla tastiera del giocatore (senza
-		# schermo, o nel browser, non si sa: quella americana).
-		var label := KEY_NONE if DisplayServer.get_name() == "headless" or OS.has_feature("web") else DisplayServer.keyboard_get_keycode_from_physical(code)
+		# schermo non si sa: quella americana).
+		var label := KEY_NONE if DisplayServer.get_name() == "headless" else DisplayServer.keyboard_get_keycode_from_physical(code)
 		return OS.get_keycode_string(label if label != KEY_NONE else code)
 	var family := 1 if _playstation() else 0
 	if event is InputEventJoypadButton:

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Screenshot del gioco senza aprire finestre: Godot disegna in un display
-# virtuale (Xvfb) col renderer del gioco (Compatibility, quello del browser).
+# virtuale (Xvfb) col renderer di compatibilità, più slavato del gioco vero.
 # Uso:  tools/screenshot.sh SCRIPT SCENA CALORE FILE.png [LARGHEZZAxALTEZZA]
 #   tools/screenshot.sh shot_biome aereo 0 /tmp/aereo.png
 #   tools/screenshot.sh shot_port panorama 100 /tmp/porto_notte.png

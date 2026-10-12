@@ -12,11 +12,7 @@ config_version=5
 
 config/name="Frogger 3D"
 run/main_scene="res://scenes/menu.tscn"
-config/features=PackedStringArray("4.7", "GL Compatibility")
-
-[audio]
-
-general/default_playback_type.web=0
+config/features=PackedStringArray("4.7", "Forward Plus")
 
 [autoload]
 
@@ -122,8 +118,3 @@ import/blender/enabled=false
 
 locale/translations=PackedStringArray("res://assets/lingue/en.po")
 locale/fallback="it"
-
-[rendering]
-
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"

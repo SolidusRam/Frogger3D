@@ -16,14 +16,6 @@ const CAR_COLORS := 6
 const PHASE_BY_LEVEL: Array[float] = [0.0, 0.0, 0.5, 1.0, 1.5, 2.0]
 const PHASE_SPEED := 0.6
 const POST_SHADER := preload("res://shaders/post.gdshader")
-## Distanza di disegno: oltre questa le cose piccole e numerose del percorso
-## (veicoli, tronchi, coccodrilli, nuvole, mosche, bordi) non si disegnano.
-## Nel browser ogni oggetto costa una chiamata di disegno, e la maggior parte
-## stava a più di 60 m dalla telecamera (misura: tools/draws.gd). Le stesse
-## cose non fanno ombra.
-const FAR_DRAW := 110.0
-const FAR_DRAW_MARGIN := 15.0
-const FAR_DRAW_SCRIPTS: Array[String] = ["car.gd", "river_log.gd", "crocodile.gd", "cloud.gd", "fly.gd", "edges.gd"]
 
 ## Ogni stile: tavolozza dei materiali, tre fasi di luce e post-processing.
 var styles: Array[Dictionary] = [
@@ -288,28 +280,7 @@ func _ready() -> void:
 	_post_material.shader = POST_SHADER
 	_post_material.set_shader_parameter("flash", 0.0)
 	Heat.changed.connect(_on_heat_changed)
-	get_tree().node_added.connect(_on_node_added)
 	_apply_colors()
-
-
-## Le geometrie che nascono sotto uno degli script di FAR_DRAW_SCRIPTS
-## si disegnano solo fino a FAR_DRAW.
-func _on_node_added(node: Node) -> void:
-	if not node is GeometryInstance3D:
-		return
-	var parent: Node = node
-	while parent != null:
-		var script: Script = parent.get_script()
-		if script != null and script.resource_path.get_file() in FAR_DRAW_SCRIPTS:
-			var geo := node as GeometryInstance3D
-			geo.visibility_range_end = FAR_DRAW
-			geo.visibility_range_end_margin = FAR_DRAW_MARGIN
-			geo.visibility_range_fade_mode = GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
-			# Stanno a terra o sull'acqua: l'ombra si nota poco e costa un
-			# altro disegno. L'ombra resta alla rana e alle cose grandi.
-			geo.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			return
-		parent = parent.get_parent()
 
 
 func _process(delta: float) -> void:
