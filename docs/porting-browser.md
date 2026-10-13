@@ -1,8 +1,8 @@
 # Il porting nel browser (tentativo del 9 ottobre 2026, messo da parte)
 
-Il 9 ottobre 2026 si è provato a fare del gioco una versione solo browser, da pubblicare su un sito proprio al posto di Steam. Nel browser il gioco partiva e si giocava, ma restava lentissimo (1-3 fps su un portatile con Radeon 740M, in Firefox). Il 12 ottobre 2026 il tentativo è stato messo da parte e main è tornato alla versione di prima (commit 0f0ce49).
+Il 9 ottobre 2026 si è provato a fare del gioco una versione solo browser, da pubblicare su un sito proprio al posto di Steam. Nel browser il gioco partiva e si giocava, ma restava lentissimo (1-3 fps su un portatile con Radeon 740M, in Firefox). Il 12 ottobre 2026 il tentativo è stato messo da parte e main è tornato alla versione di prima (commit b307fdc).
 
-Il lavoro non è perso: sta tutto nel branch **web** (commit a4cf023 e f687123). Per riprenderlo: `git checkout web`.
+Il lavoro non è perso: sta tutto nel branch **web** (commit 823c393 e d47b47e). Per riprenderlo: `git checkout web`.
 
 ## Cosa è stato fatto (nel branch web)
 
