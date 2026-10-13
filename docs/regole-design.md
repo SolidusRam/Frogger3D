@@ -169,7 +169,7 @@ Ridimensionato il 12 ottobre 2026 (fino all'8 ottobre il percorso passava da pag
 | 1. Check | L'utente gioca la lista "Da provare giocando" e segnala bug e cose rotte; si corregge solo quello | Fatto il 13 ottobre 2026: tutto ok (funzioni già provate e approvate) |
 | 2. Pacchetto | Licenze (fatte il 12 ottobre), README, build per Linux e Windows in una Release | Fatti il 13 ottobre 2026: README, tools/build.sh, Release v0.1 in bozza su GitHub. La build Linux parte pulita; quella Windows non è stata provata (qui non c'è Wine) |
 | 3. Pubblico | Il commit 860eab7 ha come autore l'email personale: decidere se riscrivere la storia. Poi il repo diventa pubblico, solo col via libera dell'utente | Il repo è pubblico |
-| 4. Il post | Lo sviluppo raccontato stile blog, con l'opinione dell'utente; lingua, nome e dove pubblicarlo da decidere | Il post è online |
+| 4. Il post | Lo sviluppo raccontato stile blog, con l'opinione dell'utente. In inglese (deciso il 13 ottobre 2026, come il README); nome e dove pubblicarlo da decidere | Il post è online |
 
 ### Fase 1: da fare, in ordine
 
