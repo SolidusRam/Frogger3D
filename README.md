@@ -2,6 +2,8 @@
 
 *A frog with superpowers and a world that reacts to chaos.*
 
+![The frog punches cars into the traffic](docs/media/frogger-punch.gif)
+
 A 3D, third-person homage to Frogger, in low-poly PS1 style. The frog has to cross roads, rivers, railways, airports and harbours while a wildfire chases it from behind. It can punch cars: a punched car flies off and crashes into the others, and the wrecks turn into obstacles, rafts and more projectiles. The more chaos you cause, the more dangerous the world gets.
 
 It's a roguelite with endless runs: in the dens you pick cards to build your frog, and between runs you unlock new frogs, cards and hats.
