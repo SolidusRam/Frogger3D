@@ -168,7 +168,7 @@ Ridimensionato il 12 ottobre 2026 (fino all'8 ottobre il percorso passava da pag
 | --- | --- | --- |
 | 1. Check | L'utente gioca la lista "Da provare giocando" e segnala bug e cose rotte; si corregge solo quello | Fatto il 13 ottobre 2026: tutto ok (funzioni già provate e approvate) |
 | 2. Pacchetto | Licenze (fatte il 12 ottobre), README, build per Linux e Windows in una Release | Fatti il 13 ottobre 2026: README, tools/build.sh, Release v0.1 in bozza su GitHub. La build Linux parte pulita; quella Windows non è stata provata (qui non c'è Wine) |
-| 3. Pubblico | Check del 13 ottobre 2026: niente segreti, percorsi personali o file pesanti nella storia; asset tutti generati, font OFL. L'email personale nel commit b77bdd5 resta (scelta dell'utente); le righe Claude-Session sono state tolte da tutti i messaggi riscrivendo la storia (main e web, copia di sicurezza in ~/Work/backup). Il repo diventa pubblico insieme al post, solo col via libera dell'utente | Il repo è pubblico |
+| 3. Pubblico | Check del 13 ottobre 2026: niente segreti, percorsi personali o file pesanti nella storia; asset tutti generati, font OFL. L'email personale nel commit b77bdd5 resta (scelta dell'utente); le righe Claude-Session sono state tolte da tutti i messaggi riscrivendo la storia (main e web, copia di sicurezza in ~/Work/backup). Il repo è diventato pubblico il 14 ottobre 2026, prima del post, col via libera dell'utente; pubblicata la Release v0.1 (Windows con la nota "non ancora provata") | Fatto il 14 ottobre 2026 |
 | 4. Il post | Lo sviluppo raccontato stile blog, con l'opinione dell'utente. In inglese (deciso il 13 ottobre 2026, come il README); nome e dove pubblicarlo da decidere | Il post è online |
 
 ### Fase 1: da fare, in ordine
