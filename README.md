@@ -44,6 +44,8 @@ godot --path .
 
 The game was developed in 12 days (1-12 October 2026) together with Claude, Anthropic's AI assistant, through Claude Code. The ideas, the design decisions and the playtesting are the author's. Most of the code, the 3D models (built from code in Blender) and the sound effects (generated from code) were written by the AI. Every commit says so with a `Co-Authored-By` line.
 
+![Twelve of the 57 models, built by a Python script in Blender](docs/media/modelli.webp)
+
 The development is documented in the [docs](docs) folder, in Italian:
 
 - [regole-design.md](docs/regole-design.md): the game's rules, with dated decisions and the roadmap;
