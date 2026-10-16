@@ -56,6 +56,8 @@ The development is documented in the [docs](docs) folder, in Italian:
 
 The comments in the code, some names and the commit messages are in Italian too.
 
+The story of the twelve days, in English: [Twelve days, 130 commits: making Frogger 3D with an AI](https://solidusram.github.io/2026/10/frogger-3d-twelve-days/).
+
 ## Licenses
 
 The code is under the [MIT](LICENSE) license. Models, sounds, translations and documents are under [CC BY 4.0](LICENSE-ASSETS.md); the Lilita One and Nunito fonts under the SIL Open Font License.
